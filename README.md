@@ -19,7 +19,7 @@
 
 - [André Godoi](https://www.linkedin.com/in/profandregodoi/)
 
-## 1. Introdução
+## Introdução
 
 A YOUVISA é uma empresa brasileira especializada em soluções digitais baseadas em **Inteligência Artificial, RPA e automação cognitiva** para otimizar processos consulares e de atendimento.  
 O objetivo deste projeto é desenvolver uma **plataforma de atendimento multicanal inteligente**, integrando **IA conversacional, visão computacional, automação de processos (RPA), e análise de dados**, com **atendimento humano assistido** em casos complexos.
@@ -35,7 +35,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-## 2. Objetivos Estratégicos
+## Objetivos Estratégicos
 
 | Dimensão | Objetivo |
 |-----------|-----------|
@@ -46,7 +46,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-## 3. Escopo Funcional
+## Escopo Funcional
 
 1. Atendimento conversacional com **NLP/LLM**.  
 2. **Omnicanalidade via n8n** com contexto persistente.  
@@ -58,7 +58,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-## 4. Arquitetura Global
+## Arquitetura Global
 
 ```
                     ┌────────────────────────────────┐
@@ -107,9 +107,9 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-## 5. Componentes Principais e Motivação
+## Componentes Principais e Motivação
 
-### 5.1 n8n — Hub Omnicanal e Orquestrador
+### Hub Omnicanal e Orquestrador (n8n)
 
 **Função:** centralizar mensagens, automações e integrações entre canais e serviços.  
 **Motivação:** elimina necessidade de middlewares proprietários (como Twilio), com suporte nativo a WhatsApp Business API, Telegram, Webhook e e-mail.  
@@ -120,7 +120,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.2 Agente de IA Conversacional
+### Agente de IA Conversacional
 
 **Função:** interpretar linguagem natural e manter diálogos contínuos e contextuais.  
 **Recursos:**  
@@ -137,7 +137,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.3 OCR + Visão Computacional
+### OCR + Visão Computacional
 
 **Função:** processar documentos (passaportes, comprovantes, formulários) e extrair dados.  
 **Stack sugerida:** AWS Textract, OpenCV, PaddleOCR ou Tesseract.  
@@ -146,7 +146,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.4 RPA / Automação de Processos
+### RPA / Automação de Processos
 
 **Função:** automação de formulários, agendamentos e comunicações.  
 **Stack:** UiPath, Robocorp, scripts Python acionados via n8n.  
@@ -154,7 +154,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.5 Console do Operador (Front-end Interno)
+### Console do Operador (Front-end Interno)
 
 **Função:** interface única para o atendimento humano quando o chatbot transfere casos.  
 
@@ -173,7 +173,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.6 Data & Analytics Platform
+### Data & Analytics Platform
 
 **Função:** consolidar logs, interações, métricas e eventos operacionais.  
 **Stack:** Kafka (stream), AWS S3 (Data Lake), BigQuery/Athena (DW), Looker/Power BI (visualização).  
@@ -185,7 +185,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-### 5.7 Segurança e Conformidade
+### Segurança e Conformidade
 
 **Camadas de proteção:**  
 - Criptografia (AES-256 / TLS 1.3).  
@@ -199,7 +199,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ---
 
-## 6. Fluxo Omnicanal Integrado (Cliente ↔ IA ↔ Humano)
+## Fluxo Omnicanal Integrado (Cliente ↔ IA ↔ Humano)
 
 ```
 Cliente envia msg (WhatsApp)
@@ -229,7 +229,7 @@ Agente IA interpreta intenção e contexto
 
 ---
 
-## 7. Plano de Implementação
+## Plano de Implementação Sugerido
 
 | Fase | Entregas | Duração |
 |------|-----------|----------|
@@ -242,7 +242,7 @@ Agente IA interpreta intenção e contexto
 
 ---
 
-## 8. Indicadores de Sucesso
+## Indicadores de Sucesso
 
 | Métrica | Antes | Depois | Variação |
 |----------|--------|---------|-----------|
@@ -254,7 +254,7 @@ Agente IA interpreta intenção e contexto
 
 ---
 
-## 9. Riscos e Mitigações
+## Riscos e Mitigações
 
 | Risco | Impacto | Mitigação |
 |--------|----------|-----------|
@@ -266,7 +266,7 @@ Agente IA interpreta intenção e contexto
 
 ---
 
-## 10. Conclusão
+## Conclusão
 
 A **Plataforma YOUVISA 360°** entrega uma visão completa da transformação digital no atendimento consular:  
 - **Inteligência conversacional** (IA + NLP) humaniza interações.  
@@ -282,7 +282,7 @@ Com essa arquitetura, a YOUVISA posiciona-se como referência em **IA aplicada a
 
 ## Apêndice Técnico
 
-### A. Modelo de Dados Simplificado
+### Modelo de Dados Simplificado
 
 | Entidade | Campos Principais | Observações |
 |-----------|-------------------|-------------|
@@ -292,7 +292,7 @@ Com essa arquitetura, a YOUVISA posiciona-se como referência em **IA aplicada a
 | **Case** | id, tipo, prioridade, fila, owner | Roteamento no console |
 | **Document** | id, tipo, OCR_data, hash, validade | Ligado ao pipeline OCR |
 
-### B. Endpoints REST (exemplos)
+### Endpoints REST (exemplos)
 
 ```
 GET /api/v1/conversations/{id}
@@ -303,7 +303,7 @@ GET /api/v1/documents/{id}/validate
 POST /api/v1/workflows/n8n/trigger
 ```
 
-### C. Estrutura de Workflow n8n (exemplo)
+### Estrutura de Workflow n8n (exemplo)
 
 ```
 Trigger (WhatsApp Message)
@@ -320,17 +320,20 @@ Else:
       Send reply via channel
 ```
 
-### D. Diagrama de Sequência Simplificado
+### Diagrama de Sequência da derivação para atendimento humano
 
 ```
-Cliente → n8n: mensagem
-n8n → IA: webhook
-IA → API: consulta status
-API → RPA/OCR: execução
-RPA/OCR → API: resultado
-API → IA: resposta consolidada
-IA → n8n: output formatado
-n8n → Cliente: entrega da mensagem
+Cliente (WhatsApp)         n8n             Agente IA         Orq/Rules         Console Operador
+      |                     |                 |                   |                     |
+1.    |---mensagem--------->|--trigger------->|                   |                     |
+2.    |                     |<--intent/conf---|                   |                     |
+3.    |                     |                 |---decide handoff->|                     |
+4.    |                     |                 |                   |--cria Case---------->|
+5.    |                     |                 |                   |--roteia p/ fila----->|
+6.    |                     |                 |                   |                     |--notifica operador
+7.    |                     |                 |                   |                     |   abre conversa
+8.    |<--resposta (hum) via n8n/IA---------- |                   |                     |
+9.    |                     |                 |<--operações via n8n (OCR/RPA/pagto)---->|
 ```
 
 ---
