@@ -8,10 +8,10 @@
 
 ## 👨‍🎓 Integrantes do Grupo
 
-- RM559800 - [Jonas Felipe dos Santos Lima](https://www.linkedin.com/in/jonas-felipe-dos-santos-lima-b2346811b/)
-- RM560173 - [Gabriel Ribeiro](https://www.linkedin.com/in/ribeirogab/)
-- RM559926 - [Marcos Trazzini](https://www.linkedin.com/in/mstrazzini/)
-- RM559645 - [Edimilson Ribeiro](https://www.linkedin.com/in/edimilson-ribeiro/)
+- `RM559800` - [Jonas Felipe dos Santos Lima](https://www.linkedin.com/in/jonas-felipe-dos-santos-lima-b2346811b/)
+- `RM560173` - [Gabriel Ribeiro](https://www.linkedin.com/in/ribeirogab/)
+- `RM559926` - [Marcos Trazzini](https://www.linkedin.com/in/mstrazzini/)
+- `RM559645` - [Edimilson Ribeiro](https://www.linkedin.com/in/edimilson-ribeiro/)
 
 ## 👩‍🏫 Professores
 
@@ -37,12 +37,12 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ## Objetivos Estratégicos
 
-| Dimensão | Objetivo |
-|-----------|-----------|
+| Dimensão | Objetivo                                                                                    |
+|-----------|---------------------------------------------------------------------------------------------|
 | **Cliente** | Garantir uma jornada fluida, natural e sem rupturas entre canais (WhatsApp, Web, Telegram). |
-| **Operação** | Automatizar até 70 % das interações repetitivas, mantendo qualidade e contexto. |
-| **Negócio** | Reduzir custos operacionais e aumentar conversão de leads para clientes. |
-| **Tecnologia** | Arquitetura baseada em nuvem e microserviços, extensível e observável. |
+| **Operação** | Automatizar até 70 % das interações repetitivas, mantendo qualidade e contexto.             |
+| **Negócio** | Reduzir custos operacionais e aumentar conversão de leads para clientes.                    |
+| **Tecnologia** | Arquitetura baseada em nuvem e microserviços, extensível e observável.                      |
 
 ---
 
@@ -60,97 +60,104 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ## Arquitetura Global
 
-```
-                    ┌────────────────────────────────┐
-                    │         Usuário Final           │
-                    │ WhatsApp • Web • Telegram • App │
-                    └───────────────┬─────────────────┘
-                                    │
-                     ┌──────────────▼──────────────┐
-                     │ n8n Omnichannel Gateway     │
-                     │  - Conectores nativos       │
-                     │  - Webhooks / APIs          │
-                     │  - Orquestração de fluxos   │
-                     └──────────────┬──────────────┘
-                                    │
-                     ┌──────────────▼──────────────┐
-                     │ Agente de IA Conversacional │
-                     │  - NLP/LLM + RAG            │
-                     │  - Context Memory           │
-                     │  - Intent / Entity Engine   │
-                     │  - Fallback Humano          │
-                     └──────────────┬──────────────┘
-                                    │
-               ┌────────────────────▼────────────────────┐
-               │ Orquestrador / API Gateway (Nest/FastAPI)│
-               │ - Autenticação e Regras                 │
-               │ - Roteamento p/ serviços (RPA/OCR/CRM)  │
-               └────────────────────┬────────────────────┘
-                                    │
-    ┌───────────────────────────────▼───────────────────────────────┐
-    │ Serviços de Negócio                                            │
-    │ OCR • RPA • Pagamentos • CRM • Scheduler • Email               │
-    └───────────────────────────────┬───────────────────────────────┘
-                                    │
-                    ┌───────────────▼───────────────┐
-                    │ Data & Context Platform       │
-                    │ MongoDB / PostgreSQL / S3     │
-                    │ ETL → BI (PowerBI / Looker)   │
-                    └───────────────┬───────────────┘
-                                    │
-                    ┌───────────────▼───────────────┐
-                    │ Console do Operador           │
-                    │ React/Next + WebSocket + API  │
-                    │ Fila Omnicanal + SLA + QA     │
-                    └───────────────────────────────┘
-```
+![](./diagramas/arquitetura_global.png)
 
 ---
 
 ## Componentes Principais e Motivação
 
-### Hub Omnicanal e Orquestrador (n8n)
+### Plataforma N8N
 
-**Função:** centralizar mensagens, automações e integrações entre canais e serviços.  
-**Motivação:** elimina necessidade de middlewares proprietários (como Twilio), com suporte nativo a WhatsApp Business API, Telegram, Webhook e e-mail.  
-**Valor para YOUVISA:**  
-- Reduz custo de licenciamento.  
-- Permite rápida adição de novos canais.  
-- Cria camada única de automação visual e audível (logs e retries).  
+A plataforma n8n atua como o núcleo de orquestração e integração inteligente 
+dentro da arquitetura proposta. Ela conecta todos os canais de atendimento 
+(WhatsApp, Webchat, Telegram) com os componentes internos da solução — o Agente 
+de IA, o API Gateway, e o serviço de OCR, por meio de fluxos 
+automatizados, triggers e webhooks. Assim, o n8n é o responsável por garantir 
+que cada evento ou mensagem siga o fluxo correto: seja para uma automação de 
+documento, uma análise de IA, ou uma interação humana no Console do Operador.
+
+Do ponto de vista técnico, o n8n funciona como um gateway omnicanal: centraliza 
+a entrada de mensagens, realiza transformações e chamadas REST para os serviços 
+da AWS, além de registrar logs e políticas de retry em caso de falhas. Por ser 
+low-code e extensível, ele permite que a YOUVISA evolua seus fluxos de negócio 
+rapidamente, adicionando novos canais, integrações ou automações sem reescrever 
+código. Cada fluxo é versionado, monitorado e audível — o que garante 
+rastreabilidade, segurança e governança.
+
+Para o cliente final, os benefícios são diretos: respostas mais rápidas, 
+jornadas sem interrupções e uma experiência omnicanal fluida, onde ele pode 
+iniciar um atendimento no WhatsApp e continuar no webchat sem perder o contexto. 
+Para a YOUVISA, o uso do n8n reduz custos operacionais, aumenta a agilidade na 
+entrega de novas funcionalidades (como a adição de novos canais, futuramente) e 
+proporciona resiliência — já que o controle de filas, logs e reprocessamentos 
+ocorre de forma automática, mantendo o ecossistema sempre disponível e escalável.
 
 ---
 
 ### Agente de IA Conversacional
 
-**Função:** interpretar linguagem natural e manter diálogos contínuos e contextuais.  
-**Recursos:**  
-- NLP + LLM (Rasa / LangChain + GPT-4 / HuggingFace).  
-- Memória contextual persistente (Redis/Mongo).  
-- Compreensão semântica + geração contextual.  
-- Recuperação de dados via RAG.  
-- Integração direta ao n8n e ao console humano.  
+O Agente de IA Conversacional é o coração inteligente da solução, responsável 
+por interpretar a linguagem natural dos clientes e manter diálogos contínuos, 
+fluidos e contextuais, independentemente do canal de origem. Ele atua como o 
+primeiro ponto de contato cognitivo: compreende intenções, reconhece entidades 
+e conduz o usuário em uma jornada totalmente conversacional, sem menus rígidos 
+ou fluxos predefinidos. Graças à sua arquitetura modular, o agente pode 
+interagir diretamente com o n8n e o API Gateway, acionando automações, consultas
+ou fluxos humanos conforme a necessidade.
 
-**Valor:**  
-- Conversas naturais → menor atrito e maior conversão.  
-- Resposta imediata → redução de TMA em até 65 %.  
-- Aprendizado contínuo (logs alimentam modelo).  
+Tecnicamente, o agente é construído sobre uma base de NLP e LLMs (com frameworks
+como LangChain ou LangGraph, integrados a modelos de linguagem hospedados em 
+HuggingFace ou serviços equivalentes). Ele mantém uma memória contextual 
+persistente no MongoDB, acessada via API Gateway, garantindo que o histórico e 
+as preferências do usuário sejam preservados entre canais e sessões. Além disso, 
+utiliza RAG (Retrieval-Augmented Generation) para enriquecer suas respostas com 
+dados internos e documentos da YOUVISA, aumentando a precisão e a personalização
+das interações. A camada semântica do agente permite compreender nuances de 
+linguagem e responder de forma natural, adaptando-se ao tom, idioma e contexto 
+de cada cliente.
 
----
+O valor desse componente é duplo: para o cliente, ele proporciona uma 
+experiência conversacional humanizada, reduzindo o atrito e tornando o processo 
+de solicitação de vistos mais simples e rápido; para a YOUVISA, significa 
+eficiência operacional e ganho de escala, com redução de até 65% no tempo médio 
+de atendimento (TMA) e aumento significativo da taxa de conversão. Além disso, 
+o agente evolui continuamente — os logs de conversas são usados para aprimorar 
+o modelo, ajustando intents, respostas e fluxos, o que garante aprendizado 
+constante e melhoria progressiva da qualidade do atendimento. 
 
-### OCR + Visão Computacional
+#### RPA / Automação de Processos
 
-**Função:** processar documentos (passaportes, comprovantes, formulários) e extrair dados.  
-**Stack sugerida:** AWS Textract, OpenCV, PaddleOCR ou Tesseract.  
-**Etapas:** upload → OCR → validação semântica → retorno via n8n.  
-**Valor:** precisão documental, redução de retrabalho e validação instantânea.  
-
----
-
-### RPA / Automação de Processos
+**TODO: Pensar em como encaixar isso na solução**
 
 **Função:** automação de formulários, agendamentos e comunicações.  
 **Stack:** UiPath, Robocorp, scripts Python acionados via n8n.  
 **Valor:** até 50 % de economia operacional, menos erros manuais, integração direta com IA e front-end.  
+
+---
+
+### Serviço de OCR
+
+O serviço de OCR funciona totalmente integrado ao ecossistema da AWS, e utiliza 
+o Amazon Textract para extração inteligente de texto, tabelas e formulários a 
+partir de documentos enviados pelos clientes (como passaportes, comprovantes 
+e formulários de visto). O fluxo inicia quando o documento é capturado pela 
+plataforma n8n e armazenado no Amazon S3; a partir daí, o Textract, orquestrado
+por EventBridge, Lambda e SQS, processa o arquivo de forma assíncrona, extrai 
+os campos relevantes e aplica o Amazon Comprehend para análise semântica, 
+detecção de PII e validação de consistência. Os resultados estruturados são 
+então enviados ao API Gateway e gravados no MongoDB, onde podem ser consumidos 
+pelo Agente de IA ou revisados por um humano no Console do Operador, quando 
+necessário.
+
+Essa arquitetura traz benefícios diretos ao cliente e à operação da YOUVISA: 
+acelera o processo de validação documental, elimina erros manuais, garante 
+conformidade com a LGPD (dados mantidos e processados exclusivamente em 
+território brasileiro – AWS São Paulo) e reduz drasticamente o tempo de resposta 
+em etapas críticas do processo de visto. A escolha da stack AWS — com Textract, 
+Comprehend, Lambda e S3 — fundamenta-se na alta acurácia dos modelos de IA 
+gerenciados, escalabilidade serverless, integração nativa com o restante da 
+arquitetura e baixo custo operacional, além de fornecer rastreabilidade, 
+segurança e resiliência corporativa sem exigir infraestrutura adicional.
 
 ---
 
