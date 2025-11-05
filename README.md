@@ -112,7 +112,7 @@ utiliza RAG (Retrieval-Augmented Generation) para enriquecer suas respostas com
 dados internos e documentos da YOUVISA, aumentando a precisão e a personalização
 das interações. A camada semântica do agente permite compreender nuances de 
 linguagem e responder de forma natural, adaptando-se ao tom, idioma e contexto 
-de cada cliente.
+de cada cliente. 
 
 O valor desse componente é duplo: para o cliente, ele proporciona uma 
 experiência conversacional humanizada, reduzindo o atrito e tornando o processo 
@@ -122,6 +122,7 @@ de atendimento (TMA) e aumento significativo da taxa de conversão. Além disso,
 o agente evolui continuamente — os logs de conversas são usados para aprimorar 
 o modelo, ajustando intents, respostas e fluxos, o que garante aprendizado 
 constante e melhoria progressiva da qualidade do atendimento.
+
 ---
 
 ### Serviço de OCR
