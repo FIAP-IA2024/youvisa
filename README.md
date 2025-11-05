@@ -261,15 +261,17 @@ da arquitetura de dados.
 
 ### Segurança e Conformidade
 
-**Camadas de proteção:**  
+Dado o cenário naturalmente sensível da solução (informações pessoais utilizadas
+em um processo oficial de emissão de vistos), é importante que a solução seja 
+aderente às últimas tecnologias, protocolos e melhores práticas de segurança,
+além de estar em conformidade com a LGPD. Para isso, utilizamos:
+
 - Criptografia (AES-256 / TLS 1.3).  
-- IAM granular e SSO (OAuth2/SAML).  
+- IAM granular, com controle de acesso RBAC. 
 - Logs imutáveis (WORM).  
 - DLP básico para anexos.  
 - Políticas LGPD: consentimento, anonimização, direito ao esquecimento.  
-- Monitoramento e alertas de segurança (SIEM).  
-
-**Valor:** garante confiança e compliance em um domínio sensível (dados consulares).  
+- Monitoramento e alertas de segurança (SIEM).
 
 ---
 
