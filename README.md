@@ -277,31 +277,32 @@ além de estar em conformidade com a LGPD. Para isso, utilizamos:
 
 ## Fluxo Omnicanal Integrado (Cliente ↔ IA ↔ Humano)
 
-```
-Cliente envia msg (WhatsApp)
-      │
-      ▼
-n8n recebe trigger → roteia para Agente IA
-      │
-      ▼
-Agente IA interpreta intenção e contexto
-      │
- ┌────┴─────────────┐
- │ Caso resolvível  │──> Executa workflow (RPA/OCR/API)
- │ pelo bot         │     ↓
- │                  │<----Retorna resultado via n8n
- └────┬─────────────┘
-      │
-      ▼
- Se falha ou complexidade → cria "Case" via API
-      │
-      ▼
- Console Operador recebe contexto completo
-      │
-      ▼
- Operador atua, aciona automações (via n8n),
- atualiza status → IA retoma acompanhamento.
-```
+![](./diagramas/fluxo_de_comunicacao.png)
+
+O diagrama acima visa apenas ilustrar uma visão alto-nível da comunicação, mas 
+diversos componentes da solução são acionados e trabalham de maneira integrada 
+para promover esse fluxo:
+
+- Independente do canal que o cliente contacta a YOUVISA, o acionamento do fluxo
+  n8n ocorre via gatilho (trigger), que é responsável por rotear as mensagens 
+  para o Agente IA, que interpreta a intenção e contexto da mensagem, e decide
+  se o caso é resolvível pelo bot ou se precisa ser aberto como um "Case" para 
+  um operador humano. A grosso modo, o n8n continua atuando como um orquestrador 
+  do fluxo, mesmo depois que o bot (agente de IA) é acionado, garantindo flexibilidade.
+- O bot utiliza NLP (Natural Language Processing) para se comunicar com o usuário, 
+  interpretando a intenção e contexto da mensagem, e respondendo de forma natural 
+  e adaptada ao tom, idioma e contexto de cada cliente.
+- Em alguns casos, o cliente precisará enviar arquivos, que serão armazenados no
+  S3 pelo n8n, o que dispara um evento Lambda para acionar o serviço de OCR e 
+  extrair as informações do arquivo (Ex: Dados do passaporte enviados a partir 
+  de uma foto do passaporte, ou dados de um comprovante de preenchimento de um 
+  formulário), e estes dados são salvos no banco de dados via API Gateway.
+- Todas as mensagens trocadas, informações extraídas e arquivos enviados são 
+  armazenadas na arquitetura de dados da plataforma.
+- Em caso de derivação para atendimento humano, é criado um novo registro de 
+  Case no MongoDB, e o n8n é responsável por atualizar o status do Case e 
+  notificar o operador humano via email ou SMS, utilizando os serviços de negócio
+  da YOUVISA.
 
 ---
 
@@ -309,9 +310,9 @@ Agente IA interpreta intenção e contexto
 
 | Fase | Entregas | Duração |
 |------|-----------|----------|
-| **S1** | Setup Cloud + n8n + Infra base + RBAC + SSO | 4 sem |
+| **S1** | Setup Cloud + n8n + Infra base + RBAC | 4 sem |
 | **S2** | MVP Agente IA (NLP/LLM) + WhatsApp + Context Store | 6 sem |
-| **S3** | OCR + RPA + integrações API | 6 sem |
+| **S3** | OCR + integrações API | 6 sem |
 | **S4** | Console Operador + Handoff + QA | 6 sem |
 | **S5** | Data Lake + Dashboards + Segurança final | 4 sem |
 | **Total** | **26 semanas (~6,5 meses)** | |
@@ -320,13 +321,17 @@ Agente IA interpreta intenção e contexto
 
 ## Indicadores de Sucesso
 
-| Métrica | Antes | Depois | Variação |
-|----------|--------|---------|-----------|
+**IMPORTANTE**: Os indicadores a seguir foram estimados, apenas a título de exemplificar
+áreas de ganho com o projeto, pois não obtivemos acesso aos indicadores reais da
+empresa. De qualquer forma, é possível adaptá-los à realidade da YOUVISA.
+
+| Métrica | Antes  | Depois | Variação |
+|----------|--------|-------|-------|
 | Tempo médio de atendimento | 35 min | 12 min | −65 % |
-| Retrabalho documental | 18 % | < 5 % | −72 % |
-| Custo por lead | 100 % | 65 % | −35 % |
-| Conversão para cliente | 22 % | 38 % | +16 p.p. |
-| NPS médio | 70 | 90 | +20 pts |
+| Retrabalho documental | 18 %   | < 5 % | −72 % |
+| Custo por lead | R$ 100 | R$ 65 | −R$35 |
+| Conversão para cliente | 22 %   | 38 %  | +16 p.p. |
+| NPS médio | 70     | 90    | +20 pts |
 
 ---
 
@@ -340,78 +345,80 @@ Agente IA interpreta intenção e contexto
 | Resistência da equipe | Médio | Treinamento e onboarding progressivo |
 | Sobrecarga de fluxos | Médio | Escalabilidade cloud (EKS/Fargate) |
 
+A gestão de riscos é parte essencial da proposta YOUVISA 360°, assegurando 
+estabilidade operacional e confiança durante toda a jornada digital do cliente. 
+O principal desafio técnico está na precisão do processamento de linguagem 
+natural; erros semânticos do NLP podem gerar interpretações incorretas das 
+intenções do usuário. Para mitigar isso, a solução prevê um fallback humano 
+automático, que transfere o atendimento ao Console do Operador quando há 
+incerteza, aliado a um processo contínuo de retraining do modelo com base em 
+logs de conversas reais — garantindo evolução progressiva da IA e redução de 
+falhas ao longo do tempo.
+
+Outro risco crítico é a indisponibilidade de canais de comunicação, como APIs 
+do WhatsApp ou Telegram. A arquitetura endereça isso com mecanismos de 
+failover n8n e logs automáticos, permitindo re-roteamento dinâmico para outros 
+canais e garantindo continuidade no atendimento. Em paralelo, o vazamento de 
+dados, considerado de impacto crítico, é mitigado por um conjunto de camadas 
+de segurança: criptografia ponta a ponta (KMS), gestão de identidades (IAM), 
+políticas DLP e auditorias periódicas, mantendo a conformidade com a LGPD e 
+preservando a reputação da YOUVISA.
+
+No aspecto humano, a resistência da equipe à adoção de novas tecnologias é 
+tratada por meio de programas de treinamento e onboarding progressivo, que 
+enfatizam o papel complementar da automação ao trabalho humano, reforçando 
+a percepção de que a IA atua como suporte — e não substituição — ao operador. 
+Por fim, para evitar sobrecarga de fluxos e gargalos de desempenho em 
+momentos de alta demanda, a infraestrutura foi desenhada com escalabilidade 
+nativa em cloud (Serverless com Lambda, mas podendo ser expandido para 
+EKS/Fargate), permitindo crescimento automático de recursos sob demanda.
+
+Essas estratégias de mitigação consolidam uma arquitetura resiliente, segura 
+e adaptável, capaz de equilibrar inovação tecnológica e governança 
+operacional. Com esse modelo, a YOUVISA garante não apenas alta 
+disponibilidade e integridade dos serviços, mas também uma jornada de 
+atendimento estável, confiável e centrada no cliente.
+
 ---
 
 ## Conclusão
 
-A **Plataforma YOUVISA 360°** entrega uma visão completa da transformação digital no atendimento consular:  
-- **Inteligência conversacional** (IA + NLP) humaniza interações.  
-- **n8n** orquestra canais, fluxos e automações com agilidade. 
-- **Console do Operador** garante qualidade e empatia no contato humano.  
-- **Data & Analytics** tornam o negócio preditivo e orientado a dados.  
-- **Segurança e LGPD** preservam reputação e conformidade.
+A solução proposta consolida uma visão completa da transformação digital no 
+atendimento consular, unindo tecnologia, inteligência e experiência humana em 
+um ecossistema coerente e escalável. Ela combina processamento de linguagem 
+natural, automação e orquestração de fluxos para criar um atendimento 
+verdadeiramente omnicanal, no qual o cliente transita livremente entre 
+WhatsApp, Webchat ou Telegram, preservando sempre o contexto de sua 
+solicitação. Essa integração garante agilidade e consistência nas interações, 
+reduzindo atritos e elevando o padrão de atendimento a um novo patamar de 
+eficiência e personalização.
 
-Com essa arquitetura, a YOUVISA posiciona-se como referência em **IA aplicada a serviços consulares**, oferecendo **atendimento fluido, seguro e inteligente**, do primeiro contato até a emissão do visto.
+A camada de inteligência conversacional, composta por NLP e LLMs, transforma 
+o diálogo com o usuário em uma experiência natural e empática, substituindo 
+fluxos baseados em menus por interações livres e contextuais. Esse agente 
+cognitivo é capaz de compreender intenções, interpretar documentos e até 
+acionar automações — como OCR ou RPA — de forma autônoma, acelerando processos 
+e reduzindo o tempo médio de atendimento. Em paralelo, o n8n atua como o 
+maestro da solução, orquestrando canais, fluxos e integrações com rapidez e 
+flexibilidade, possibilitando que a YOUVISA adicione novos serviços e 
+conectores sem a necessidade de desenvolvimento extensivo.
 
----
+O Console do Operador complementa a jornada digital ao oferecer o toque 
+humano quando necessário, com uma interface unificada e inteligente que dá 
+continuidade aos atendimentos iniciados pela IA, preservando histórico e 
+contexto. Essa integração entre automação e atendimento humano garante que 
+nenhuma interação seja perdida, mantendo qualidade, empatia e supervisão. 
+Além disso, o módulo de Data & Analytics transforma cada interação em dado 
+estratégico, permitindo que a YOUVISA antecipe demandas, otimize recursos e 
+tome decisões orientadas por indicadores de desempenho e satisfação.
 
-## Apêndice Técnico
-
-### Modelo de Dados Simplificado
-
-| Entidade | Campos Principais | Observações |
-|-----------|-------------------|-------------|
-| **Conversation** | id, canal, status, timestamps | Persistência de sessões omnicanal |
-| **Message** | id, conversation_id, autor, payload, anexos | Logs auditáveis |
-| **Customer** | id, PII (criptografada), preferências, idioma | Conformidade LGPD |
-| **Case** | id, tipo, prioridade, fila, owner | Roteamento no console |
-| **Document** | id, tipo, OCR_data, hash, validade | Ligado ao pipeline OCR |
-
-### Endpoints REST (exemplos)
-
-```
-GET /api/v1/conversations/{id}
-POST /api/v1/conversations/{id}/messages
-POST /api/v1/cases
-PATCH /api/v1/cases/{id}/assign
-GET /api/v1/documents/{id}/validate
-POST /api/v1/workflows/n8n/trigger
-```
-
-### Estrutura de Workflow n8n (exemplo)
-
-```
-Trigger (WhatsApp Message)
-   ↓
-Webhook → Intent Detection (IA)
-   ↓
-If intent == "renovar_visto":
-      Execute Node (RPA DS-160)
-   ↓
-If OCR required:
-      Upload Document → Validate OCR → Return
-   ↓
-Else:
-      Send reply via channel
-```
-
-### Diagrama de Sequência da derivação para atendimento humano
-
-```
-Cliente (WhatsApp)         n8n             Agente IA         Orq/Rules         Console Operador
-      |                     |                 |                   |                     |
-1.    |---mensagem--------->|--trigger------->|                   |                     |
-2.    |                     |<--intent/conf---|                   |                     |
-3.    |                     |                 |---decide handoff->|                     |
-4.    |                     |                 |                   |--cria Case---------->|
-5.    |                     |                 |                   |--roteia p/ fila----->|
-6.    |                     |                 |                   |                     |--notifica operador
-7.    |                     |                 |                   |                     |   abre conversa
-8.    |<--resposta (hum) via n8n/IA---------- |                   |                     |
-9.    |                     |                 |<--operações via n8n (OCR/RPA/pagto)---->|
-```
-
----
-
+Por fim, a arquitetura foi desenhada com segurança e conformidade como pilares 
+centrais, assegurando que todos os dados sejam processados e armazenados de 
+acordo com a LGPD em infraestrutura AWS localizada no Brasil. Com isso, a 
+YOUVISA posiciona-se como uma referência em IA aplicada a serviços consulares, 
+entregando um ecossistema digital que combina automação inteligente, 
+atendimento humano e governança de dados — oferecendo ao cliente uma 
+experiência fluida, segura e de alto valor agregado, do primeiro contato à 
+emissão do visto.
 
 

@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.8 Chrome/140.0.7339.240 Electron/38.4.0 Safari/537.36" version="28.2.8">
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.8 Chrome/140.0.7339.240 Electron/38.4.0 Safari/537.36" version="28.2.8" pages="2">
   <diagram name="Arquitetura Global" id="SUk4XKZaSpNrtz7TaFmM">
     <mxGraphModel dx="1018" dy="1177" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
       <root>
@@ -88,6 +88,51 @@
         </mxCell>
         <mxCell id="KSDkCjzVuXHtolIaIeAl-35" value="&lt;div&gt;&lt;b&gt;Serviço de OCR&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-weight: normal;&quot;&gt;- AWS Textract / Comprehend&lt;/span&gt;&lt;/div&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- EventBridge / SQS/SNS / Lambda&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=none;" parent="1" vertex="1">
           <mxGeometry x="633" y="168.5" width="237" height="91.75" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="eM6a-TUV3vOfX-2FA7Jr" name="Fluxo de comunicação">
+    <mxGraphModel dx="1018" dy="777" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Upi3H-C3Rde-u2CZSjbb-1" target="Upi3H-C3Rde-u2CZSjbb-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-1" value="Cliente envia mensagem via WhatsApp, Web (chat) ou Telegram" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="263" y="117" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Upi3H-C3Rde-u2CZSjbb-2" target="Upi3H-C3Rde-u2CZSjbb-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-2" value="n8n recebe trigger e encaminha para o agente de IA" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="263" y="229" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Upi3H-C3Rde-u2CZSjbb-6" target="Upi3H-C3Rde-u2CZSjbb-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-14" value="SIM" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Upi3H-C3Rde-u2CZSjbb-11">
+          <mxGeometry x="-0.0084" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Upi3H-C3Rde-u2CZSjbb-6" target="Upi3H-C3Rde-u2CZSjbb-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-15" value="NÃO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="Upi3H-C3Rde-u2CZSjbb-13">
+          <mxGeometry x="-0.2479" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-6" value="O Bot consegue resolver?" style="rhombus;whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="257.5" y="330" width="131" height="134" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-10" value="Finaliza o atendimento" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="457" y="367" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Upi3H-C3Rde-u2CZSjbb-12" value="Deriva para atendimento humano" style="whiteSpace=wrap;html=1;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="263" y="536" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
