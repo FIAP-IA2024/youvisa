@@ -28,7 +28,6 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 - Agente de IA conversacional omnicanal;
 - Integração orquestrada por **n8n**;
 - Validação de documentos via OCR e visão computacional;
-- Automação RPA para formulários e notificacões;
 - Painel de **atendimento humano (console do operador)**;
 - Data pipeline e análise de dados preditiva;
 - Governança, LGPD e observabilidade.
@@ -51,10 +50,9 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 1. Atendimento conversacional com **NLP/LLM**.  
 2. **Omnicanalidade via n8n** com contexto persistente.  
 3. **OCR + visão computacional** para análise de documentos.  
-4. **RPA** para automações de formulários e agendamentos.  
-5. **Console de operador humano**, integrado ao fluxo.  
-6. **Data Lake e dashboards analíticos**.  
-7. **Camadas de segurança e LGPD**.  
+4. **Console de operador humano**, integrado ao fluxo.  
+5. **Data Lake e dashboards analíticos**.  
+6. **Camadas de segurança e LGPD**.  
 
 ---
 
@@ -123,16 +121,7 @@ eficiência operacional e ganho de escala, com redução de até 65% no tempo m�
 de atendimento (TMA) e aumento significativo da taxa de conversão. Além disso, 
 o agente evolui continuamente — os logs de conversas são usados para aprimorar 
 o modelo, ajustando intents, respostas e fluxos, o que garante aprendizado 
-constante e melhoria progressiva da qualidade do atendimento. 
-
-#### RPA / Automação de Processos
-
-**TODO: Pensar em como encaixar isso na solução**
-
-**Função:** automação de formulários, agendamentos e comunicações.  
-**Stack:** UiPath, Robocorp, scripts Python acionados via n8n.  
-**Valor:** até 50 % de economia operacional, menos erros manuais, integração direta com IA e front-end.  
-
+constante e melhoria progressiva da qualidade do atendimento.
 ---
 
 ### Serviço de OCR
@@ -160,35 +149,112 @@ arquitetura e baixo custo operacional, além de fornecer rastreabilidade,
 segurança e resiliência corporativa sem exigir infraestrutura adicional.
 
 ---
+### API Gateway
 
-### Console do Operador (Front-end Interno)
+O API Gateway funciona como a espinha dorsal da arquitetura proposta, 
+centralizando toda a comunicação entre os componentes internos — Agente de IA, 
+n8n, OCR, MongoDB e Console do Operador — de forma segura, padronizada e 
+escalável. Ele atua como ponto central e único de entrada autorizado para as 
+requisições externas e internas, garantindo autenticação, autorização e controle 
+de tráfego. Essa camada também abstrai a complexidade técnica dos diversos 
+serviços que compõem o ecossistema, permitindo que cada um opere de maneira 
+independente, sem acoplamento direto entre si.
 
-**Função:** interface única para o atendimento humano quando o chatbot transfere casos.  
+Em termos técnicos, o API Gateway implementa autenticação via JWT, controle de 
+permissões RBAC, e políticas de segurança (rate limiting, CORS, logs e 
+monitoramento via AWS CloudWatch). Ele também é responsável por orquestrar e 
+rotear chamadas REST entre os módulos da plataforma — por exemplo, entregando ao 
+Agente de IA os dados armazenados no banco de dados MongoDB, disparando o 
+pipeline do OCR, ou repassando atualizações de status ao Console do Operador em 
+tempo real via WebSockets. Além disso, todos os acessos a dados sensíveis (como 
+documentos ou informações pessoais) passam obrigatoriamente pelo gateway, o que 
+assegura conformidade com a LGPD e rastreabilidade completa de eventos.
 
-**Características:**  
-- Inbox unificada (WhatsApp, Web, Telegram).  
-- Fila inteligente com regras por idioma, prioridade e pacote (Basic/Plus/Ultra).  
-- Histórico completo da conversa e documentos.  
-- Notas internas, macros, automações rápidas (via n8n).  
-- Painel supervisor: QA, SLAs, NPS, tempo médio, retrabalho.  
-- SSO, RBAC, logs e rastreabilidade.  
+Não está explícito no desenho geral da arquitetura, a fim de simplificar o 
+entendimento da solução, mas o API Gateway da solução é composto por diversos 
+componentes da nuvem AWS, começando pelo serviço de mesmo nome (AWS API Gateway),
+que recebe, autentica e encaminha as requisições de API para o backend, que 
+inicialmente será um conjunto de lambdas (AWS Lambda) que executam funções de 
+processamento e integração com outros serviços da AWS utilizados pela solução.
+A opção por um backend "serverless", com AWS Lambda, agrega simplicidade e 
+rapidez de prototipagem, enquanto a abstração criada pelo API Gateway permite 
+a migração futura do backend para outros serviços da AWS, como o AWS ECS 
+(Elastic Container Service) ou AWS Fargate, caso seja necessário.
 
-**Valor para YOUVISA:**  
-- Garantia de qualidade e personalização humana.  
-- Governança e métricas centralizadas.  
-- Continuidade real entre IA e humano — o operador retoma o contexto completo.  
+Para o cliente final, o API Gateway garante velocidade, segurança e 
+confiabilidade em cada interação. Graças à sua arquitetura escalável e 
+monitorada, o cliente experimenta um atendimento contínuo e sem interrupções, 
+mesmo em períodos de alta demanda. A centralização de autenticação e logs 
+também permite respostas mais consistentes, maior disponibilidade e menor 
+latência, principalmente por optarmos utilizar a região São Paulo da AWS. Na 
+prática, isso significa que o cliente obtém respostas mais rápidas, com mais 
+precisão e privacidade assegurada — reforçando a confiança na YOUVISA como uma 
+empresa segura, moderna e orientada à experiência digital.
 
 ---
 
-### Data & Analytics Platform
+### Console do Operador (Front-end Interno)
 
-**Função:** consolidar logs, interações, métricas e eventos operacionais.  
-**Stack:** Kafka (stream), AWS S3 (Data Lake), BigQuery/Athena (DW), Looker/Power BI (visualização).  
-**Insights possíveis:**  
-- Gargalos de atendimento;  
-- Eficiência por canal;  
-- Taxa de automação/handoff;  
-- Correlação entre perfil do cliente e sucesso de visto.  
+O Console do Operador é o ponto de convergência entre automação e atendimento 
+humano dentro da arquitetura proposta. Ele funciona como uma interface única 
+de atendimento que permite que operadores humanos assumam casos transferidos 
+pelo Agente de IA de forma contínua e contextualizada, sem perda de informações 
+ou histórico. Quando o assistente conversacional identifica situações complexas 
+ou que exigem julgamento humano, o Console se torna o ambiente principal de 
+atuação, assegurando fluidez na jornada do cliente e mantendo a experiência 
+omnicanal entre WhatsApp, Web (Chat) e Telegram.
+
+Sua estrutura oferece uma interface simples e unificada para atendimento, onde 
+cada operador visualiza conversas de múltiplos canais, documentos associados 
+e o histórico completo das interações. A distribuição de atendimentos é gerida 
+por uma fila inteligente, que aplica regras dinâmicas com base em idioma, 
+priorização segmentada por perfil do cliente (por exemplo, Bronze, Prata ou 
+Ouro) ou por SLA (nível de urgência com base em prazos). Além disso, o Console 
+conta com um painel de supervisão que exibe métricas de qualidade (QA), SLAs, 
+tempo médio de atendimento, NPS e índices de retrabalho, fornecendo ao gestor 
+visibilidade total sobre a operação e suporte à tomada de decisão baseada em 
+dados.
+
+Do ponto de vista técnico, o Console incorpora autenticação baseada em usuário 
+e senha, controle de acesso baseado em função (RBAC) e logs de auditoria, 
+garantindo segurança e rastreabilidade em conformidade com a LGPD. Sua 
+arquitetura baseada em React e WebSockets permite atualizações em tempo real, 
+notificações instantâneas e um design responsivo que facilita o uso em 
+diferentes dispositivos. Com baixa curva de aprendizagem e layout intuitivo, 
+o Console reduz o tempo de onboarding e aumenta a produtividade dos atendentes, 
+oferecendo uma experiência fluida e eficiente. 
+
+Para a YOUVISA, o Console do Operador representa o equilíbrio ideal entre 
+automação e personalização. Ele assegura a continuidade real entre IA e humano, 
+permitindo que o operador retome conversas com o contexto completo, sem 
+repetições ou retrabalho. Além disso, centraliza governança e métricas 
+operacionais, garantindo que o crescimento da base de clientes ocorra com 
+qualidade, previsibilidade e empatia. Em essência, o Console é o elo que 
+transforma tecnologia em experiência humana — ampliando a eficiência 
+operacional e fortalecendo o relacionamento da YOUVISA com seus clientes.
+
+---
+
+### Arquitetura de Dados
+
+Para garantir o melhor equilíbrio entre simplicidade, confiabilidade e 
+escalabilidade para acesso a dados na plataforma, optamos por centralizar 
+toda a persistência de dados transacionais e de contexto em uma base de dados 
+MongoDB, em conjunto com um repositório (conjunto de buckets) de documentos, 
+utilizando o AWS S3.
+
+Essa arquitetura acelera o tempo de entrega e percepção de valor da solução, 
+enquanto ainda deixa espaço para expansão e adaptação às necessidades futuras, 
+com a adição de componentes especializados de caching (como o REDIS), ou um 
+barramento de mensagens para desacoplamento total dos componentes e criação de 
+um pipeline de dados, utilizando Kafka (AWS MSK), o AWS Lambda e o Amazon 
+EventBridge.
+
+A fim de não tornar o entendimento da arquitetura geral muito complexo, optamos
+por não incluir alguns componentes nativos da arquitetura AWS (como CodeCommit, 
+CloudWatch, etc), mas estes outros componentes consolidam logs, métricas de 
+utilização dos componentes AWS e monitoramento de integridade, fazendo parte 
+da arquitetura de dados.
 
 ---
 
@@ -277,8 +343,7 @@ Agente IA interpreta intenção e contexto
 
 A **Plataforma YOUVISA 360°** entrega uma visão completa da transformação digital no atendimento consular:  
 - **Inteligência conversacional** (IA + NLP) humaniza interações.  
-- **n8n** orquestra canais, fluxos e automações com agilidade.  
-- **OCR e RPA** automatizam tarefas manuais e reduzem erros.  
+- **n8n** orquestra canais, fluxos e automações com agilidade. 
 - **Console do Operador** garante qualidade e empatia no contato humano.  
 - **Data & Analytics** tornam o negócio preditivo e orientado a dados.  
 - **Segurança e LGPD** preservam reputação e conformidade.
