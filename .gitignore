@@ -74,3 +74,5 @@ __pycache__/
 # Others
 CLAUDE.md
 AGENTS.md
+tmp/*
+.tasks/*
