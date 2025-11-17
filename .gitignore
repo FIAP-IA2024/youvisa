@@ -70,3 +70,7 @@ __pycache__/
 *.dll
 *.exe
 *.bkp
+
+# Others
+CLAUDE.md
+AGENTS.md
