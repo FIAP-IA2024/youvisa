@@ -60,6 +60,13 @@ vendor/
 .env
 .env.local
 
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
 # Compiled files
 *.class
 *.pyc
