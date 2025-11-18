@@ -18,7 +18,7 @@ n8n acts as the central orchestration hub for the YOUVISA omnichannel customer s
 
 ### Workflow Architecture
 
-```
+```plaintext
 Telegram Bot
     |
     v
@@ -41,6 +41,7 @@ Telegram Bot
 ### Node Descriptions
 
 #### 1. Telegram Trigger
+
 - **Type**: `n8n-nodes-base.telegramTrigger`
 - **Function**: Listens for all messages sent to the Telegram bot
 - **Configuration**:
@@ -49,6 +50,7 @@ Telegram Bot
 - **Output**: Raw message data from Telegram API
 
 #### 2. Check if File Exists
+
 - **Type**: `n8n-nodes-base.if`
 - **Function**: Routes the flow based on whether the message contains a file
 - **Condition**: Checks if `$json.message.document` exists
@@ -57,6 +59,7 @@ Telegram Bot
   - **False**: Message is text-only, send instructions
 
 #### 3. Send Instructions (No File)
+
 - **Type**: `n8n-nodes-base.telegram`
 - **Function**: Instructs user to send a file when only text is received
 - **Configuration**:
@@ -64,6 +67,7 @@ Telegram Bot
   - Text: "Please send a file (document, image, PDF, etc.) so I can process it."
 
 #### 4. Get File from Telegram
+
 - **Type**: `n8n-nodes-base.telegram`
 - **Function**: Downloads the file from Telegram servers
 - **Configuration**:
@@ -73,9 +77,11 @@ Telegram Bot
 - **Output**: Binary file data + file metadata
 
 #### 5. Prepare S3 Upload
+
 - **Type**: `n8n-nodes-base.code`
 - **Function**: Prepares file path structure and metadata for S3
 - **Logic**:
+
   ```javascript
   // Extract file data and metadata
   const fileData = items[0].binary.data;
@@ -106,6 +112,7 @@ Telegram Bot
     }
   }];
   ```
+
 - **Output**:
   - `s3Key`: Full S3 path (e.g., `telegram/2025/11/18/12345_1731888000_passport.pdf`)
   - `fileName`: Original filename
@@ -114,6 +121,7 @@ Telegram Bot
   - `chatId`: Telegram chat ID for response
 
 #### 6. Upload to S3
+
 - **Type**: `n8n-nodes-base.awsS3`
 - **Function**: Uploads file to AWS S3 bucket
 - **Configuration**:
@@ -127,6 +135,7 @@ Telegram Bot
 - **Result**: File stored in S3 with structure `s3://bucket/telegram/YYYY/MM/DD/filename`
 
 #### 7. Send Confirmation
+
 - **Type**: `n8n-nodes-base.telegram`
 - **Function**: Sends success message to user
 - **Configuration**:
@@ -155,6 +164,7 @@ s3://youvisa-files-dev/
 - `original_filename`: Original name sent by user
 
 This ensures:
+
 - No file name conflicts (unique file_id + timestamp)
 - Easy traceability back to Telegram
 - Chronological organization by date
@@ -203,12 +213,14 @@ S3_BUCKET_NAME=youvisa-files-dev
 After importing the workflow, you need to configure two sets of credentials:
 
 #### 1. Telegram Bot API
+
 - **Name**: Telegram Bot API
 - **Type**: `telegramApi`
 - **Fields**:
   - Access Token: Value from `TELEGRAM_BOT_TOKEN`
 
 #### 2. AWS Credentials
+
 - **Name**: AWS Credentials
 - **Type**: `aws`
 - **Fields**:
@@ -219,12 +231,13 @@ After importing the workflow, you need to configure two sets of credentials:
 ### How to Import and Activate
 
 1. **Start n8n**:
+
    ```bash
    docker-compose up -d
    ```
 
 2. **Access n8n**:
-   Open http://localhost:5678 and login with credentials from `.env`
+   Open <http://localhost:5678> and login with credentials from `.env`
 
 3. **Import Workflow**:
    - Click "Workflows" > "Import from File"
@@ -249,6 +262,7 @@ After importing the workflow, you need to configure two sets of credentials:
 ### Monitoring and Debugging
 
 #### View Execution History
+
 - Click "Executions" in n8n sidebar
 - See all workflow runs with status (success/error)
 - Click any execution to see detailed logs
@@ -256,17 +270,20 @@ After importing the workflow, you need to configure two sets of credentials:
 #### Common Issues
 
 **Workflow not triggering**:
+
 - Check if workflow is active (toggle in top-right)
 - Verify Telegram token is correct
 - Ensure webhook is registered (n8n does this automatically)
 
 **File not appearing in S3**:
+
 - Check AWS credentials are correct
 - Verify S3 bucket name matches `.env`
 - Check IAM permissions include `s3:PutObject`
 - Review n8n execution logs for errors
 
 **Telegram bot not responding**:
+
 - Ensure bot was created via @BotFather
 - Check token format (should be `123456:ABC...`)
 - Verify bot is not blocked by user
@@ -274,10 +291,12 @@ After importing the workflow, you need to configure two sets of credentials:
 ### Performance Metrics
 
 **Expected Performance** (as per requirements):
+
 - Files up to 20MB: Process in <10 seconds
 - Throughput: Up to 100 files per hour (sufficient for MVP)
 
 **Monitoring**:
+
 - Average execution time: visible in n8n Executions panel
 - Success rate: count successful vs failed executions
 - S3 storage: monitor via AWS CloudWatch

@@ -47,21 +47,26 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
 1. Envie o comando: `/newbot`
 
 2. O BotFather perguntará o nome do bot. Digite:
+
    ```
    YOUVISA Test Assistant
    ```
+
    (Você pode usar qualquer nome)
 
 3. O BotFather pedirá um username. Digite:
+
    ```
    youvisa_test_assistant_bot
    ```
+
    **IMPORTANTE**: O username deve:
    - Terminar com `_bot` ou `Bot`
    - Ser único (se já existir, tente outro)
    - Não conter espaços
 
 4. Se der certo, você receberá uma mensagem com o **TOKEN**:
+
    ```
    123456789:ABCdefGHIjklMNOpqrsTUVwxyz-1234567
    ```
@@ -83,16 +88,19 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
 1. Abra um terminal na raiz do projeto
 
 2. Navegue até o diretório do Terraform:
+
    ```bash
    cd infrastructure/terraform/s3
    ```
 
 3. Copie o arquivo de exemplo:
+
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
 
 4. Abra o arquivo `terraform.tfvars` em um editor:
+
    ```bash
    # macOS/Linux
    nano terraform.tfvars
@@ -102,6 +110,7 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
    ```
 
 5. Edite a linha do `s3_bucket_name` para torná-lo ÚNICO:
+
    ```hcl
    s3_bucket_name = "youvisa-files-dev-SEU-NOME-12345"
    ```
@@ -117,6 +126,7 @@ terraform init
 ```
 
 **Resultado esperado**:
+
 ```
 Terraform has been successfully initialized!
 ```
@@ -128,6 +138,7 @@ terraform plan
 ```
 
 Você verá uma lista de recursos que serão criados:
+
 - 1 S3 bucket
 - 1 IAM user
 - 1 IAM access key
@@ -135,6 +146,7 @@ Você verá uma lista de recursos que serão criados:
 - Configurações de segurança do bucket
 
 **Verifique**:
+
 - [ ] O nome do bucket está correto e único
 - [ ] A região é `sa-east-1`
 - [ ] Aparece "Plan: 6 to add, 0 to change, 0 to destroy"
@@ -150,6 +162,7 @@ terraform apply
 3. Aguarde a criação dos recursos (leva ~30 segundos)
 
 **Resultado esperado**:
+
 ```
 Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
@@ -182,7 +195,7 @@ terraform output -raw bucket_name
 
 ### 2.6. Verificar no Console AWS (Opcional)
 
-1. Acesse https://console.aws.amazon.com/s3
+1. Acesse <https://console.aws.amazon.com/s3>
 2. Verifique que o bucket foi criado
 3. Verifique que a região é "South America (São Paulo) sa-east-1"
 
@@ -235,6 +248,7 @@ WEBHOOK_URL=http://localhost:5678/
 ```
 
 **IMPORTANTE**:
+
 - Substitua TODOS os valores de exemplo pelos valores reais
 - Mude a senha do n8n para algo seguro
 - Salve e feche o arquivo
@@ -258,6 +272,7 @@ docker-compose up -d
 ```
 
 **Resultado esperado**:
+
 ```
 Creating network "youvisa-network" with driver "bridge"
 Creating volume "youvisa_n8n_data" with driver "local"
@@ -271,6 +286,7 @@ docker-compose ps
 ```
 
 **Resultado esperado**:
+
 ```
 NAME          STATUS    PORTS
 youvisa-n8n   Up        0.0.0.0:5678->5678/tcp
@@ -283,6 +299,7 @@ docker-compose logs -f n8n
 ```
 
 Aguarde até ver mensagens como:
+
 ```
 Editor is now accessible via:
 http://localhost:5678/
@@ -293,12 +310,13 @@ Pressione `Ctrl+C` para sair dos logs.
 ### 4.4. Acessar a Interface do n8n
 
 1. Abra o navegador
-2. Acesse: http://localhost:5678
+2. Acesse: <http://localhost:5678>
 3. Faça login com:
    - **Usuário**: `admin` (ou o que você definiu no .env)
    - **Senha**: A senha que você definiu no .env
 
 **Se não conseguir acessar**:
+
 - Aguarde 30 segundos (n8n pode estar iniciando)
 - Verifique se a porta 5678 não está sendo usada por outro programa
 - Verifique os logs: `docker-compose logs n8n`
@@ -361,17 +379,20 @@ Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
 1. Abra o Telegram
 2. Encontre seu bot (busque pelo username, ex: `@youvisa_test_assistant_bot`)
 3. Envie uma mensagem de texto qualquer:
+
    ```
    Olá, bot!
    ```
 
 **Resultado esperado**:
 O bot deve responder:
+
 ```
 Please send a file (document, image, PDF, etc.) so I can process it.
 ```
 
 **Se não funcionar**:
+
 - Aguarde 10 segundos e tente novamente
 - Verifique que o workflow está ativo (toggle verde)
 - Veja os logs do n8n: `docker-compose logs -f n8n`
@@ -383,6 +404,7 @@ Please send a file (document, image, PDF, etc.) so I can process it.
 3. Envie a foto
 
 **Resultado esperado**:
+
 ```
 File "photo.jpg" received and stored successfully!
 ```
@@ -396,6 +418,7 @@ File "photo.jpg" received and stored successfully!
 5. Envie
 
 **Resultado esperado**:
+
 ```
 File "documento.pdf" received and stored successfully!
 ```
@@ -416,6 +439,7 @@ aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/telegram/ --recursive
 ```
 
 **Resultado esperado**:
+
 ```
 2025-11-18 10:30:00    245123 telegram/2025/11/18/AgAD...12345_1731933000000_photo.jpg
 2025-11-18 10:31:15    512456 telegram/2025/11/18/BQAc...67890_1731933075000_documento.pdf
@@ -423,7 +447,7 @@ aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/telegram/ --recursive
 
 #### Opção 2: Via Console AWS
 
-1. Acesse https://console.aws.amazon.com/s3
+1. Acesse <https://console.aws.amazon.com/s3>
 2. Clique no seu bucket
 3. Navegue até `telegram/2025/11/18/` (ajuste para a data atual)
 4. Veja os arquivos enviados
@@ -435,6 +459,7 @@ aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/telegram/ --recursive
 ### 7.1. Teste de Múltiplos Arquivos
 
 Envie 3 arquivos diferentes em sequência:
+
 - Uma foto
 - Um PDF
 - Um documento Word/Excel
@@ -446,12 +471,14 @@ Verifique que todos foram processados com sucesso.
 Envie um arquivo entre 10-20MB (limite do Telegram).
 
 Verifique:
+
 - [ ] Upload bem-sucedido
 - [ ] Tempo de processamento < 15 segundos
 
 ### 7.3. Teste de Diferentes Tipos de Arquivo
 
 Teste com:
+
 - [ ] Imagem JPG
 - [ ] Imagem PNG
 - [ ] PDF
@@ -466,6 +493,7 @@ Teste com:
 ### Problema: Bot não responde no Telegram
 
 **Soluções**:
+
 1. Verifique que o workflow está ativo (toggle verde no n8n)
 2. Verifique o token do Telegram nas credenciais
 3. Veja os logs: `docker-compose logs -f n8n`
@@ -474,9 +502,11 @@ Teste com:
 ### Problema: Erro "Access Denied" no S3
 
 **Soluções**:
+
 1. Verifique as credenciais AWS no n8n
 2. Confirme que o bucket name está correto
 3. Verifique as permissões IAM:
+
    ```bash
    aws iam get-user-policy --user-name youvisa-n8n-user-dev --policy-name youvisa-n8n-s3-policy-dev
    ```
@@ -484,15 +514,21 @@ Teste com:
 ### Problema: n8n não inicia
 
 **Soluções**:
+
 1. Verifique se a porta 5678 está livre:
+
    ```bash
    lsof -i :5678
    ```
+
 2. Veja os logs:
+
    ```bash
    docker-compose logs n8n
    ```
+
 3. Recrie o container:
+
    ```bash
    docker-compose down
    docker-compose up -d
@@ -501,9 +537,11 @@ Teste com:
 ### Problema: Workflow executa mas arquivo não aparece no S3
 
 **Soluções**:
+
 1. Verifique o nome do bucket na execução do n8n
 2. Confira se há erros no node "Upload to S3"
 3. Teste as credenciais AWS manualmente:
+
    ```bash
    aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/
    ```
@@ -546,7 +584,7 @@ Após completar todos os passos, você deve ter:
 - [ ] Bot do Telegram criado e ativo
 - [ ] Bucket S3 provisionado na região sa-east-1
 - [ ] IAM user com credenciais funcionando
-- [ ] n8n rodando em http://localhost:5678
+- [ ] n8n rodando em <http://localhost:5678>
 - [ ] Workflow importado, configurado e ativo
 - [ ] Teste 1: Mensagem de texto respondida com instruções
 - [ ] Teste 2: Imagem enviada e armazenada no S3
@@ -579,6 +617,7 @@ Se encontrar problemas:
    - [infrastructure/terraform/s3/README.md](infrastructure/terraform/s3/README.md) - Documentação do Terraform
 
 3. Revise os logs:
+
    ```bash
    # Logs do n8n
    docker-compose logs -f n8n

@@ -5,6 +5,7 @@ This directory contains Terraform configuration files to provision AWS S3 infras
 ## Resources Provisioned
 
 ### S3 Bucket
+
 - **Name**: Configurable via `s3_bucket_name` variable
 - **Region**: `sa-east-1` (Sao Paulo) for LGPD compliance
 - **Versioning**: Enabled
@@ -13,6 +14,7 @@ This directory contains Terraform configuration files to provision AWS S3 infras
 - **Tags**: Project, Environment, ManagedBy
 
 ### IAM User
+
 - **Name**: `youvisa-n8n-user-{environment}`
 - **Purpose**: Dedicated user for n8n to upload files to S3
 - **Permissions**: Minimal IAM policy with only:
@@ -21,6 +23,7 @@ This directory contains Terraform configuration files to provision AWS S3 infras
   - `s3:ListBucket` - List bucket contents
 
 ### Security Features
+
 - Bucket with versioning enabled for data protection
 - Server-side encryption (AES-256) for all objects
 - Public access completely blocked
@@ -32,6 +35,7 @@ This directory contains Terraform configuration files to provision AWS S3 infras
 Before running Terraform, ensure you have:
 
 1. **Terraform installed** (version >= 1.5.0)
+
    ```bash
    terraform version
    ```
@@ -77,6 +81,7 @@ terraform init
 ```
 
 Expected output:
+
 ```
 Terraform has been successfully initialized!
 ```
@@ -90,6 +95,7 @@ terraform plan
 ```
 
 Review the output carefully to ensure:
+
 - Bucket name is unique and correct
 - Region is `sa-east-1`
 - All tags are present
@@ -106,6 +112,7 @@ terraform apply
 Type `yes` when prompted to confirm.
 
 Expected output:
+
 ```
 Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
@@ -141,32 +148,38 @@ echo "AWS_REGION=$(terraform output -raw aws_region)" >> .env
 ## Useful Commands
 
 ### View Current State
+
 ```bash
 terraform show
 ```
 
 ### List All Outputs
+
 ```bash
 terraform output
 ```
 
 ### View Specific Output (without sensitive masking)
+
 ```bash
 terraform output -raw bucket_name
 terraform output -raw aws_access_key_id
 ```
 
 ### Validate Configuration
+
 ```bash
 terraform validate
 ```
 
 ### Format Code
+
 ```bash
 terraform fmt -recursive
 ```
 
 ### Refresh State
+
 ```bash
 terraform refresh
 ```
@@ -198,6 +211,7 @@ Type `yes` when prompted to confirm.
 **Problem**: Your AWS credentials don't have sufficient permissions.
 
 **Solution**: Ensure your AWS user/role has permissions to create S3 buckets and IAM users. Check with:
+
 ```bash
 aws sts get-caller-identity
 ```
@@ -207,6 +221,7 @@ aws sts get-caller-identity
 **Problem**: Bucket name doesn't follow AWS naming rules.
 
 **Solution**: Ensure bucket name:
+
 - Is between 3-63 characters
 - Contains only lowercase letters, numbers, dots, and hyphens
 - Starts and ends with a letter or number
@@ -226,7 +241,7 @@ terraform import aws_s3_bucket.files youvisa-files-dev-SUFFIX
 
 ## File Structure
 
-```
+```plaintext
 infrastructure/terraform/s3/
 ├── main.tf                    # S3 bucket configuration
 ├── iam.tf                     # IAM user and policies
