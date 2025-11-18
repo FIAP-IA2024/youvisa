@@ -306,6 +306,283 @@ para promover esse fluxo:
 
 ---
 
+## Integracao Telegram + S3
+
+Esta secao descreve a implementacao MVP do primeiro componente da arquitetura YOUVISA 360: integracao entre Telegram e AWS S3 via n8n.
+
+### Visao Geral
+
+A integracao Telegram + S3 e o ponto de partida da plataforma omnicanal, estabelecendo:
+- Primeiro canal de comunicacao ativo (Telegram)
+- Infraestrutura de armazenamento de documentos (S3)
+- Base de orquestracao via n8n
+
+Este MVP permite que usuarios enviem documentos (passaportes, comprovantes, formularios) diretamente pelo Telegram, com armazenamento automatico e organizado no S3, preparando o terreno para futuras integracoes com OCR, MongoDB e outros canais.
+
+### Arquitetura do Componente
+
+```
+Usuario                 n8n                    AWS
+(Telegram)             (Local)              (Cloud)
+    |                    |                      |
+    |-- Envia arquivo -->|                      |
+    |                    |-- Download -->       |
+    |                    |   (Telegram API)     |
+    |                    |                      |
+    |                    |-- Upload ----------->|
+    |                    |                   [S3 Bucket]
+    |                    |                   sa-east-1
+    |<-- Confirmacao ----|                      |
+```
+
+### Prerequisitos
+
+Antes de configurar a integracao, certifique-se de ter:
+
+1. **Docker e Docker Compose** instalados
+   ```bash
+   docker --version
+   docker-compose --version
+   ```
+
+2. **Terraform** (>= 1.5.0) instalado
+   ```bash
+   terraform version
+   ```
+
+3. **Conta AWS** com:
+   - Acesso a regiao `sa-east-1` (Sao Paulo)
+   - Permissoes para criar buckets S3 e usuarios IAM
+   - AWS CLI configurado localmente
+
+4. **Conta no Telegram** para criar o bot
+
+### Passo 1: Configurar Bot do Telegram
+
+1. Abra o Telegram e busque por `@BotFather`
+2. Envie o comando `/newbot`
+3. Siga as instrucoes para escolher:
+   - **Nome do bot**: YOUVISA Assistant (exemplo)
+   - **Username**: youvisa_assistant_bot (deve terminar com `_bot`)
+4. Copie o **token** fornecido (formato: `123456789:ABC-DEF...`)
+5. Guarde o token temporariamente (sera usado no `.env`)
+
+Para testar, envie `/start` para o bot e verifique que esta ativo.
+
+### Passo 2: Provisionar Infraestrutura AWS com Terraform
+
+1. **Configure as variaveis do Terraform**:
+   ```bash
+   cd infrastructure/terraform/s3
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+2. **Edite `terraform.tfvars`** e defina um nome unico para o bucket:
+   ```hcl
+   s3_bucket_name = "youvisa-files-dev-SEU-SUFIXO-UNICO"
+   ```
+
+3. **Inicialize o Terraform**:
+   ```bash
+   terraform init
+   ```
+
+4. **Revise o plano de execucao**:
+   ```bash
+   terraform plan
+   ```
+
+5. **Aplique a configuracao**:
+   ```bash
+   terraform apply
+   ```
+   Digite `yes` quando solicitado.
+
+6. **Copie as credenciais AWS** geradas:
+   ```bash
+   terraform output -raw aws_access_key_id
+   terraform output -raw aws_secret_access_key
+   terraform output -raw bucket_name
+   ```
+
+Guarde esses valores para o proximo passo.
+
+Documentacao detalhada: [infrastructure/terraform/s3/README.md](infrastructure/terraform/s3/README.md)
+
+### Passo 3: Configurar Variaveis de Ambiente
+
+1. **Copie o arquivo de exemplo**:
+   ```bash
+   cd ../../..  # Voltar para raiz do projeto
+   cp .env.example .env
+   ```
+
+2. **Edite `.env`** e preencha com os valores reais:
+   ```bash
+   # Token do Telegram (do BotFather)
+   TELEGRAM_BOT_TOKEN=123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+
+   # Credenciais AWS (do Terraform)
+   AWS_ACCESS_KEY_ID=AKIA...
+   AWS_SECRET_ACCESS_KEY=...
+   S3_BUCKET_NAME=youvisa-files-dev-SEU-SUFIXO
+
+   # n8n (defina usuario e senha para acesso)
+   N8N_BASIC_AUTH_USER=admin
+   N8N_BASIC_AUTH_PASSWORD=sua_senha_segura_aqui
+   ```
+
+**IMPORTANTE**: Nunca commite o arquivo `.env` no Git. Ele ja esta no `.gitignore`.
+
+### Passo 4: Iniciar n8n com Docker
+
+1. **Inicie o container n8n**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Verifique que esta rodando**:
+   ```bash
+   docker-compose ps
+   ```
+
+   Saida esperada:
+   ```
+   NAME          STATUS    PORTS
+   youvisa-n8n   Up        0.0.0.0:5678->5678/tcp
+   ```
+
+3. **Acesse a interface n8n**:
+   Abra http://localhost:5678 no navegador e faca login com as credenciais do `.env`.
+
+### Passo 5: Importar e Configurar Workflow
+
+1. **Dentro do n8n**, clique em "Workflows" > "Import from File"
+
+2. **Selecione o arquivo**: `n8n-workflows/001-telegram-to-s3.json`
+
+3. **Configure as credenciais**:
+
+   **a) Telegram Bot API**:
+   - Clique em qualquer node Telegram com icone de aviso
+   - Selecione "Create New Credential"
+   - Nome: Telegram Bot API
+   - Access Token: cole o valor de `TELEGRAM_BOT_TOKEN`
+   - Salve
+
+   **b) AWS Credentials**:
+   - Clique no node "Upload to S3"
+   - Selecione "Create New Credential"
+   - Access Key ID: `AWS_ACCESS_KEY_ID`
+   - Secret Access Key: `AWS_SECRET_ACCESS_KEY`
+   - Region: `sa-east-1`
+   - Salve
+
+4. **Ative o workflow**:
+   - Clique no toggle no canto superior direito
+   - Status deve mudar para "Active"
+
+### Passo 6: Testar a Integracao
+
+1. **Abra o Telegram** e encontre seu bot pelo username
+
+2. **Envie o comando** `/start`
+   - O bot deve responder (se configurado)
+
+3. **Envie um arquivo** (qualquer documento, imagem, PDF)
+   - O workflow processara o arquivo
+   - Voce recebera uma mensagem de confirmacao
+
+4. **Verifique no S3**:
+   ```bash
+   aws s3 ls s3://youvisa-files-dev-SEU-SUFIXO/telegram/ --recursive
+   ```
+
+   Voce deve ver o arquivo organizado por data:
+   ```
+   telegram/2025/11/18/12345_1731888000_documento.pdf
+   ```
+
+5. **Verifique os logs no n8n**:
+   - Clique em "Executions" na barra lateral
+   - Veja a execucao mais recente com status "success"
+
+### Estrutura de Armazenamento no S3
+
+Os arquivos sao organizados automaticamente com a seguinte estrutura:
+
+```
+s3://youvisa-files-dev/
+└── telegram/
+    └── YYYY/          # Ano
+        └── MM/        # Mes
+            └── DD/    # Dia
+                └── {file_id}_{timestamp}_{nome_original}
+```
+
+**Exemplo**:
+```
+s3://youvisa-files-dev/telegram/2025/11/18/
+├── 12345_1731888000_passaporte.pdf
+├── 12346_1731888123_visto.jpg
+└── 12347_1731888456_comprovante.pdf
+```
+
+**Convencao de nomenclatura**:
+- `file_id`: ID unico do Telegram
+- `timestamp`: Unix timestamp (milissegundos)
+- `nome_original`: Nome do arquivo enviado pelo usuario
+
+Isso garante:
+- Nenhum conflito de nomes (file_id + timestamp sao unicos)
+- Rastreabilidade (file_id mapeia para mensagem original no Telegram)
+- Organizacao cronologica (estrutura de pastas por data)
+
+### Troubleshooting
+
+**Workflow nao recebe mensagens**:
+- Verifique se o workflow esta ativo (toggle verde)
+- Confirme o token do Telegram esta correto
+- Para ambiente local, considere usar Telegram Polling mode ao inves de webhook
+
+**Erro "Access Denied" no S3**:
+- Verifique credenciais AWS no n8n
+- Confirme que o bucket name no `.env` esta correto
+- Revise a politica IAM do usuario (deve ter `s3:PutObject`)
+
+**n8n nao inicia**:
+- Verifique logs: `docker-compose logs -f n8n`
+- Confirme que a porta 5678 nao esta em uso
+- Valide variaveis de ambiente no `.env`
+
+**Arquivo corrompido no S3**:
+- Verifique que binary data esta habilitado no node S3
+- Confirme que Content-Type esta sendo preservado
+
+### Limitacoes Conhecidas (MVP)
+
+Esta e a versao inicial (MVP). Limitacoes conhecidas:
+
+1. **Webhook local**: n8n rodando em localhost nao recebe webhooks do Telegram. Para producao, use ngrok ou dominio publico com HTTPS.
+2. **Polling alternativo**: Se webhook nao funcionar, use Telegram Polling mode (menos eficiente mas funciona localmente).
+3. **Limite de 20MB**: Telegram Bot API limita arquivos a 20MB.
+4. **Sem autenticacao**: Qualquer pessoa com o username do bot pode enviar arquivos (sera implementado futuramente).
+5. **Sem OCR**: Arquivos sao apenas armazenados, nao processados (proxima fase).
+
+### Proximos Passos
+
+Com a integracao Telegram + S3 funcionando, os proximos passos incluem:
+
+1. **Integracao com MongoDB**: Salvar metadados das mensagens e usuarios
+2. **Processamento OCR**: Usar AWS Textract para extrair dados dos documentos
+3. **Integracao WhatsApp**: Adicionar WhatsApp Business API como canal
+4. **Agente de IA**: Implementar NLP/LLM para conversas inteligentes
+5. **Console do Operador**: Interface web para atendimento humano
+
+Para mais detalhes sobre o workflow n8n, consulte: [docs/n8n-workflows.md](docs/n8n-workflows.md)
+
+---
+
 ## Plano de Implementação Sugerido
 
 | Fase | Entregas | Duração |
