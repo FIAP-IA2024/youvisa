@@ -42,6 +42,8 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $json.message.chat.id }}",
         "text": "Please send a file (document, image, PDF, etc.) so I can process it."
       },
@@ -61,8 +63,9 @@
     },
     {
       "parameters": {
+        "resource": "file",
         "operation": "get",
-        "fileId": "={{ $json.message.document.file_id }}",
+        "fileId": "={{ $json.message.document.file_id || $json.message.photo[0].file_id }}",
         "download": true
       },
       "name": "Get File from Telegram",
@@ -118,6 +121,8 @@
     },
     {
       "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
         "chatId": "={{ $json.chatId }}",
         "text": "File \"={{ $json.fileName }}\" received and stored successfully!"
       },
