@@ -106,6 +106,7 @@
         "fileName": "={{ $json.s3Key }}",
         "binaryData": true,
         "binaryPropertyName": "data",
+        "region": "sa-east-1",
         "additionalFields": {
           "contentType": "={{ $json.mimeType }}"
         }
@@ -128,8 +129,8 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chatId }}",
-        "text": "File \"={{ $json.fileName }}\" received and stored successfully!"
+        "chatId": "={{ $node[\"Telegram Trigger\"].json.message.chat.id }}",
+        "text": "={{ \"File received and stored successfully in S3!\" }}"
       },
       "name": "Send Confirmation",
       "type": "n8n-nodes-base.telegram",
