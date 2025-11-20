@@ -70,7 +70,7 @@
       "parameters": {
         "resource": "file",
         "operation": "get",
-        "fileId": "={{ $json.message.document.file_id || $json.message.photo[0].file_id }}",
+        "fileId": "={{ $json.message.document ? $json.message.document.file_id : $json.message.photo[$json.message.photo.length - 1].file_id }}",
         "download": true
       },
       "name": "Get File from Telegram",
