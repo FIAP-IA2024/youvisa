@@ -50,7 +50,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $json.message.chat.id }}",
-        "text": "Please send a file (document, image, PDF, etc.) so I can process it."
+        "text": "Por favor, envie um arquivo (documento, imagem, PDF, etc.) para que eu possa processar."
       },
       "name": "Send Instructions (No File)",
       "type": "n8n-nodes-base.telegram",
@@ -130,7 +130,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node[\"Telegram Trigger\"].json.message.chat.id }}",
-        "text": "={{ \"File received and stored successfully in S3!\" }}"
+        "text": "Arquivo recebido e armazenado com sucesso!"
       },
       "name": "Send Confirmation",
       "type": "n8n-nodes-base.telegram",
