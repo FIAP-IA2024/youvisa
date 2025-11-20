@@ -263,9 +263,73 @@ Confirme que todos os valores estão preenchidos (sem "your_", "change_this", et
 
 ---
 
-## Passo 4: Iniciar o n8n
+## Passo 4: Configurar ngrok (Túnel HTTPS)
 
-### 4.1. Subir o Container
+O Telegram requer uma URL HTTPS pública para enviar mensagens via webhook. Como estamos rodando localmente, usaremos o ngrok para criar um túnel.
+
+### 4.1. Instalar o ngrok
+
+```bash
+brew install ngrok
+```
+
+**Resultado esperado**:
+
+```
+🍺  ngrok was successfully installed!
+```
+
+### 4.2. Criar Conta e Obter Token
+
+1. Acesse: https://dashboard.ngrok.com/signup
+2. Crie uma conta (pode usar Google/GitHub)
+3. Copie seu authtoken em: https://dashboard.ngrok.com/get-started/your-authtoken
+
+### 4.3. Configurar o Token
+
+```bash
+ngrok config add-authtoken SEU_TOKEN_AQUI
+```
+
+Substitua `SEU_TOKEN_AQUI` pelo token copiado.
+
+### 4.4. Iniciar o ngrok
+
+```bash
+ngrok http 5678
+```
+
+**Importante**: Deixe este terminal aberto! O ngrok precisa ficar rodando.
+
+**Resultado esperado**:
+
+```
+Forwarding  https://abc123.ngrok-free.app -> http://localhost:5678
+```
+
+### 4.5. Copiar a URL HTTPS
+
+Copie a URL que aparece em "Forwarding" (começa com `https://`).
+
+Exemplo: `https://abc123.ngrok-free.app`
+
+### 4.6. Atualizar o .env com a URL do ngrok
+
+Abra o arquivo `.env` e atualize a linha do `WEBHOOK_URL`:
+
+```bash
+WEBHOOK_URL=https://abc123.ngrok-free.app/
+```
+
+**Importante**: Não esqueça da barra `/` no final!
+
+**Nota**: A URL do ngrok muda cada vez que você reinicia o ngrok. Se você quiser uma URL fixa, precisará de uma conta paga do ngrok.
+
+---
+
+## Passo 5: Iniciar o n8n
+
+### 5.1. Subir o Container
 
 ```bash
 docker-compose up -d
@@ -279,7 +343,7 @@ Creating volume "youvisa_n8n_data" with driver "local"
 Creating youvisa-n8n ... done
 ```
 
-### 4.2. Verificar que está Rodando
+### 5.2. Verificar que está Rodando
 
 ```bash
 docker-compose ps
@@ -292,7 +356,7 @@ NAME          STATUS    PORTS
 youvisa-n8n   Up        0.0.0.0:5678->5678/tcp
 ```
 
-### 4.3. Verificar os Logs (Opcional)
+### 5.3. Verificar os Logs (Opcional)
 
 ```bash
 docker-compose logs -f n8n
@@ -307,7 +371,7 @@ http://localhost:5678/
 
 Pressione `Ctrl+C` para sair dos logs.
 
-### 4.4. Acessar a Interface do n8n
+### 5.4. Acessar a Interface do n8n
 
 1. Abra o navegador
 2. Acesse: <http://localhost:5678>
@@ -323,9 +387,9 @@ Pressione `Ctrl+C` para sair dos logs.
 
 ---
 
-## Passo 5: Importar e Configurar o Workflow
+## Passo 6: Importar e Configurar o Workflow
 
-### 5.1. Importar o Workflow
+### 6.1. Importar o Workflow
 
 1. No n8n, clique em **"Workflows"** no menu lateral
 2. Clique no botão **"Add workflow"** > **"Import from file"**
@@ -334,7 +398,7 @@ Pressione `Ctrl+C` para sair dos logs.
 
 O workflow aparecerá com vários nodes conectados.
 
-### 5.2. Configurar Credenciais do Telegram
+### 6.2. Configurar Credenciais do Telegram
 
 1. Clique no primeiro node chamado **"Telegram Trigger"**
 2. Você verá um ícone de aviso (⚠️) em "Credential to connect with"
@@ -344,7 +408,7 @@ O workflow aparecerá com vários nodes conectados.
    - **Access Token**: Cole o token do Telegram (do Passo 1.2)
 5. Clique em **"Create"**
 
-### 5.3. Configurar Credenciais da AWS
+### 6.3. Configurar Credenciais da AWS
 
 1. Clique no node **"Upload to S3"**
 2. Clique em **"Select Credential"** > **"Create New"**
@@ -356,7 +420,7 @@ O workflow aparecerá com vários nodes conectados.
    - **Region**: `sa-east-1`
 5. Clique em **"Create"**
 
-### 5.4. Verificar Outros Nodes
+### 6.4. Verificar Outros Nodes
 
 Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
 
@@ -364,7 +428,7 @@ Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
 2. Em "Credential to connect with", selecione **"Telegram Bot API"** (a que você criou)
 3. Repita para todos os nodes do Telegram
 
-### 5.5. Ativar o Workflow
+### 6.5. Ativar o Workflow
 
 1. No canto superior direito, você verá um **toggle switch**
 2. Clique para mudar de "Inactive" para **"Active"**
@@ -372,9 +436,9 @@ Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
 
 ---
 
-## Passo 6: Testar a Integração
+## Passo 7: Testar a Integração
 
-### 6.1. Teste 1: Mensagem de Texto (Sem Arquivo)
+### 7.1. Teste 1: Mensagem de Texto (Sem Arquivo)
 
 1. Abra o Telegram
 2. Encontre seu bot (busque pelo username, ex: `@youvisa_test_assistant_bot`)
@@ -388,7 +452,7 @@ Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
 O bot deve responder:
 
 ```
-Please send a file (document, image, PDF, etc.) so I can process it.
+Por favor, envie um arquivo (documento, imagem, PDF, etc.) para que eu possa processar.
 ```
 
 **Se não funcionar**:
@@ -397,7 +461,7 @@ Please send a file (document, image, PDF, etc.) so I can process it.
 - Verifique que o workflow está ativo (toggle verde)
 - Veja os logs do n8n: `docker-compose logs -f n8n`
 
-### 6.2. Teste 2: Enviar uma Imagem
+### 7.2. Teste 2: Enviar uma Imagem
 
 1. No Telegram, clique no ícone de anexo (📎)
 2. Selecione uma foto ou tire uma foto nova
@@ -406,10 +470,10 @@ Please send a file (document, image, PDF, etc.) so I can process it.
 **Resultado esperado**:
 
 ```
-File "photo.jpg" received and stored successfully!
+Arquivo recebido e armazenado com sucesso!
 ```
 
-### 6.3. Teste 3: Enviar um Documento PDF
+### 7.3. Teste 3: Enviar um Documento PDF
 
 1. Prepare um arquivo PDF qualquer (pode ser qualquer documento)
 2. No Telegram, clique no ícone de anexo (📎)
@@ -420,17 +484,17 @@ File "photo.jpg" received and stored successfully!
 **Resultado esperado**:
 
 ```
-File "documento.pdf" received and stored successfully!
+Arquivo recebido e armazenado com sucesso!
 ```
 
-### 6.4. Verificar no n8n
+### 7.4. Verificar no n8n
 
 1. No n8n, clique em **"Executions"** no menu lateral
 2. Você verá a lista de execuções do workflow
 3. As execuções bem-sucedidas aparecem com status **"Success"** (verde)
 4. Clique em uma execução para ver os detalhes de cada node
 
-### 6.5. Verificar no S3
+### 7.5. Verificar no S3
 
 #### Opção 1: Via AWS CLI
 
@@ -454,9 +518,9 @@ aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/telegram/ --recursive
 
 ---
 
-## Passo 7: Testes Adicionais
+## Passo 8: Testes Adicionais
 
-### 7.1. Teste de Múltiplos Arquivos
+### 8.1. Teste de Múltiplos Arquivos
 
 Envie 3 arquivos diferentes em sequência:
 
@@ -466,7 +530,7 @@ Envie 3 arquivos diferentes em sequência:
 
 Verifique que todos foram processados com sucesso.
 
-### 7.2. Teste de Arquivo Grande
+### 8.2. Teste de Arquivo Grande
 
 Envie um arquivo entre 10-20MB (limite do Telegram).
 
@@ -475,7 +539,7 @@ Verifique:
 - [ ] Upload bem-sucedido
 - [ ] Tempo de processamento < 15 segundos
 
-### 7.3. Teste de Diferentes Tipos de Arquivo
+### 8.3. Teste de Diferentes Tipos de Arquivo
 
 Teste com:
 
