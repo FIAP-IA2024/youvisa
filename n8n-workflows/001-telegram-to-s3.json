@@ -25,7 +25,12 @@
     {
       "parameters": {
         "conditions": {
-          "boolean": [],
+          "boolean": [
+            {
+              "value1": "={{ $json.message.document !== undefined || $json.message.photo !== undefined }}",
+              "value2": true
+            }
+          ],
           "number": [],
           "string": [],
           "dateTime": []
@@ -84,7 +89,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const fileData = items[0].binary.data;\nconst document = items[0].json.message.document;\nconst now = new Date();\n\nconst year = now.getFullYear();\nconst month = String(now.getMonth() + 1).padStart(2, '0');\nconst day = String(now.getDate()).padStart(2, '0');\nconst timestamp = now.getTime();\n\nconst fileName = `${document.file_id}_${timestamp}_${document.file_name}`;\nconst s3Key = `telegram/${year}/${month}/${day}/${fileName}`;\n\nreturn [{\n  json: {\n    s3Key: s3Key,\n    fileName: document.file_name,\n    fileSize: document.file_size,\n    mimeType: document.mime_type,\n    chatId: items[0].json.message.chat.id\n  },\n  binary: {\n    data: fileData\n  }\n}];"
+        "jsCode": "const fileData = items[0].binary.data;\nconst message = items[0].json.message;\nconst now = new Date();\n\n// Check if it's a document or photo\nlet fileInfo;\nif (message.document) {\n  fileInfo = {\n    file_id: message.document.file_id,\n    file_name: message.document.file_name,\n    file_size: message.document.file_size,\n    mime_type: message.document.mime_type\n  };\n} else if (message.photo) {\n  // Get the largest photo size\n  const photo = message.photo[message.photo.length - 1];\n  fileInfo = {\n    file_id: photo.file_id,\n    file_name: `photo_${photo.file_unique_id}.jpg`,\n    file_size: photo.file_size,\n    mime_type: 'image/jpeg'\n  };\n}\n\nconst year = now.getFullYear();\nconst month = String(now.getMonth() + 1).padStart(2, '0');\nconst day = String(now.getDate()).padStart(2, '0');\nconst timestamp = now.getTime();\n\nconst fileName = `${fileInfo.file_id}_${timestamp}_${fileInfo.file_name}`;\nconst s3Key = `telegram/${year}/${month}/${day}/${fileName}`;\n\nreturn [{\n  json: {\n    s3Key: s3Key,\n    fileName: fileInfo.file_name,\n    fileSize: fileInfo.file_size,\n    mimeType: fileInfo.mime_type,\n    chatId: message.chat.id\n  },\n  binary: {\n    data: fileData\n  }\n}];"
       },
       "name": "Prepare S3 Upload",
       "type": "n8n-nodes-base.code",
