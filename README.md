@@ -58,7 +58,7 @@ A proposta reflete uma arquitetura **modular, escalável e segura**, contempland
 
 ## Arquitetura Global
 
-![](./diagramas/arquitetura_global.png)
+![](./docs/diagramas/arquitetura_global.png)
 
 ---
 
@@ -277,7 +277,7 @@ além de estar em conformidade com a LGPD. Para isso, utilizamos:
 
 ## Fluxo Omnicanal Integrado (Cliente ↔ IA ↔ Humano)
 
-![](./diagramas/fluxo_de_comunicacao.png)
+![](./docs/diagramas/fluxo_de_comunicacao.png)
 
 O diagrama acima visa apenas ilustrar uma visão alto-nível da comunicação, mas 
 diversos componentes da solução são acionados e trabalham de maneira integrada 
