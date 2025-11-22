@@ -59,6 +59,7 @@ vendor/
 # Environment variables
 .env
 .env.local
+.env.bak
 
 # Terraform
 *.tfstate
