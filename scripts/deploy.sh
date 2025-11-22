@@ -54,6 +54,17 @@ deploy_s3() {
 deploy_backend() {
     echo -e "${BLUE}Deploying Backend infrastructure...${NC}"
 
+    # Check if .env exists
+    if [ ! -f .env ]; then
+        echo -e "${RED}Error: .env file not found${NC}"
+        echo "Run: cp .env.example .env"
+        echo "Then edit .env with your credentials"
+        exit 1
+    fi
+
+    # Load environment variables from .env
+    export $(grep -v '^#' .env | xargs)
+
     # Build and package Lambda
     echo -e "${BLUE}Building backend...${NC}"
     cd app/backend
@@ -74,7 +85,10 @@ deploy_backend() {
     rm -rf .terraform
 
     terraform init -backend-config="key=backend/terraform.tfstate"
-    terraform apply -auto-approve
+    terraform apply -auto-approve \
+        -var="mongodb_uri=${MONGODB_URI}" \
+        -var="mongodb_database=${MONGODB_DATABASE}" \
+        -var="s3_bucket_name=${S3_BUCKET_NAME}"
     cd ../../../../
 
     echo -e "${BLUE}Backend infrastructure deployed successfully!${NC}"

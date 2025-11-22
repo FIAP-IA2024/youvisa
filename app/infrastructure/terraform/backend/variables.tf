@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "youvisa-api"
+  default     = "youvisa"
 }
 
 variable "environment" {
@@ -17,18 +17,19 @@ variable "aws_region" {
 }
 
 variable "mongodb_uri" {
-  description = "MongoDB connection URI"
+  description = "MongoDB connection URI (loaded from .env)"
   type        = string
   sensitive   = true
 }
 
 variable "mongodb_database" {
-  description = "MongoDB database name"
+  description = "MongoDB database name (loaded from .env)"
   type        = string
-  default     = "youvisa"
+  default     = "dev"
 }
 
 variable "s3_bucket_name" {
   description = "S3 bucket name for file storage"
   type        = string
+  default     = "dev-youvisa-files-9k3m7x"
 }
