@@ -1,51 +1,75 @@
-.PHONY: help deploy start stop logs ngrok-status s3-list backend-dev backend-build backend-deploy db-connect
+.PHONY: help deploy start stop logs s3-list db-connect
+
+# Colors
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+NC := \033[0m
 
 help:
-	@echo "\033[0;34mYOUVISA - Platform 360\033[0m"
+	@echo "$(BLUE)YOUVISA - Platform 360$(NC)"
 	@echo ""
-	@echo "\033[0;32mInfrastructure Commands:\033[0m"
-	@echo "  make deploy         - Deploy AWS infrastructure (Terraform S3)"
-	@echo "  make start          - Start everything (MongoDB + n8n + ngrok)"
-	@echo "  make stop           - Stop everything"
-	@echo "  make logs           - Show n8n logs"
-	@echo "  make ngrok-status   - Show ngrok tunnel status and URL"
-	@echo "  make s3-list        - List files in S3 bucket"
+	@echo "$(GREEN)Deploy Commands:$(NC)"
+	@echo "  make deploy <app>    - Deploy infrastructure (s3, backend, all)"
+	@echo "                         Examples: make deploy s3"
+	@echo "                                  make deploy backend"
+	@echo "                                  make deploy all"
 	@echo ""
-	@echo "\033[0;32mBackend API Commands:\033[0m"
-	@echo "  make backend-dev    - Run backend API in development mode"
-	@echo "  make backend-build  - Build backend for production"
-	@echo "  make backend-deploy - Deploy backend to AWS Lambda"
+	@echo "$(GREEN)Start Commands:$(NC)"
+	@echo "  make start <app>     - Start services (mongodb, backend, n8n, all)"
+	@echo "                         Examples: make start mongodb"
+	@echo "                                  make start backend"
+	@echo "                                  make start n8n"
+	@echo "                                  make start all"
 	@echo ""
-	@echo "\033[0;32mDatabase Commands:\033[0m"
-	@echo "  make db-connect     - Connect to MongoDB shell"
+	@echo "$(GREEN)Utility Commands:$(NC)"
+	@echo "  make stop            - Stop all services"
+	@echo "  make logs <service>  - Show logs (mongodb, backend, n8n)"
+	@echo "  make s3-list         - List files in S3 bucket"
+	@echo "  make db-connect      - Connect to MongoDB shell"
 	@echo ""
 
+# Deploy command
 deploy:
-	@./scripts/deploy.sh
+	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
+		echo "$(RED)Error: Please specify what to deploy$(NC)"; \
+		echo "$(YELLOW)Available options: s3, backend, all$(NC)"; \
+		echo "$(YELLOW)Example: make deploy s3$(NC)"; \
+		exit 1; \
+	fi
+	@./scripts/deploy.sh $(filter-out $@,$(MAKECMDGOALS))
 
+# Start command
 start:
-	@./scripts/start.sh
+	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
+		echo "$(RED)Error: Please specify what to start$(NC)"; \
+		echo "$(YELLOW)Available options: mongodb, backend, n8n, all$(NC)"; \
+		echo "$(YELLOW)Example: make start all$(NC)"; \
+		exit 1; \
+	fi
+	@./scripts/start.sh $(filter-out $@,$(MAKECMDGOALS))
 
+# Stop all services
 stop:
 	@./scripts/stop.sh
 
+# Show logs
 logs:
-	@./scripts/logs.sh
+	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
+		docker-compose logs -f; \
+	else \
+		docker-compose logs -f $(filter-out $@,$(MAKECMDGOALS)); \
+	fi
 
-ngrok-status:
-	@./scripts/ngrok-status.sh
-
+# S3 list
 s3-list:
 	@./scripts/s3-list.sh
 
-backend-dev:
-	@cd backend && npm run dev
-
-backend-build:
-	@cd backend && npm run build
-
-backend-deploy:
-	@cd backend && npm run package:lambda && cd infrastructure/terraform/lambda && terraform apply
-
+# Connect to MongoDB
 db-connect:
 	@docker exec -it youvisa-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin
+
+# Catch-all target to prevent "No rule to make target" errors
+%:
+	@:

@@ -79,6 +79,9 @@ __pycache__/
 *.exe
 *.bkp
 
+# Docker volumes
+docker/
+
 # Others
 CLAUDE.md
 AGENTS.md
