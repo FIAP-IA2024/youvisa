@@ -1,26 +1,6 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:8.0
-    container_name: youvisa-mongodb
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-admin123}
-      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:-youvisa}
-    volumes:
-      - ./docker/mongodb:/data/db
-    networks:
-      - youvisa-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build:
       context: ./app/backend
@@ -33,8 +13,8 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - API_HOST=0.0.0.0
       - API_PORT=3000
-      - MONGODB_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-admin123}@mongodb:27017/${MONGO_INITDB_DATABASE:-youvisa}?authSource=admin
-      - MONGODB_DATABASE=${MONGO_INITDB_DATABASE:-youvisa}
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - IS_DEBUG=${IS_DEBUG:-true}
@@ -43,9 +23,6 @@ services:
       - /app/node_modules
     networks:
       - youvisa-network
-    depends_on:
-      mongodb:
-        condition: service_healthy
     command: npm run dev
 
   n8n:
@@ -66,9 +43,6 @@ services:
       - ./app/n8n-workflows:/workflows
     networks:
       - youvisa-network
-    depends_on:
-      mongodb:
-        condition: service_healthy
 
 networks:
   youvisa-network:

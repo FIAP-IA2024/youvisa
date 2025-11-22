@@ -1,4 +1,4 @@
-.PHONY: help deploy start stop logs s3-list db-connect
+.PHONY: help deploy start stop logs s3-list
 
 # Colors
 BLUE := \033[0;34m
@@ -16,17 +16,15 @@ help:
 	@echo "                                  make deploy all"
 	@echo ""
 	@echo "$(BLUE)Start Commands:$(NC)"
-	@echo "  make start <app>     - Start services (mongodb, backend, n8n, all)"
-	@echo "                         Examples: make start mongodb"
-	@echo "                                  make start backend"
+	@echo "  make start <app>     - Start services (backend, n8n, all)"
+	@echo "                         Examples: make start backend"
 	@echo "                                  make start n8n"
 	@echo "                                  make start all"
 	@echo ""
 	@echo "$(BLUE)Utility Commands:$(NC)"
 	@echo "  make stop            - Stop all services"
-	@echo "  make logs <service>  - Show logs (mongodb, backend, n8n)"
+	@echo "  make logs <service>  - Show logs (backend, n8n)"
 	@echo "  make s3-list         - List files in S3 bucket"
-	@echo "  make db-connect      - Connect to MongoDB shell"
 	@echo ""
 
 # Deploy command
@@ -43,7 +41,7 @@ deploy:
 start:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
 		echo "$(RED)Error: Please specify what to start$(NC)"; \
-		echo "Available options: mongodb, backend, n8n, all"; \
+		echo "Available options: backend, n8n, all"; \
 		echo "Example: make start all"; \
 		exit 1; \
 	fi
@@ -64,10 +62,6 @@ logs:
 # S3 list
 s3-list:
 	@./scripts/s3-list.sh
-
-# Connect to MongoDB
-db-connect:
-	@docker exec -it youvisa-mongodb mongosh -u admin -p admin123 --authenticationDatabase admin
 
 # Catch-all target to prevent "No rule to make target" errors
 %:

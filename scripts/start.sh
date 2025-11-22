@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: mongodb, backend, n8n, all"
+    echo -e "Available options: backend, n8n, all"
     exit 1
 fi
 
@@ -22,13 +22,6 @@ if [ ! -f .env ]; then
     echo "Then edit .env with your credentials"
     exit 1
 fi
-
-start_mongodb() {
-    echo -e "${BLUE}Starting MongoDB...${NC}"
-    docker-compose up -d mongodb
-    echo -e "${BLUE}MongoDB started!${NC}"
-    echo -e "MongoDB: localhost:27017"
-}
 
 start_backend() {
     echo -e "${BLUE}Starting Backend API...${NC}"
@@ -68,8 +61,6 @@ start_n8n() {
 
 start_all() {
     echo -e "${BLUE}Starting all services...${NC}"
-    start_mongodb
-    sleep 2
     start_backend
     sleep 2
     start_n8n
@@ -79,9 +70,6 @@ start_all() {
 }
 
 case "$APP" in
-    mongodb)
-        start_mongodb
-        ;;
     backend)
         start_backend
         ;;
@@ -93,7 +81,7 @@ case "$APP" in
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: mongodb, backend, n8n, all"
+        echo -e "Available options: backend, n8n, all"
         exit 1
         ;;
 esac
