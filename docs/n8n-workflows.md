@@ -8,7 +8,7 @@ n8n acts as the central orchestration hub for the YOUVISA omnichannel customer s
 
 ## Workflow 001: Telegram to S3
 
-**File**: `n8n-workflows/001-telegram-to-s3.json`
+**File**: `app/n8n-workflows/001-telegram-to-s3.json`
 
 **Purpose**: Receive files sent via Telegram and automatically store them in AWS S3 with organized folder structure.
 
@@ -241,7 +241,7 @@ After importing the workflow, you need to configure two sets of credentials:
 
 3. **Import Workflow**:
    - Click "Workflows" > "Import from File"
-   - Select `n8n-workflows/001-telegram-to-s3.json`
+   - Select `app/n8n-workflows/001-telegram-to-s3.json`
    - Click "Import"
 
 4. **Configure Credentials**:
@@ -324,7 +324,7 @@ This is the MVP version. Planned improvements include:
 
 ### Related Documentation
 
-- [Terraform S3 Infrastructure](../infrastructure/terraform/s3/README.md)
+- [Terraform S3 Infrastructure](../app/infrastructure/terraform/s3/README.md)
 - [Main Project README](../README.md)
 - [Task Specification](.tasks/001-n8n-telegram-s3-integration.md)
 

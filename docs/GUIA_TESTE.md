@@ -90,7 +90,7 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
 2. Navegue até o diretório do Terraform:
 
    ```bash
-   cd infrastructure/terraform/s3
+   cd app/infrastructure/terraform/s3
    ```
 
 3. Copie o arquivo de exemplo:
@@ -393,7 +393,7 @@ Pressione `Ctrl+C` para sair dos logs.
 
 1. No n8n, clique em **"Workflows"** no menu lateral
 2. Clique no botão **"Add workflow"** > **"Import from file"**
-3. Selecione o arquivo: `n8n-workflows/001-telegram-to-s3.json`
+3. Selecione o arquivo: `app/n8n-workflows/001-telegram-to-s3.json`
 4. Clique em **"Import"**
 
 O workflow aparecerá com vários nodes conectados.
@@ -631,7 +631,7 @@ docker-compose down -v
 ### Destruir Infraestrutura AWS
 
 ```bash
-cd infrastructure/terraform/s3
+cd app/infrastructure/terraform/s3
 terraform destroy
 ```
 
@@ -678,7 +678,7 @@ Se encontrar problemas:
 2. Consulte a documentação detalhada:
    - [README.md](README.md) - Seção "Integração Telegram + S3"
    - [docs/n8n-workflows.md](docs/n8n-workflows.md) - Documentação do workflow
-   - [infrastructure/terraform/s3/README.md](infrastructure/terraform/s3/README.md) - Documentação do Terraform
+   - [app/infrastructure/terraform/s3/README.md](../app/infrastructure/terraform/s3/README.md) - Documentação do Terraform
 
 3. Revise os logs:
 
@@ -687,7 +687,7 @@ Se encontrar problemas:
    docker-compose logs -f n8n
 
    # Status do Terraform
-   cd infrastructure/terraform/s3
+   cd app/infrastructure/terraform/s3
    terraform show
    ```
 
