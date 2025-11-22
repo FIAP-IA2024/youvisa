@@ -10,8 +10,8 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  minify: true,
-  treeshake: true,
+  minify: false,
+  treeshake: false,
   target: 'node22',
   external: [],
 });

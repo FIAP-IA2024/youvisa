@@ -43,7 +43,6 @@ resource "aws_lambda_function" "api" {
       NODE_ENV          = "production"
       MONGODB_URI       = var.mongodb_uri
       MONGODB_DATABASE  = var.mongodb_database
-      AWS_REGION        = var.aws_region
       S3_BUCKET_NAME    = var.s3_bucket_name
     }
   }
