@@ -373,7 +373,7 @@ Para testar, envie `/start` para o bot e verifique que esta ativo.
 
 1. **Configure as variaveis do Terraform**:
    ```bash
-   cd infrastructure/terraform/s3
+   cd app/infrastructure/terraform/s3
    cp terraform.tfvars.example terraform.tfvars
    ```
 
@@ -407,7 +407,7 @@ Para testar, envie `/start` para o bot e verifique que esta ativo.
 
 Guarde esses valores para o proximo passo.
 
-Documentacao detalhada: [infrastructure/terraform/s3/README.md](infrastructure/terraform/s3/README.md)
+Documentacao detalhada: [app/infrastructure/terraform/s3/README.md](app/infrastructure/terraform/s3/README.md)
 
 ### Passo 3: Configurar Variaveis de Ambiente
 
@@ -459,7 +459,7 @@ Documentacao detalhada: [infrastructure/terraform/s3/README.md](infrastructure/t
 
 1. **Dentro do n8n**, clique em "Workflows" > "Import from File"
 
-2. **Selecione o arquivo**: `n8n-workflows/001-telegram-to-s3.json`
+2. **Selecione o arquivo**: `app/n8n-workflows/001-telegram-to-s3.json`
 
 3. **Configure as credenciais**:
 

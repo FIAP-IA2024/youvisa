@@ -83,6 +83,3 @@ CLAUDE.md
 AGENTS.md
 tmp/*
 .tasks/*
-
-# n8n workflows with credentials (sensitive)
-n8n-workflows/*.configured.json

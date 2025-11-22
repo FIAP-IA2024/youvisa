@@ -10,16 +10,16 @@ NC='\033[0m'
 echo -e "${BLUE}Deploying AWS infrastructure...${NC}"
 
 # Check if Terraform is initialized
-if [ ! -d "infrastructure/terraform/s3/.terraform" ]; then
+if [ ! -d "app/infrastructure/terraform/s3/.terraform" ]; then
     echo -e "${YELLOW}Initializing Terraform...${NC}"
-    cd infrastructure/terraform/s3 && terraform init
-    cd ../../..
+    cd app/infrastructure/terraform/s3 && terraform init
+    cd ../../../..
 fi
 
 # Apply Terraform
-cd infrastructure/terraform/s3 && terraform apply
+cd app/infrastructure/terraform/s3 && terraform apply
 TERRAFORM_EXIT=$?
-cd ../../..
+cd ../../../..
 
 if [ $TERRAFORM_EXIT -ne 0 ]; then
     echo -e "${RED}Terraform deployment failed${NC}"
@@ -30,7 +30,7 @@ echo ""
 echo -e "${GREEN}AWS infrastructure deployed!${NC}"
 echo ""
 echo -e "${BLUE}AWS Credentials:${NC}"
-cd infrastructure/terraform/s3 && terraform output
-cd ../../..
+cd app/infrastructure/terraform/s3 && terraform output
+cd ../../../..
 echo ""
 echo -e "${YELLOW}Update your .env file with the credentials above${NC}"
