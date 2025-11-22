@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:8.0
+    container_name: youvisa-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-admin123}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE:-youvisa}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - youvisa-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   n8n:
     image: n8nio/n8n:latest
     container_name: youvisa-n8n
@@ -17,9 +37,14 @@ services:
       - ./app/n8n-workflows:/workflows
     networks:
       - youvisa-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
 volumes:
   n8n_data:
+    driver: local
+  mongodb_data:
     driver: local
 
 networks:

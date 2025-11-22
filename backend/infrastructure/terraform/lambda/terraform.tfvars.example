@@ -1,0 +1,6 @@
+project_name     = "youvisa-api"
+environment      = "dev"
+aws_region       = "sa-east-1"
+mongodb_uri      = "mongodb://admin:admin123@your-mongodb-host:27017/youvisa?authSource=admin"
+mongodb_database = "youvisa"
+s3_bucket_name   = "youvisa-files-dev"
