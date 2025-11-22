@@ -9,8 +9,9 @@ help:
 	@echo "$(BLUE)YOUVISA - Platform 360$(NC)"
 	@echo ""
 	@echo "$(BLUE)Deploy Commands:$(NC)"
-	@echo "  make deploy <app>    - Deploy infrastructure (s3, backend, all)"
-	@echo "                         Examples: make deploy s3"
+	@echo "  make deploy <app>    - Deploy infrastructure (tf-state, s3, backend, all)"
+	@echo "                         Examples: make deploy tf-state (run this FIRST)"
+	@echo "                                  make deploy s3"
 	@echo "                                  make deploy backend"
 	@echo "                                  make deploy all"
 	@echo ""
@@ -32,8 +33,8 @@ help:
 deploy:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
 		echo "$(RED)Error: Please specify what to deploy$(NC)"; \
-		echo "Available options: s3, backend, all"; \
-		echo "Example: make deploy s3"; \
+		echo "Available options: tf-state, s3, backend, all"; \
+		echo "Example: make deploy tf-state"; \
 		exit 1; \
 	fi
 	@./scripts/deploy.sh $(filter-out $@,$(MAKECMDGOALS))

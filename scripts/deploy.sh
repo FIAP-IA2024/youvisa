@@ -11,9 +11,26 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: s3, backend, all"
+    echo -e "Available options: tf-state, s3, backend, all"
     exit 1
 fi
+
+deploy_tf_state() {
+    echo -e "${BLUE}Deploying Terraform State infrastructure...${NC}"
+    echo -e "${BLUE}This module uses LOCAL backend (no remote state)${NC}"
+
+    cd app/infrastructure/terraform/tf-state
+
+    terraform init
+    terraform apply -auto-approve
+
+    echo ""
+    echo -e "${BLUE}Terraform State infrastructure deployed successfully!${NC}"
+    echo ""
+    echo -e "${BLUE}S3 bucket and DynamoDB table created. Other modules can now use remote backend.${NC}"
+
+    cd ../../../../
+}
 
 deploy_s3() {
     echo -e "${BLUE}Deploying S3 infrastructure...${NC}"
@@ -64,6 +81,9 @@ deploy_backend() {
 }
 
 case "$APP" in
+    tf-state)
+        deploy_tf_state
+        ;;
     s3)
         deploy_s3
         ;;
@@ -76,7 +96,7 @@ case "$APP" in
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: s3, backend, all"
+        echo -e "Available options: tf-state, s3, backend, all"
         exit 1
         ;;
 esac
