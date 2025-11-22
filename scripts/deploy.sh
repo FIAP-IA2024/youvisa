@@ -19,10 +19,20 @@ fi
 
 deploy_s3() {
     echo -e "${BLUE}Deploying S3 infrastructure...${NC}"
+
+    # Copy shared backend configuration
+    echo -e "${BLUE}Copying shared backend.tf...${NC}"
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/s3/backend.tf
+
     cd app/infrastructure/terraform/s3
-    terraform init
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init -backend-config="key=s3/terraform.tfstate"
     terraform apply -auto-approve
     cd ../../../../
+
     echo -e "${GREEN}S3 infrastructure deployed successfully!${NC}"
 }
 
@@ -37,10 +47,18 @@ deploy_backend() {
     bash scripts/package-lambda.sh
     cd ../../
 
+    # Copy shared backend configuration
+    echo -e "${BLUE}Copying shared backend.tf...${NC}"
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/backend/backend.tf
+
     # Deploy with Terraform
     echo -e "${BLUE}Deploying Lambda...${NC}"
     cd app/infrastructure/terraform/backend
-    terraform init
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init -backend-config="key=backend/terraform.tfstate"
     terraform apply -auto-approve
     cd ../../../../
 
