@@ -1,8 +1,8 @@
 resource "aws_iam_user" "n8n_user" {
-  name = "${var.project_name}-n8n-user-${var.environment}"
+  name = "${var.environment}-${var.project_name}-n8n-user"
 
   tags = {
-    Name = "${var.project_name}-n8n-user-${var.environment}"
+    Name = "${var.environment}-${var.project_name}-n8n-user"
   }
 }
 
@@ -11,7 +11,7 @@ resource "aws_iam_access_key" "n8n_user" {
 }
 
 resource "aws_iam_user_policy" "n8n_s3_policy" {
-  name = "${var.project_name}-n8n-s3-policy-${var.environment}"
+  name = "${var.environment}-${var.project_name}-n8n-s3-policy"
   user = aws_iam_user.n8n_user.name
 
   policy = jsonencode({

@@ -25,7 +25,7 @@ data "aws_caller_identity" "current" {}
 
 # Lambda Function
 resource "aws_lambda_function" "api" {
-  function_name    = "${var.project_name}-${var.environment}"
+  function_name    = "${var.environment}-${var.project_name}"
   handler          = "lambda.handler"
   runtime          = "nodejs22.x"
   role             = aws_iam_role.lambda_exec_role.arn
@@ -49,21 +49,21 @@ resource "aws_lambda_function" "api" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}"
+    Name = "${var.environment}-${var.project_name}"
   }
 }
 
 # Lambda Layer for node_modules
 resource "aws_lambda_layer_version" "node_modules" {
   filename            = "${path.module}/../../../backend/nodejs-layer.zip"
-  layer_name          = "${var.project_name}-${var.environment}-layer"
+  layer_name          = "${var.environment}-${var.project_name}-layer"
   compatible_runtimes = ["nodejs22.x"]
   source_code_hash    = filebase64sha256("${path.module}/../../../backend/nodejs-layer.zip")
 }
 
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "${var.project_name}-${var.environment}-lambda-role"
+  name = "${var.environment}-${var.project_name}-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -83,7 +83,7 @@ resource "aws_iam_role" "lambda_exec_role" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-lambda-role"
+    Name = "${var.environment}-${var.project_name}-lambda-role"
   }
 }
 
