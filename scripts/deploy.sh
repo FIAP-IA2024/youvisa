@@ -3,9 +3,7 @@
 set -e
 
 # Colors
-GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
@@ -13,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "${YELLOW}Available options: s3, backend, all${NC}"
+    echo -e "Available options: s3, backend, all"
     exit 1
 fi
 
@@ -33,7 +31,7 @@ deploy_s3() {
     terraform apply -auto-approve
     cd ../../../../
 
-    echo -e "${GREEN}S3 infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}S3 infrastructure deployed successfully!${NC}"
 }
 
 deploy_backend() {
@@ -62,7 +60,7 @@ deploy_backend() {
     terraform apply -auto-approve
     cd ../../../../
 
-    echo -e "${GREEN}Backend infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}Backend infrastructure deployed successfully!${NC}"
 }
 
 case "$APP" in
@@ -78,9 +76,9 @@ case "$APP" in
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "${YELLOW}Available options: s3, backend, all${NC}"
+        echo -e "Available options: s3, backend, all"
         exit 1
         ;;
 esac
 
-echo -e "${GREEN}Deploy completed!${NC}"
+echo -e "${BLUE}Deploy completed!${NC}"

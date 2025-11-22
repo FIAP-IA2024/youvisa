@@ -2,28 +2,26 @@
 
 # Colors
 BLUE := \033[0;34m
-GREEN := \033[0;32m
-YELLOW := \033[0;33m
 RED := \033[0;31m
 NC := \033[0m
 
 help:
 	@echo "$(BLUE)YOUVISA - Platform 360$(NC)"
 	@echo ""
-	@echo "$(GREEN)Deploy Commands:$(NC)"
+	@echo "$(BLUE)Deploy Commands:$(NC)"
 	@echo "  make deploy <app>    - Deploy infrastructure (s3, backend, all)"
 	@echo "                         Examples: make deploy s3"
 	@echo "                                  make deploy backend"
 	@echo "                                  make deploy all"
 	@echo ""
-	@echo "$(GREEN)Start Commands:$(NC)"
+	@echo "$(BLUE)Start Commands:$(NC)"
 	@echo "  make start <app>     - Start services (mongodb, backend, n8n, all)"
 	@echo "                         Examples: make start mongodb"
 	@echo "                                  make start backend"
 	@echo "                                  make start n8n"
 	@echo "                                  make start all"
 	@echo ""
-	@echo "$(GREEN)Utility Commands:$(NC)"
+	@echo "$(BLUE)Utility Commands:$(NC)"
 	@echo "  make stop            - Stop all services"
 	@echo "  make logs <service>  - Show logs (mongodb, backend, n8n)"
 	@echo "  make s3-list         - List files in S3 bucket"
@@ -34,8 +32,8 @@ help:
 deploy:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
 		echo "$(RED)Error: Please specify what to deploy$(NC)"; \
-		echo "$(YELLOW)Available options: s3, backend, all$(NC)"; \
-		echo "$(YELLOW)Example: make deploy s3$(NC)"; \
+		echo "Available options: s3, backend, all"; \
+		echo "Example: make deploy s3"; \
 		exit 1; \
 	fi
 	@./scripts/deploy.sh $(filter-out $@,$(MAKECMDGOALS))
@@ -44,8 +42,8 @@ deploy:
 start:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
 		echo "$(RED)Error: Please specify what to start$(NC)"; \
-		echo "$(YELLOW)Available options: mongodb, backend, n8n, all$(NC)"; \
-		echo "$(YELLOW)Example: make start all$(NC)"; \
+		echo "Available options: mongodb, backend, n8n, all"; \
+		echo "Example: make start all"; \
 		exit 1; \
 	fi
 	@./scripts/start.sh $(filter-out $@,$(MAKECMDGOALS))

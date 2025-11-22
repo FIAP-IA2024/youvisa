@@ -3,9 +3,7 @@
 set -e
 
 # Colors
-GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
@@ -13,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "${YELLOW}Available options: mongodb, backend, n8n, all${NC}"
+    echo -e "Available options: mongodb, backend, n8n, all"
     exit 1
 fi
 
@@ -28,14 +26,14 @@ fi
 start_mongodb() {
     echo -e "${BLUE}Starting MongoDB...${NC}"
     docker-compose up -d mongodb
-    echo -e "${GREEN}MongoDB started!${NC}"
+    echo -e "${BLUE}MongoDB started!${NC}"
     echo -e "MongoDB: localhost:27017"
 }
 
 start_backend() {
     echo -e "${BLUE}Starting Backend API...${NC}"
     docker-compose up -d --build backend
-    echo -e "${GREEN}Backend API started!${NC}"
+    echo -e "${BLUE}Backend API started!${NC}"
     echo -e "API: http://localhost:3000"
 }
 
@@ -53,7 +51,7 @@ start_n8n() {
         URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | python3 -c "import sys, json; data = json.load(sys.stdin); print([t['public_url'] for t in data['tunnels'] if t['public_url'].startswith('https')][0])" 2>/dev/null || echo "")
 
         if [ -n "$URL" ]; then
-            echo -e "${GREEN}ngrok URL: $URL${NC}"
+            echo -e "${BLUE}ngrok URL: $URL${NC}"
             # Update WEBHOOK_URL in .env
             if grep -q "^WEBHOOK_URL=" .env; then
                 sed -i.bak "s|^WEBHOOK_URL=.*|WEBHOOK_URL=$URL/|" .env
@@ -64,7 +62,7 @@ start_n8n() {
     fi
 
     docker-compose up -d n8n
-    echo -e "${GREEN}n8n started!${NC}"
+    echo -e "${BLUE}n8n started!${NC}"
     echo -e "n8n: http://localhost:5678"
 }
 
@@ -76,7 +74,7 @@ start_all() {
     sleep 2
     start_n8n
     echo ""
-    echo -e "${GREEN}All services started!${NC}"
+    echo -e "${BLUE}All services started!${NC}"
     docker-compose ps
 }
 
@@ -95,7 +93,7 @@ case "$APP" in
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "${YELLOW}Available options: mongodb, backend, n8n, all${NC}"
+        echo -e "Available options: mongodb, backend, n8n, all"
         exit 1
         ;;
 esac
