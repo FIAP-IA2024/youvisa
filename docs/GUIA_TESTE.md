@@ -9,6 +9,7 @@ Antes de começar, certifique-se de ter instalado:
 - [ ] Docker Desktop (ou Docker + Docker Compose)
 - [ ] Terraform (versão >= 1.5.0)
 - [ ] AWS CLI configurado
+- [ ] ngrok instalado e configurado
 - [ ] Conta no Telegram (aplicativo instalado no celular)
 - [ ] Conta AWS ativa
 
@@ -27,9 +28,25 @@ terraform version
 # Verificar AWS CLI
 aws --version
 aws sts get-caller-identity
+
+# Verificar ngrok
+ngrok version
 ```
 
 Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
+
+### Instalar ngrok (se necessário)
+
+```bash
+# macOS
+brew install ngrok
+
+# Configurar token do ngrok
+# 1. Crie conta em: https://dashboard.ngrok.com/signup
+# 2. Copie seu token em: https://dashboard.ngrok.com/get-started/your-authtoken
+# 3. Configure:
+ngrok config add-authtoken SEU_TOKEN_AQUI
+```
 
 ---
 
@@ -47,15 +64,12 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
 1. Envie o comando: `/newbot`
 
 2. O BotFather perguntará o nome do bot. Digite:
-
    ```
    YOUVISA Test Assistant
    ```
-
    (Você pode usar qualquer nome)
 
 3. O BotFather pedirá um username. Digite:
-
    ```
    youvisa_test_assistant_bot
    ```
@@ -66,7 +80,6 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
    - Não conter espaços
 
 4. Se der certo, você receberá uma mensagem com o **TOKEN**:
-
    ```
    123456789:ABCdefGHIjklMNOpqrsTUVwxyz-1234567
    ```
@@ -81,149 +94,87 @@ Se algum comando falhar, instale a ferramenta correspondente antes de continuar.
 
 ---
 
-## Passo 2: Provisionar Infraestrutura AWS
+## Passo 2: Configurar Terraform
 
 ### 2.1. Preparar as Variáveis do Terraform
 
-1. Abra um terminal na raiz do projeto
-
-2. Navegue até o diretório do Terraform:
-
+1. Navegue até o diretório do Terraform:
    ```bash
    cd app/infrastructure/terraform/s3
    ```
 
-3. Copie o arquivo de exemplo:
-
+2. Copie o arquivo de exemplo:
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
 
-4. Abra o arquivo `terraform.tfvars` em um editor:
-
+3. Edite o arquivo `terraform.tfvars`:
    ```bash
-   # macOS/Linux
    nano terraform.tfvars
-
-   # Ou use seu editor preferido
-   code terraform.tfvars
    ```
 
-5. Edite a linha do `s3_bucket_name` para torná-lo ÚNICO:
-
+4. Altere o `s3_bucket_name` para torná-lo ÚNICO:
    ```hcl
    s3_bucket_name = "youvisa-files-dev-SEU-NOME-12345"
    ```
 
    **DICA**: Use algo como `youvisa-files-dev-gabriel-2024` ou adicione números aleatórios
 
-6. Salve e feche o arquivo
+5. Salve e feche o arquivo
 
-### 2.2. Inicializar o Terraform
-
-```bash
-terraform init
-```
-
-**Resultado esperado**:
-
-```
-Terraform has been successfully initialized!
-```
-
-### 2.3. Revisar o Plano
-
-```bash
-terraform plan
-```
-
-Você verá uma lista de recursos que serão criados:
-
-- 1 S3 bucket
-- 1 IAM user
-- 1 IAM access key
-- 1 IAM policy
-- Configurações de segurança do bucket
-
-**Verifique**:
-
-- [ ] O nome do bucket está correto e único
-- [ ] A região é `sa-east-1`
-- [ ] Aparece "Plan: 6 to add, 0 to change, 0 to destroy"
-
-### 2.4. Aplicar a Configuração
-
-```bash
-terraform apply
-```
-
-1. Revise as mudanças
-2. Digite `yes` quando solicitado
-3. Aguarde a criação dos recursos (leva ~30 segundos)
-
-**Resultado esperado**:
-
-```
-Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
-
-Outputs:
-
-aws_access_key_id = <sensitive>
-aws_region = "sa-east-1"
-aws_secret_access_key = <sensitive>
-bucket_arn = "arn:aws:s3:::youvisa-files-dev-SEU-NOME-12345"
-bucket_name = "youvisa-files-dev-SEU-NOME-12345"
-n8n_user_name = "youvisa-n8n-user-dev"
-```
-
-### 2.5. Obter as Credenciais AWS
-
-Execute os comandos abaixo e **COPIE os valores**:
-
-```bash
-# Access Key ID
-terraform output -raw aws_access_key_id
-
-# Secret Access Key
-terraform output -raw aws_secret_access_key
-
-# Nome do Bucket
-terraform output -raw bucket_name
-```
-
-**GUARDE ESSES VALORES** em um arquivo temporário. Você vai precisar deles no próximo passo.
-
-### 2.6. Verificar no Console AWS (Opcional)
-
-1. Acesse <https://console.aws.amazon.com/s3>
-2. Verifique que o bucket foi criado
-3. Verifique que a região é "South America (São Paulo) sa-east-1"
+6. Volte para a raiz do projeto:
+   ```bash
+   cd ../../../..
+   ```
 
 ---
 
-## Passo 3: Configurar Variáveis de Ambiente
+## Passo 3: Deploy da Infraestrutura AWS
 
-### 3.1. Voltar para a Raiz do Projeto
+Execute o comando:
 
 ```bash
-cd ../../..
-pwd  # Deve mostrar: /Users/seu-usuario/caminho/youvisa
+make deploy
 ```
 
-### 3.2. Criar o Arquivo .env
+Este comando:
+- Inicializa o Terraform automaticamente
+- Provisiona bucket S3 na região sa-east-1
+- Cria usuário IAM com permissões necessárias
+- Gera credenciais AWS
+
+**Resultado esperado**:
+```
+Deploying AWS infrastructure...
+Initializing Terraform...
+...
+AWS infrastructure deployed!
+
+AWS Credentials:
+aws_access_key_id = AKIA...
+aws_secret_access_key = <sensitive>
+bucket_name = "youvisa-files-dev-SEU-NOME-12345"
+...
+```
+
+**Copie as credenciais** (aws_access_key_id, aws_secret_access_key e bucket_name)
+
+---
+
+## Passo 4: Configurar Variáveis de Ambiente
+
+### 4.1. Criar o Arquivo .env
 
 ```bash
 cp .env.example .env
 ```
 
-### 3.3. Editar o Arquivo .env
+### 4.2. Editar o Arquivo .env
 
 Abra o arquivo `.env` em um editor:
 
 ```bash
 nano .env
-# ou
-code .env
 ```
 
 Preencha os valores:
@@ -232,7 +183,7 @@ Preencha os valores:
 # Token do Telegram (do Passo 1.2)
 TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz-1234567
 
-# Credenciais AWS (do Passo 2.5)
+# Credenciais AWS (do Passo 3)
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=sa-east-1
@@ -243,153 +194,62 @@ N8N_BASIC_AUTH_ACTIVE=true
 N8N_BASIC_AUTH_USER=admin
 N8N_BASIC_AUTH_PASSWORD=SuaSenhaSegura123!
 
-# Webhook
+# Webhook - será atualizado automaticamente pelo make start
 WEBHOOK_URL=http://localhost:5678/
 ```
 
 **IMPORTANTE**:
-
 - Substitua TODOS os valores de exemplo pelos valores reais
 - Mude a senha do n8n para algo seguro
+- O WEBHOOK_URL será atualizado automaticamente no próximo passo
 - Salve e feche o arquivo
 
-### 3.4. Verificar o Arquivo .env
+---
+
+## Passo 5: Iniciar a Plataforma
+
+Execute o comando:
 
 ```bash
-cat .env | grep -v "^#" | grep -v "^$"
+make start
 ```
 
-Confirme que todos os valores estão preenchidos (sem "your_", "change_this", etc.)
+Este comando faz TUDO automaticamente:
+- Inicia o ngrok e obtém URL pública HTTPS
+- Atualiza o `.env` com a URL do ngrok
+- Inicia o n8n com a configuração correta
+
+**Resultado esperado**:
+```
+Starting YOUVISA platform...
+
+[1/3] Starting ngrok tunnel...
+ngrok tunnel started
+
+[2/3] Configuring webhook URL...
+Public URL: https://abc123.ngrok-free.app
+WEBHOOK_URL updated in .env
+
+[3/3] Starting n8n container...
+n8n is running at http://localhost:5678
+
+Platform is ready!
+Access n8n at: http://localhost:5678
+Webhook URL: https://abc123.ngrok-free.app/
+```
 
 ---
 
-## Passo 4: Configurar ngrok (Túnel HTTPS)
+## Passo 6: Configurar o Workflow no n8n
 
-O Telegram requer uma URL HTTPS pública para enviar mensagens via webhook. Como estamos rodando localmente, usaremos o ngrok para criar um túnel.
+### 6.1. Acessar o n8n
 
-### 4.1. Instalar o ngrok
+1. Abra o navegador em: http://localhost:5678
+2. Faça login com as credenciais do `.env`:
+   - Usuário: `admin` (ou o que você definiu)
+   - Senha: a senha que você definiu
 
-```bash
-brew install ngrok
-```
-
-**Resultado esperado**:
-
-```
-🍺  ngrok was successfully installed!
-```
-
-### 4.2. Criar Conta e Obter Token
-
-1. Acesse: https://dashboard.ngrok.com/signup
-2. Crie uma conta (pode usar Google/GitHub)
-3. Copie seu authtoken em: https://dashboard.ngrok.com/get-started/your-authtoken
-
-### 4.3. Configurar o Token
-
-```bash
-ngrok config add-authtoken SEU_TOKEN_AQUI
-```
-
-Substitua `SEU_TOKEN_AQUI` pelo token copiado.
-
-### 4.4. Iniciar o ngrok
-
-```bash
-ngrok http 5678
-```
-
-**Importante**: Deixe este terminal aberto! O ngrok precisa ficar rodando.
-
-**Resultado esperado**:
-
-```
-Forwarding  https://abc123.ngrok-free.app -> http://localhost:5678
-```
-
-### 4.5. Copiar a URL HTTPS
-
-Copie a URL que aparece em "Forwarding" (começa com `https://`).
-
-Exemplo: `https://abc123.ngrok-free.app`
-
-### 4.6. Atualizar o .env com a URL do ngrok
-
-Abra o arquivo `.env` e atualize a linha do `WEBHOOK_URL`:
-
-```bash
-WEBHOOK_URL=https://abc123.ngrok-free.app/
-```
-
-**Importante**: Não esqueça da barra `/` no final!
-
-**Nota**: A URL do ngrok muda cada vez que você reinicia o ngrok. Se você quiser uma URL fixa, precisará de uma conta paga do ngrok.
-
----
-
-## Passo 5: Iniciar o n8n
-
-### 5.1. Subir o Container
-
-```bash
-docker-compose up -d
-```
-
-**Resultado esperado**:
-
-```
-Creating network "youvisa-network" with driver "bridge"
-Creating volume "youvisa_n8n_data" with driver "local"
-Creating youvisa-n8n ... done
-```
-
-### 5.2. Verificar que está Rodando
-
-```bash
-docker-compose ps
-```
-
-**Resultado esperado**:
-
-```
-NAME          STATUS    PORTS
-youvisa-n8n   Up        0.0.0.0:5678->5678/tcp
-```
-
-### 5.3. Verificar os Logs (Opcional)
-
-```bash
-docker-compose logs -f n8n
-```
-
-Aguarde até ver mensagens como:
-
-```
-Editor is now accessible via:
-http://localhost:5678/
-```
-
-Pressione `Ctrl+C` para sair dos logs.
-
-### 5.4. Acessar a Interface do n8n
-
-1. Abra o navegador
-2. Acesse: <http://localhost:5678>
-3. Faça login com:
-   - **Usuário**: `admin` (ou o que você definiu no .env)
-   - **Senha**: A senha que você definiu no .env
-
-**Se não conseguir acessar**:
-
-- Aguarde 30 segundos (n8n pode estar iniciando)
-- Verifique se a porta 5678 não está sendo usada por outro programa
-- Verifique os logs: `docker-compose logs n8n`
-
----
-
-## Passo 6: Importar e Configurar o Workflow
-
-### 6.1. Importar o Workflow
+### 6.2. Importar o Workflow
 
 1. No n8n, clique em **"Workflows"** no menu lateral
 2. Clique no botão **"Add workflow"** > **"Import from file"**
@@ -398,234 +258,173 @@ Pressione `Ctrl+C` para sair dos logs.
 
 O workflow aparecerá com vários nodes conectados.
 
-### 6.2. Configurar Credenciais do Telegram
+### 6.3. Configurar Credenciais do Telegram
 
-1. Clique no primeiro node chamado **"Telegram Trigger"**
-2. Você verá um ícone de aviso (⚠️) em "Credential to connect with"
-3. Clique em **"Select Credential"** > **"Create New"**
-4. Preencha:
-   - **Name**: `Telegram Bot API`
-   - **Access Token**: Cole o token do Telegram (do Passo 1.2)
-5. Clique em **"Create"**
+1. Clique no node **"Telegram Trigger"** (primeiro node)
+2. No painel direito, clique em **"Create New Credential"**
+3. Cole o **TELEGRAM_BOT_TOKEN** (do Passo 1.2)
+4. Clique em **"Save"**
 
-### 6.3. Configurar Credenciais da AWS
+### 6.4. Configurar Credenciais da AWS
 
 1. Clique no node **"Upload to S3"**
-2. Clique em **"Select Credential"** > **"Create New"**
-3. Selecione o tipo **"AWS"**
-4. Preencha:
-   - **Name**: `AWS Credentials`
-   - **Access Key ID**: Cole o valor do .env
-   - **Secret Access Key**: Cole o valor do .env
+2. No painel direito, clique em **"Create New Credential"**
+3. Preencha:
+   - **Access Key ID**: copie do `.env`
+   - **Secret Access Key**: copie do `.env`
    - **Region**: `sa-east-1`
-5. Clique em **"Create"**
-
-### 6.4. Verificar Outros Nodes
-
-Alguns nodes também usam as credenciais do Telegram. Para cada node com ⚠️:
-
-1. Clique no node
-2. Em "Credential to connect with", selecione **"Telegram Bot API"** (a que você criou)
-3. Repita para todos os nodes do Telegram
+4. Clique em **"Save"**
 
 ### 6.5. Ativar o Workflow
 
-1. No canto superior direito, você verá um **toggle switch**
-2. Clique para mudar de "Inactive" para **"Active"**
-3. O workflow agora está ativo e ouvindo mensagens do Telegram
+1. Clique no toggle **"Active"** no canto superior direito
+2. O status deve mudar para verde ("Active")
 
 ---
 
 ## Passo 7: Testar a Integração
 
-### 7.1. Teste 1: Mensagem de Texto (Sem Arquivo)
+### 7.1. Enviar um Arquivo no Telegram
 
-1. Abra o Telegram
-2. Encontre seu bot (busque pelo username, ex: `@youvisa_test_assistant_bot`)
-3. Envie uma mensagem de texto qualquer:
+1. Abra o Telegram e encontre seu bot pelo username
+2. Envie o comando `/start` (se ainda não enviou)
+3. **Envie um arquivo** (qualquer documento, imagem, PDF)
+4. Aguarde alguns segundos
 
-   ```
-   Olá, bot!
-   ```
+### 7.2. Verificar a Confirmação
 
-**Resultado esperado**:
-O bot deve responder:
+O bot deve responder com uma mensagem confirmando o upload:
 
 ```
-Por favor, envie um arquivo (documento, imagem, PDF, etc.) para que eu possa processar.
+Arquivo recebido e salvo com sucesso!
+
+Nome: documento.pdf
+Tamanho: 1.2 MB
+Bucket: youvisa-files-dev-SEU-NOME-12345
+Caminho: telegram/2025/11/22/12345_1732288000_documento.pdf
 ```
 
-**Se não funcionar**:
+### 7.3. Verificar no S3
 
-- Aguarde 10 segundos e tente novamente
-- Verifique que o workflow está ativo (toggle verde)
-- Veja os logs do n8n: `docker-compose logs -f n8n`
-
-### 7.2. Teste 2: Enviar uma Imagem
-
-1. No Telegram, clique no ícone de anexo (📎)
-2. Selecione uma foto ou tire uma foto nova
-3. Envie a foto
-
-**Resultado esperado**:
-
-```
-Arquivo recebido e armazenado com sucesso!
-```
-
-### 7.3. Teste 3: Enviar um Documento PDF
-
-1. Prepare um arquivo PDF qualquer (pode ser qualquer documento)
-2. No Telegram, clique no ícone de anexo (📎)
-3. Selecione "Document" ou "File"
-4. Escolha o PDF
-5. Envie
-
-**Resultado esperado**:
-
-```
-Arquivo recebido e armazenado com sucesso!
-```
-
-### 7.4. Verificar no n8n
-
-1. No n8n, clique em **"Executions"** no menu lateral
-2. Você verá a lista de execuções do workflow
-3. As execuções bem-sucedidas aparecem com status **"Success"** (verde)
-4. Clique em uma execução para ver os detalhes de cada node
-
-### 7.5. Verificar no S3
-
-#### Opção 1: Via AWS CLI
+Execute o comando:
 
 ```bash
-aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/telegram/ --recursive
+make s3-list
 ```
 
-**Resultado esperado**:
-
+Você deve ver o arquivo no formato:
 ```
-2025-11-18 10:30:00    245123 telegram/2025/11/18/AgAD...12345_1731933000000_photo.jpg
-2025-11-18 10:31:15    512456 telegram/2025/11/18/BQAc...67890_1731933075000_documento.pdf
+2025-11-22 15:30:00   1.2 MB telegram/2025/11/22/12345_1732288000_documento.pdf
 ```
 
-#### Opção 2: Via Console AWS
+### 7.4. Verificar no Console AWS (Opcional)
 
-1. Acesse <https://console.aws.amazon.com/s3>
+1. Acesse: https://s3.console.aws.amazon.com/s3/
 2. Clique no seu bucket
-3. Navegue até `telegram/2025/11/18/` (ajuste para a data atual)
-4. Veja os arquivos enviados
+3. Navegue até a pasta `telegram/YYYY/MM/DD/`
+4. Verifique que o arquivo está lá
 
 ---
 
-## Passo 8: Testes Adicionais
+## Comandos Úteis
 
-### 8.1. Teste de Múltiplos Arquivos
+### Visualizar Logs do n8n
 
-Envie 3 arquivos diferentes em sequência:
+```bash
+make logs
+```
 
-- Uma foto
-- Um PDF
-- Um documento Word/Excel
+Pressione `Ctrl+C` para sair.
 
-Verifique que todos foram processados com sucesso.
+### Verificar Status do ngrok
 
-### 8.2. Teste de Arquivo Grande
+```bash
+make ngrok-status
+```
 
-Envie um arquivo entre 10-20MB (limite do Telegram).
+### Parar a Plataforma
 
-Verifique:
+```bash
+make stop
+```
 
-- [ ] Upload bem-sucedido
-- [ ] Tempo de processamento < 15 segundos
+### Listar Arquivos no S3
 
-### 8.3. Teste de Diferentes Tipos de Arquivo
-
-Teste com:
-
-- [ ] Imagem JPG
-- [ ] Imagem PNG
-- [ ] PDF
-- [ ] Documento Word (.docx)
-- [ ] Planilha Excel (.xlsx)
-- [ ] Vídeo (pequeno, < 10MB)
+```bash
+make s3-list
+```
 
 ---
 
 ## Troubleshooting
 
-### Problema: Bot não responde no Telegram
+### Workflow não recebe mensagens
+
+**Problema**: Envio mensagens no Telegram mas o workflow não é acionado.
 
 **Soluções**:
+1. Verifique se o workflow está ativo (toggle verde)
+2. Verifique se o ngrok está rodando: `make ngrok-status`
+3. Verifique os logs: `make logs`
+4. Confirme que o WEBHOOK_URL no `.env` está correto
 
-1. Verifique que o workflow está ativo (toggle verde no n8n)
-2. Verifique o token do Telegram nas credenciais
-3. Veja os logs: `docker-compose logs -f n8n`
-4. Tente desativar e reativar o workflow
+### Erro "Access Denied" no S3
 
-### Problema: Erro "Access Denied" no S3
-
-**Soluções**:
-
-1. Verifique as credenciais AWS no n8n
-2. Confirme que o bucket name está correto
-3. Verifique as permissões IAM:
-
-   ```bash
-   aws iam get-user-policy --user-name youvisa-n8n-user-dev --policy-name youvisa-n8n-s3-policy-dev
-   ```
-
-### Problema: n8n não inicia
+**Problema**: Workflow falha ao fazer upload no S3.
 
 **Soluções**:
+1. Verifique se as credenciais AWS no n8n estão corretas
+2. Confirme que o bucket name no `.env` está correto
+3. Verifique se o usuário IAM tem permissões: `aws iam get-user --user-name youvisa-n8n-user-dev`
 
-1. Verifique se a porta 5678 está livre:
+### n8n não inicia
 
-   ```bash
-   lsof -i :5678
-   ```
-
-2. Veja os logs:
-
-   ```bash
-   docker-compose logs n8n
-   ```
-
-3. Recrie o container:
-
-   ```bash
-   docker-compose down
-   docker-compose up -d
-   ```
-
-### Problema: Workflow executa mas arquivo não aparece no S3
+**Problema**: Container não sobe ou falha ao iniciar.
 
 **Soluções**:
+1. Verifique os logs: `docker-compose logs n8n`
+2. Confirme que a porta 5678 não está em uso: `lsof -i :5678`
+3. Verifique se o `.env` existe e está preenchido: `cat .env`
 
-1. Verifique o nome do bucket na execução do n8n
-2. Confira se há erros no node "Upload to S3"
-3. Teste as credenciais AWS manualmente:
+### ngrok retorna erro 404
 
-   ```bash
-   aws s3 ls s3://youvisa-files-dev-SEU-NOME-12345/
-   ```
+**Problema**: Ao acessar a URL do ngrok, recebo erro 404.
+
+**Soluções**:
+1. Verifique se o n8n está rodando: `docker-compose ps`
+2. Teste o acesso local primeiro: `curl http://localhost:5678`
+3. Reinicie tudo: `make stop && make start`
+
+### URL do ngrok mudou
+
+**Problema**: A URL do ngrok muda toda vez que reinicio.
+
+**Solução**: Isso é normal no plano gratuito do ngrok. A URL muda a cada reinício. Para ter uma URL fixa, você precisa:
+- Plano pago do ngrok (permite domínio customizado)
+- OU usar um serviço de túnel alternativo (localtunnel, serveo)
+
+Ao reiniciar, o `make start` atualiza automaticamente o WEBHOOK_URL.
 
 ---
 
-## Limpeza e Destruição (Opcional)
+## Próximos Passos
 
-Se você quiser remover tudo depois dos testes:
+Com a integração Telegram + S3 funcionando, você pode explorar:
 
-### Parar o n8n
+1. **Adicionar mais tipos de arquivo**: Modificar o workflow para processar vídeos, áudios, etc.
+2. **Integrar MongoDB**: Salvar metadados das mensagens e usuários
+3. **Adicionar OCR**: Usar AWS Textract para extrair dados dos documentos
+4. **Integrar WhatsApp**: Adicionar WhatsApp Business API como canal
+5. **Criar Agente de IA**: Implementar NLP/LLM para conversas inteligentes
+
+---
+
+## Limpeza (Destruir Recursos)
+
+### Parar a Plataforma
 
 ```bash
-docker-compose down
-```
-
-### Remover Volumes (CUIDADO: Apaga os workflows salvos)
-
-```bash
-docker-compose down -v
+make stop
 ```
 
 ### Destruir Infraestrutura AWS
@@ -641,54 +440,8 @@ Digite `yes` para confirmar.
 
 ---
 
-## Checklist Final
+## Referências
 
-Após completar todos os passos, você deve ter:
-
-- [ ] Bot do Telegram criado e ativo
-- [ ] Bucket S3 provisionado na região sa-east-1
-- [ ] IAM user com credenciais funcionando
-- [ ] n8n rodando em <http://localhost:5678>
-- [ ] Workflow importado, configurado e ativo
-- [ ] Teste 1: Mensagem de texto respondida com instruções
-- [ ] Teste 2: Imagem enviada e armazenada no S3
-- [ ] Teste 3: PDF enviado e armazenado no S3
-- [ ] Arquivos visíveis no S3 com estrutura: `telegram/YYYY/MM/DD/`
-- [ ] Execuções bem-sucedidas visíveis no n8n
-
----
-
-## Próximos Passos
-
-Depois de validar que tudo funciona:
-
-1. **Integração com MongoDB**: Salvar metadados das mensagens
-2. **Processamento OCR**: Extrair dados dos documentos com AWS Textract
-3. **Adicionar WhatsApp**: Integrar WhatsApp Business API
-4. **Agente de IA**: Implementar conversação com NLP/LLM
-5. **Console do Operador**: Interface web para atendimento humano
-
----
-
-## Suporte
-
-Se encontrar problemas:
-
-1. Verifique a seção **Troubleshooting** acima
-2. Consulte a documentação detalhada:
-   - [README.md](README.md) - Seção "Integração Telegram + S3"
-   - [docs/n8n-workflows.md](docs/n8n-workflows.md) - Documentação do workflow
-   - [app/infrastructure/terraform/s3/README.md](../app/infrastructure/terraform/s3/README.md) - Documentação do Terraform
-
-3. Revise os logs:
-
-   ```bash
-   # Logs do n8n
-   docker-compose logs -f n8n
-
-   # Status do Terraform
-   cd app/infrastructure/terraform/s3
-   terraform show
-   ```
-
-Boa sorte com os testes!
+- [README.md](../README.md) - Documentação completa do projeto
+- [docs/n8n-workflows.md](n8n-workflows.md) - Documentação do workflow
+- [app/infrastructure/terraform/s3/README.md](../app/infrastructure/terraform/s3/README.md) - Documentação do Terraform
