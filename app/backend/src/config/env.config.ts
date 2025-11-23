@@ -1,8 +1,13 @@
+import path from 'node:path';
+
 import { config } from 'dotenv';
 import envVar from 'env-var';
 import { injectable } from 'tsyringe';
 
-config();
+// Only load .env in development (Lambda has env vars configured)
+if (process.env.NODE_ENV !== 'production') {
+  config({ path: path.resolve(process.cwd(), '.env') });
+}
 
 @injectable()
 export class EnvConfig {
