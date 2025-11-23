@@ -1,12 +1,15 @@
 import { fileRepository } from '../../repositories';
 import { mockTextractService } from '../aws/mock-textract.service';
+import { textractService } from '../aws/textract.service';
 import { classifierService } from '../classification/classifier.service';
 import { ProcessingStatus, ExtractionResult } from '../../types';
-import { logger } from '../../config';
+import { env, logger } from '../../config';
 
 export class OCROrchestratorService {
+  private textractService = env.USE_MOCK_TEXTRACT ? mockTextractService : textractService;
+
   async processDocument(bucket: string, key: string): Promise<void> {
-    logger.info('Processing document', { bucket, key });
+    logger.info('Processing document', { bucket, key, useMock: env.USE_MOCK_TEXTRACT });
 
     // 1. Find File in MongoDB
     const file = await fileRepository.findByS3Key(bucket, key);
@@ -31,8 +34,8 @@ export class OCROrchestratorService {
 
       logger.info('Document classified', { fileId: file._id, documentType: docType });
 
-      // 4. Extract data using Mock Textract
-      const extractedData = await mockTextractService.analyzeDocument(bucket, key, docType);
+      // 4. Extract data using Textract (mock or real based on env)
+      const extractedData = await this.textractService.analyzeDocument(bucket, key, docType);
 
       // 5. Update File with OCR result
       await fileRepository.updateOCRResult(file._id.toString(), {

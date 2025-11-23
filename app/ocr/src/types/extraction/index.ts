@@ -1,11 +1,12 @@
 export { BaseExtraction } from './base-extraction.types';
-export { PassportData } from './passport.types';
-export { IDCardData } from './id-card.types';
-export { ReceiptData, type LineItem } from './receipt.types';
-export { FormData, type FormField } from './form.types';
+export type { PassportData } from './passport.types';
+export type { IDCardData } from './id-card.types';
+export type { ReceiptData, LineItem } from './receipt.types';
+export type { FormData, FormField } from './form.types';
 
-export type ExtractionResult =
-  | PassportData
-  | IDCardData
-  | ReceiptData
-  | FormData;
+import type { PassportData } from './passport.types';
+import type { IDCardData } from './id-card.types';
+import type { ReceiptData } from './receipt.types';
+import type { FormData } from './form.types';
+
+export type ExtractionResult = PassportData | IDCardData | ReceiptData | FormData;
