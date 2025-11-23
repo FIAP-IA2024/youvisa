@@ -41,6 +41,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       NODE_ENV          = "production"
+      API_KEY           = var.api_key
       MONGODB_URI       = var.mongodb_uri
       MONGODB_DATABASE  = var.mongodb_database
       S3_BUCKET_NAME    = var.s3_bucket_name

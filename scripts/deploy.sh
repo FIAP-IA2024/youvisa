@@ -86,6 +86,7 @@ deploy_backend() {
 
     terraform init -backend-config="key=backend/terraform.tfstate"
     terraform apply -auto-approve \
+        -var="api_key=${API_KEY}" \
         -var="mongodb_uri=${MONGODB_URI}" \
         -var="mongodb_database=${MONGODB_DATABASE}" \
         -var="s3_bucket_name=${S3_BUCKET_NAME}"

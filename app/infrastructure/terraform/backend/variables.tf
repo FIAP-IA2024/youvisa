@@ -33,3 +33,9 @@ variable "s3_bucket_name" {
   type        = string
   default     = "dev-youvisa-files-9k3m7x"
 }
+
+variable "api_key" {
+  description = "API key for backend authentication"
+  type        = string
+  sensitive   = true
+}

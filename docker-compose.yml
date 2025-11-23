@@ -13,6 +13,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - API_HOST=0.0.0.0
       - API_PORT=5555
+      - API_KEY=${API_KEY}
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
@@ -36,6 +37,7 @@ services:
       - LAMBDA_FUNCTION_URL=${LAMBDA_FUNCTION_URL}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:5555}
+      - API_KEY=${API_KEY}
     volumes:
       - ./docker/n8n:/home/node/.n8n
       - ./app/n8n/workflows:/workflows

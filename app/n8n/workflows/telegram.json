@@ -21,6 +21,15 @@
       "parameters": {
         "url": "={{ $env.BACKEND_URL }}/users/upsert/{{ $json.message.from.id }}",
         "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  username: $json.message.from.username,\n  first_name: $json.message.from.first_name,\n  last_name: $json.message.from.last_name,\n  language_code: $json.message.from.language_code,\n  is_bot: $json.message.from.is_bot || false\n}) }}",
@@ -35,6 +44,15 @@
       "parameters": {
         "url": "={{ $env.BACKEND_URL }}/conversations/upsert",
         "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  user_id: $json.data._id,\n  channel: 'telegram',\n  chat_id: String($node['Telegram Trigger'].json.message.chat.id),\n  status: 'active'\n}) }}",
@@ -115,6 +133,15 @@
       "parameters": {
         "url": "={{ $env.BACKEND_URL }}/messages",
         "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Prepare S3 Upload'].json.messageId,\n  user_id: $node['Prepare S3 Upload'].json.userId,\n  text: $node['Telegram Trigger'].json.message.caption || '',\n  message_type: $node['Prepare S3 Upload'].json.messageType,\n  direction: 'incoming',\n  timestamp: $node['Prepare S3 Upload'].json.timestamp,\n  metadata: {\n    file_id: $node['Prepare S3 Upload'].json.fileId,\n    file_name: $node['Prepare S3 Upload'].json.fileName,\n    file_size: $node['Prepare S3 Upload'].json.fileSize,\n    mime_type: $node['Prepare S3 Upload'].json.mimeType\n  }\n}) }}",
@@ -129,6 +156,15 @@
       "parameters": {
         "url": "={{ $env.BACKEND_URL }}/files",
         "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: $env.S3_BUCKET_NAME,\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
@@ -161,6 +197,15 @@
       "parameters": {
         "url": "={{ $env.BACKEND_URL }}/messages",
         "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: String($node['Telegram Trigger'].json.message.message_id),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: $node['Telegram Trigger'].json.message.text || '',\n  message_type: 'text',\n  direction: 'incoming',\n  timestamp: new Date($node['Telegram Trigger'].json.message.date * 1000).toISOString()\n}) }}",

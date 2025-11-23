@@ -20,6 +20,19 @@ export const app = () => {
     await database.connect();
   });
 
+  // API Key authentication (except /health)
+  fastify.addHook('onRequest', async (request, reply) => {
+    if (request.url === '/health') {
+      return;
+    }
+
+    const apiKey = request.headers['x-api-key'];
+    if (!apiKey || apiKey !== env.API_KEY) {
+      reply.code(401).send({ error: 'Unauthorized: Invalid or missing API key' });
+      return;
+    }
+  });
+
   fastify.register(routes);
 
   return { fastify, env, logger, database };
