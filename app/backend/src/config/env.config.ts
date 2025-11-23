@@ -1,10 +1,10 @@
 import { config } from 'dotenv';
 import envVar from 'env-var';
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 config();
 
-@singleton()
+@injectable()
 export class EnvConfig {
   public readonly NODE_ENV = envVar.get('NODE_ENV').default('development').asString();
   public readonly IS_PRODUCTION = this.NODE_ENV === 'production';

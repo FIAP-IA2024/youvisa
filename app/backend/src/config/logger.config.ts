@@ -1,11 +1,11 @@
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import winston from 'winston';
 
 import { EnvConfig } from './env.config';
 
-@singleton()
+@injectable()
 export class LoggerConfig extends winston.createLogger {
-  constructor(env: EnvConfig) {
+  constructor(@inject('EnvConfig') env: EnvConfig) {
     super({
       level: env.IS_DEBUG ? 'debug' : 'info',
       format: winston.format.combine(

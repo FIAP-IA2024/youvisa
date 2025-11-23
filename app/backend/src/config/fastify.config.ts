@@ -5,16 +5,16 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod';
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { EnvConfig } from './env.config';
 import { LoggerConfig } from './logger.config';
 
-@singleton()
+@injectable()
 export class FastifyConfig {
   constructor(
-    private readonly env: EnvConfig,
-    private readonly logger: LoggerConfig,
+    @inject('EnvConfig') private readonly env: EnvConfig,
+    @inject('LoggerConfig') private readonly logger: LoggerConfig,
   ) {}
 
   public app(): FastifyInstance {

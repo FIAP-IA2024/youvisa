@@ -21,26 +21,22 @@ import {
   UserRepository,
 } from './repositories';
 
-// Register all dependencies
-container.register('EnvConfig', { useClass: EnvConfig });
-container.register('LoggerConfig', { useClass: LoggerConfig });
-container.register('DatabaseConfig', { useClass: DatabaseConfig });
-container.register('FastifyConfig', { useClass: FastifyConfig });
+// Register @/config
+container.registerSingleton('EnvConfig', EnvConfig);
+container.registerSingleton('LoggerConfig', LoggerConfig);
+container.registerSingleton('DatabaseConfig', DatabaseConfig);
+container.registerSingleton('FastifyConfig', FastifyConfig);
 
-// Register repositories
-container.register('UserRepository', { useClass: UserRepository });
-container.register('ConversationRepository', {
-  useClass: ConversationRepository,
-});
-container.register('MessageRepository', { useClass: MessageRepository });
-container.register('FileRepository', { useClass: FileRepository });
+// Register @/repositories
+container.registerSingleton('UserRepository', UserRepository);
+container.registerSingleton('ConversationRepository', ConversationRepository);
+container.registerSingleton('MessageRepository', MessageRepository);
+container.registerSingleton('FileRepository', FileRepository);
 
-// Register controllers
-container.register('UserController', { useClass: UserController });
-container.register('ConversationController', {
-  useClass: ConversationController,
-});
-container.register('MessageController', { useClass: MessageController });
-container.register('FileController', { useClass: FileController });
+// Register @/controllers
+container.registerSingleton('UserController', UserController);
+container.registerSingleton('ConversationController', ConversationController);
+container.registerSingleton('MessageController', MessageController);
+container.registerSingleton('FileController', FileController);
 
 export { container };

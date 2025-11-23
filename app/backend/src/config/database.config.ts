@@ -1,16 +1,16 @@
 import mongoose from 'mongoose';
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { EnvConfig } from './env.config';
 import { LoggerConfig } from './logger.config';
 
-@singleton()
+@injectable()
 export class DatabaseConfig {
   private isConnected = false;
 
   constructor(
-    private readonly env: EnvConfig,
-    private readonly logger: LoggerConfig,
+    @inject('EnvConfig') private readonly env: EnvConfig,
+    @inject('LoggerConfig') private readonly logger: LoggerConfig,
   ) {}
 
   public async connect(): Promise<void> {
