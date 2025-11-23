@@ -16,7 +16,7 @@ async function initialize() {
 
 export const handler = async (event: SQSEvent, context: Context) => {
   logger.info('Lambda invocation started', {
-    requestId: context.requestId,
+    requestId: context.awsRequestId,
     recordCount: event.Records.length,
   });
 

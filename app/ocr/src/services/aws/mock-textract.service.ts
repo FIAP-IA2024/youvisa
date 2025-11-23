@@ -5,23 +5,22 @@ export class MockTextractService {
   async analyzeDocument(bucket: string, key: string, docType: DocumentType): Promise<any> {
     logger.info('Mock Textract - analyzing document', { bucket, key, docType });
 
-    const filename = key.toLowerCase();
     const now = new Date();
 
     switch (docType) {
       case DocumentType.PASSPORT:
-        return this.mockPassport(filename, now);
+        return this.mockPassport(now);
       case DocumentType.ID_CARD:
-        return this.mockIDCard(filename, now);
+        return this.mockIDCard(now);
       case DocumentType.RECEIPT:
       case DocumentType.INVOICE:
-        return this.mockReceipt(filename, now);
+        return this.mockReceipt(now);
       default:
-        return this.mockForm(filename, now);
+        return this.mockForm(now);
     }
   }
 
-  private mockPassport(filename: string, now: Date): PassportData {
+  private mockPassport(now: Date): PassportData {
     return {
       document_type: DocumentType.PASSPORT,
       document_number: 'BR' + Math.random().toString().slice(2, 8),
@@ -37,7 +36,7 @@ export class MockTextractService {
     };
   }
 
-  private mockIDCard(filename: string, now: Date): IDCardData {
+  private mockIDCard(now: Date): IDCardData {
     return {
       document_type: DocumentType.ID_CARD,
       document_number: Math.random().toString().slice(2, 10),
@@ -51,7 +50,7 @@ export class MockTextractService {
     };
   }
 
-  private mockReceipt(filename: string, now: Date): ReceiptData {
+  private mockReceipt(now: Date): ReceiptData {
     return {
       document_type: DocumentType.RECEIPT,
       vendor_name: 'Mock Store',
@@ -67,7 +66,7 @@ export class MockTextractService {
     };
   }
 
-  private mockForm(filename: string, now: Date): FormData {
+  private mockForm(now: Date): FormData {
     return {
       document_type: DocumentType.FORM,
       form_fields: [

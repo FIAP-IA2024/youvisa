@@ -66,12 +66,13 @@ start_n8n() {
 
 start_ocr() {
     echo -e "${BLUE}Starting OCR service...${NC}"
-    cd app/ocr
-    docker-compose up -d
-    cd ../../
+    docker-compose up -d --build ocr
+
+    # Get port from .env or default
+    OCR_PORT=3001
 
     echo -e "${BLUE}OCR service started!${NC}"
-    echo -e "API: http://localhost:3001"
+    echo -e "API: http://localhost:${OCR_PORT}"
     echo -e "Watch folder: app/ocr/watch/"
 }
 
@@ -85,7 +86,6 @@ start_all() {
     echo ""
     echo -e "${BLUE}All services started!${NC}"
     docker-compose ps
-    cd app/ocr && docker-compose ps && cd ../../
 }
 
 case "$APP" in

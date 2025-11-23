@@ -1,9 +1,13 @@
 import chokidar from 'chokidar';
 import fastify from 'fastify';
+import multipart from '@fastify/multipart';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import mongoose from 'mongoose';
 import { database, env, logger } from './config';
 import { ocrOrchestratorService } from './services';
+import { FileModel } from './models';
+import { ProcessingStatus } from './types';
 
 async function startFileWatcher() {
   const watchDir = path.resolve(env.WATCH_DIR);
@@ -11,7 +15,7 @@ async function startFileWatcher() {
   logger.info(`Starting file watcher on ${watchDir}`);
 
   const watcher = chokidar.watch(watchDir, {
-    ignored: /(^|[\/\\])\../,
+    ignored: (path) => path.includes('/processed/') || path.includes('\\processed\\'),
     persistent: true,
     ignoreInitial: true,
   });
@@ -24,6 +28,22 @@ async function startFileWatcher() {
       // Simulate S3 upload by using local path
       const mockBucket = 'local-bucket';
       const mockKey = `telegram/${new Date().toISOString().split('T')[0]}/${filename}`;
+
+      // Create mock File record in MongoDB for local testing
+      const stats = await fs.stat(filePath);
+      await FileModel.create({
+        conversation_id: new mongoose.Types.ObjectId(),
+        message_id: new mongoose.Types.ObjectId(),
+        file_id: `local_${Date.now()}`,
+        s3_bucket: mockBucket,
+        s3_key: mockKey,
+        original_filename: filename,
+        file_size: stats.size,
+        mime_type: 'text/plain',
+        uploaded_at: new Date(),
+        ocr_status: ProcessingStatus.PENDING,
+        metadata: {},
+      });
 
       // Process document
       await ocrOrchestratorService.processDocument(mockBucket, mockKey);
@@ -45,6 +65,9 @@ async function startFileWatcher() {
 async function startAPI() {
   const app = fastify({ logger: false });
 
+  // Register multipart plugin for file uploads
+  await app.register(multipart);
+
   app.get('/health', async () => {
     return { status: 'ok', mode: 'local', mongodb: database ? 'connected' : 'disconnected' };
   });
@@ -63,6 +86,8 @@ async function startAPI() {
       const watchDir = path.resolve(env.WATCH_DIR);
       const filePath = path.join(watchDir, filename);
       await fs.writeFile(filePath, buffer);
+
+      logger.info('File uploaded via API', { filename, size: buffer.length });
 
       return { success: true, message: 'File queued for processing', filename };
     } catch (error) {
