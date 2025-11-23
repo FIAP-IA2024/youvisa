@@ -33,6 +33,7 @@ export class EnvConfig {
 
   // AWS (shared, no prefix - Lambda sets AWS_REGION automatically)
   public readonly AWS_REGION = envVar.get('AWS_REGION').default('sa-east-1').asString();
+  public readonly AWS_TEXTRACT_REGION = envVar.get('AWS_TEXTRACT_REGION').default('us-east-1').asString();
   public readonly USE_MOCK_TEXTRACT = envVar
     .get('OCR_DOCUMENT_PROCESSOR_USE_MOCK_TEXTRACT')
     .default(envVar.get('USE_MOCK_TEXTRACT').default('false').asString())

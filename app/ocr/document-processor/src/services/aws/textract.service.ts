@@ -19,22 +19,12 @@ export class TextractService {
   private textractClient: TextractClient;
 
   constructor() {
-    const region = env.AWS_REGION;
     logger.info('Initializing TextractClient', {
-      region,
-      endpoint: `https://textract.${region}.amazonaws.com`,
-      allEnv: {
-        AWS_REGION: process.env.AWS_REGION,
-        NODE_ENV: process.env.NODE_ENV
-      }
+      lambdaRegion: env.AWS_REGION,
+      textractRegion: env.AWS_TEXTRACT_REGION
     });
     this.textractClient = new TextractClient({
-      region,
-      endpoint: `https://textract.${region}.amazonaws.com`,
-      maxAttempts: 3,
-      requestHandler: {
-        requestTimeout: 60000
-      }
+      region: env.AWS_TEXTRACT_REGION
     });
   }
 
