@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: backend, n8n, all"
+    echo -e "Available options: backend, n8n, ocr, all"
     exit 1
 fi
 
@@ -64,11 +64,25 @@ start_n8n() {
     echo -e "n8n: http://localhost:5678"
 }
 
+start_ocr() {
+    echo -e "${BLUE}Starting OCR service...${NC}"
+    docker-compose up -d --build ocr
+
+    # Get port from .env or default
+    OCR_PORT=5556
+
+    echo -e "${BLUE}OCR service started!${NC}"
+    echo -e "API: http://localhost:${OCR_PORT}"
+    echo -e "Watch folder: app/ocr/document-processor/watch/"
+}
+
 start_all() {
     echo -e "${BLUE}Starting all services...${NC}"
     start_backend
     sleep 2
     start_n8n
+    sleep 2
+    start_ocr
     echo ""
     echo -e "${BLUE}All services started!${NC}"
     docker-compose ps
@@ -81,12 +95,15 @@ case "$APP" in
     n8n)
         start_n8n
         ;;
+    ocr)
+        start_ocr
+        ;;
     all)
         start_all
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: backend, n8n, all"
+        echo -e "Available options: backend, n8n, ocr, all"
         exit 1
         ;;
 esac

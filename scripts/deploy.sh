@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: tf-state, s3, backend, all"
+    echo -e "Available options: tf-state, s3, backend, ocr, all"
     exit 1
 fi
 
@@ -95,6 +95,49 @@ deploy_backend() {
     echo -e "${BLUE}Backend infrastructure deployed successfully!${NC}"
 }
 
+deploy_ocr() {
+    echo -e "${BLUE}Deploying OCR infrastructure...${NC}"
+
+    # Check if .env exists
+    if [ ! -f .env ]; then
+        echo -e "${RED}Error: .env file not found${NC}"
+        echo "Run: cp .env.example .env"
+        echo "Then edit .env with your credentials"
+        exit 1
+    fi
+
+    # Load environment variables from .env
+    export $(grep -v '^#' .env | xargs)
+
+    # Build and package Lambda
+    echo -e "${BLUE}Building OCR...${NC}"
+    cd app/ocr/document-processor
+    npm install
+    npm run build
+    bash scripts/package-lambda.sh
+    cd ../../../
+
+    # Copy shared backend configuration
+    echo -e "${BLUE}Copying shared backend.tf...${NC}"
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/ocr/backend.tf
+
+    # Deploy with Terraform
+    echo -e "${BLUE}Deploying OCR Lambda...${NC}"
+    cd app/infrastructure/terraform/ocr
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init -backend-config="key=ocr/terraform.tfstate"
+    terraform apply -auto-approve \
+        -var="mongodb_uri=${MONGODB_URI}" \
+        -var="mongodb_database=${MONGODB_DATABASE}" \
+        -var="s3_bucket_name=${S3_BUCKET_NAME}"
+    cd ../../../../
+
+    echo -e "${BLUE}OCR infrastructure deployed successfully!${NC}"
+}
+
 case "$APP" in
     tf-state)
         deploy_tf_state
@@ -105,13 +148,17 @@ case "$APP" in
     backend)
         deploy_backend
         ;;
+    ocr)
+        deploy_ocr
+        ;;
     all)
         deploy_s3
         deploy_backend
+        deploy_ocr
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: tf-state, s3, backend, all"
+        echo -e "Available options: tf-state, s3, backend, ocr, all"
         exit 1
         ;;
 esac

@@ -1,0 +1,48 @@
+{
+  "name": "youvisa-ocr",
+  "version": "1.0.0",
+  "description": "OCR processing service for YOUVISA platform using AWS Textract",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint ./src --ext .ts",
+    "lint:fix": "eslint ./src --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "build": "tsup",
+    "dev": "tsx watch src/local.ts",
+    "start": "NODE_ENV=production node dist/local.js",
+    "package": "npm run build && bash scripts/package-lambda.sh"
+  },
+  "keywords": [
+    "youvisa",
+    "ocr",
+    "textract",
+    "lambda"
+  ],
+  "author": "YOUVISA Team",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-comprehend": "^3.600.0",
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/client-textract": "^3.600.0",
+    "@fastify/multipart": "^9.3.0",
+    "chokidar": "^4.0.3",
+    "dotenv": "^16.4.7",
+    "env-var": "^7.5.0",
+    "fastify": "^5.5.0",
+    "mongoose": "^8.0.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^22.15.14",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
