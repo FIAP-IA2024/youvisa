@@ -111,11 +111,11 @@ deploy_ocr() {
 
     # Build and package Lambda
     echo -e "${BLUE}Building OCR...${NC}"
-    cd app/ocr
+    cd app/ocr/document-processor
     npm install
     npm run build
     bash scripts/package-lambda.sh
-    cd ../../
+    cd ../../../
 
     # Copy shared backend configuration
     echo -e "${BLUE}Copying shared backend.tf...${NC}"

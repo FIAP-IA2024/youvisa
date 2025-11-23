@@ -73,7 +73,7 @@ start_ocr() {
 
     echo -e "${BLUE}OCR service started!${NC}"
     echo -e "API: http://localhost:${OCR_PORT}"
-    echo -e "Watch folder: app/ocr/watch/"
+    echo -e "Watch folder: app/ocr/document-processor/watch/"
 }
 
 start_all() {

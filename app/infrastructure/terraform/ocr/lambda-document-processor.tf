@@ -6,8 +6,8 @@ resource "aws_lambda_function" "ocr_processor" {
   role             = aws_iam_role.ocr_lambda_role.arn
   timeout          = 60
   memory_size      = 2048
-  source_code_hash = filebase64sha256("${path.module}/../../../ocr/dist.zip")
-  filename         = "${path.module}/../../../ocr/dist.zip"
+  source_code_hash = filebase64sha256("${path.module}/../../../ocr/document-processor/dist.zip")
+  filename         = "${path.module}/../../../ocr/document-processor/dist.zip"
 
   layers = [aws_lambda_layer_version.ocr_node_modules.arn]
 
@@ -30,10 +30,10 @@ resource "aws_lambda_function" "ocr_processor" {
 
 # Lambda Layer for node_modules
 resource "aws_lambda_layer_version" "ocr_node_modules" {
-  filename            = "${path.module}/../../../ocr/nodejs-layer.zip"
+  filename            = "${path.module}/../../../ocr/document-processor/nodejs-layer.zip"
   layer_name          = "${var.environment}-${var.project_name}-layer"
   compatible_runtimes = ["nodejs22.x"]
-  source_code_hash    = filebase64sha256("${path.module}/../../../ocr/nodejs-layer.zip")
+  source_code_hash    = filebase64sha256("${path.module}/../../../ocr/document-processor/nodejs-layer.zip")
 }
 
 # Event Source Mapping: SQS → Lambda
