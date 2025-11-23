@@ -1,8 +1,8 @@
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import { ConversationModel, IConversation } from '@/models';
 
-@singleton()
+@injectable()
 export class ConversationRepository {
   async create(data: Partial<IConversation>): Promise<IConversation> {
     const conversation = new ConversationModel(data);

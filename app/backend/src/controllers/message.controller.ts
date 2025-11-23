@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { LoggerConfig } from '@/config';
 import { MessageRepository } from '@/repositories';
 
-@singleton()
+@injectable()
 export class MessageController {
   constructor(
-    private readonly messageRepository: MessageRepository,
-    private readonly logger: LoggerConfig,
+    @inject('MessageRepository') private readonly messageRepository: MessageRepository,
+    @inject('LoggerConfig') private readonly logger: LoggerConfig,
   ) {}
 
   async create(data: any) {

@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { LoggerConfig } from '@/config';
 import { ConversationRepository } from '@/repositories';
 
-@singleton()
+@injectable()
 export class ConversationController {
   constructor(
-    private readonly conversationRepository: ConversationRepository,
-    private readonly logger: LoggerConfig,
+    @inject('ConversationRepository') private readonly conversationRepository: ConversationRepository,
+    @inject('LoggerConfig') private readonly logger: LoggerConfig,
   ) {}
 
   async create(data: any) {

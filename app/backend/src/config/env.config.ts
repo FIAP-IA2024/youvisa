@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 
 import { config } from 'dotenv';
@@ -6,7 +7,16 @@ import { injectable } from 'tsyringe';
 
 // Only load .env in development (Lambda has env vars configured)
 if (process.env.NODE_ENV !== 'production') {
-  config({ path: path.resolve(process.cwd(), '.env') });
+  // Try to find .env in project root (handles both running from root and from app/backend)
+  const possiblePaths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '../../.env'),
+  ];
+
+  const envPath = possiblePaths.find((p) => fs.existsSync(p));
+  if (envPath) {
+    config({ path: envPath });
+  }
 }
 
 @injectable()

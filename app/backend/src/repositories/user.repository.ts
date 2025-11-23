@@ -1,8 +1,8 @@
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import { IUser, UserModel } from '@/models';
 
-@singleton()
+@injectable()
 export class UserRepository {
   async create(data: Partial<IUser>): Promise<IUser> {
     const user = new UserModel(data);

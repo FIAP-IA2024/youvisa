@@ -1,8 +1,8 @@
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import { IMessage, MessageModel } from '@/models';
 
-@singleton()
+@injectable()
 export class MessageRepository {
   async create(data: Partial<IMessage>): Promise<IMessage> {
     const message = new MessageModel(data);

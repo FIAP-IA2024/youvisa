@@ -1,8 +1,8 @@
-import { singleton } from 'tsyringe';
+import { injectable } from 'tsyringe';
 
 import { FileModel, IFile } from '@/models';
 
-@singleton()
+@injectable()
 export class FileRepository {
   async create(data: Partial<IFile>): Promise<IFile> {
     const file = new FileModel(data);

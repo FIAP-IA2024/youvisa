@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
-import { singleton } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 
 import { LoggerConfig } from '@/config';
 import { FileRepository } from '@/repositories';
 
-@singleton()
+@injectable()
 export class FileController {
   constructor(
-    private readonly fileRepository: FileRepository,
-    private readonly logger: LoggerConfig,
+    @inject('FileRepository') private readonly fileRepository: FileRepository,
+    @inject('LoggerConfig') private readonly logger: LoggerConfig,
   ) {}
 
   async create(data: any) {
