@@ -20,8 +20,6 @@ resource "aws_lambda_function" "ocr_processor" {
     }
   }
 
-  reserved_concurrent_executions = 5
-
   tags = {
     Name = "${var.environment}-${var.project_name}"
   }
@@ -44,10 +42,6 @@ resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
   maximum_batching_window_in_seconds = 5
 
   function_response_types = ["ReportBatchItemFailures"]
-
-  scaling_config {
-    maximum_concurrency = 5
-  }
 }
 
 # CloudWatch Log Group
