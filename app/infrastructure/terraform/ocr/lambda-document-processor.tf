@@ -16,7 +16,6 @@ resource "aws_lambda_function" "ocr_processor" {
       NODE_ENV          = "production"
       MONGODB_URI       = var.mongodb_uri
       MONGODB_DATABASE  = var.mongodb_database
-      AWS_REGION        = var.aws_region
       USE_MOCK_TEXTRACT = "false"
     }
   }
