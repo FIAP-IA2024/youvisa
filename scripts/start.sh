@@ -50,11 +50,11 @@ start_n8n() {
 
         if [ -n "$URL" ]; then
             echo -e "${BLUE}ngrok URL: $URL${NC}"
-            # Update WEBHOOK_URL in .env
-            if grep -q "^WEBHOOK_URL=" .env; then
-                sed -i.bak "s|^WEBHOOK_URL=.*|WEBHOOK_URL=$URL/|" .env
+            # Update N8N_WEBHOOK_URL in .env
+            if grep -q "^N8N_WEBHOOK_URL=" .env; then
+                sed -i.bak "s|^N8N_WEBHOOK_URL=.*|N8N_WEBHOOK_URL=$URL/|" .env
             else
-                echo "WEBHOOK_URL=$URL/" >> .env
+                echo "N8N_WEBHOOK_URL=$URL/" >> .env
             fi
         fi
     fi
