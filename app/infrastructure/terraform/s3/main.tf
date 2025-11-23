@@ -25,7 +25,7 @@ resource "aws_s3_bucket" "files" {
   bucket = var.s3_bucket_name
 
   tags = {
-    Name = "${var.project_name}-files-${var.environment}"
+    Name = "${var.environment}-${var.project_name}-files"
   }
 }
 

@@ -67,6 +67,8 @@ vendor/
 *.tfvars
 .terraform/
 .terraform.lock.hcl
+app/infrastructure/terraform/*/backend.tf
+!app/infrastructure/terraform/shared/backend.tf
 
 # Compiled files
 *.class
@@ -78,6 +80,9 @@ __pycache__/
 *.dll
 *.exe
 *.bkp
+
+# Docker volumes
+docker/
 
 # Others
 CLAUDE.md

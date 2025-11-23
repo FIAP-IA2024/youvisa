@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    container_name: youvisa-backend
+    restart: always
+    ports:
+      - "5555:5555"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - API_HOST=0.0.0.0
+      - API_PORT=5555
+      - API_KEY=${API_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - IS_DEBUG=${IS_DEBUG:-true}
+    volumes:
+      - ./app/backend:/app
+      - /app/node_modules
+    networks:
+      - youvisa-network
+    command: npm run dev
+
   n8n:
     image: n8nio/n8n:latest
     container_name: youvisa-n8n
@@ -8,19 +33,16 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
       - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
+      - LAMBDA_FUNCTION_URL=${LAMBDA_FUNCTION_URL}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:5555}
+      - API_KEY=${API_KEY}
     volumes:
-      - n8n_data:/home/node/.n8n
-      - ./app/n8n-workflows:/workflows
+      - ./docker/n8n:/home/node/.n8n
+      - ./app/n8n/workflows:/workflows
     networks:
       - youvisa-network
-
-volumes:
-  n8n_data:
-    driver: local
 
 networks:
   youvisa-network:

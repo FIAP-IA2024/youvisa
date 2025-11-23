@@ -1,0 +1,45 @@
+{
+  "name": "youvisa-backend",
+  "version": "1.0.0",
+  "description": "YOUVISA Backend API - Lambda Function with Fastify + MongoDB",
+  "main": "dist/lambda.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "eslint ./src --ext .ts",
+    "lint:fix": "eslint ./src --ext .ts --fix",
+    "type-check": "tsc --noEmit",
+    "build": "tsup",
+    "dev": "tsx watch src/server.ts",
+    "start": "NODE_ENV=production node dist/server.js",
+    "package:lambda": "npm run build && bash scripts/package-lambda.sh",
+    "deploy": "npm run package:lambda && cd infrastructure/terraform/lambda && terraform apply"
+  },
+  "keywords": ["youvisa", "backend", "api", "lambda", "mongodb"],
+  "author": "YOUVISA Team",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.15.14",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@fastify/aws-lambda": "^6.1.1",
+    "@fastify/cors": "^11.0.1",
+    "dotenv": "^16.4.7",
+    "env-var": "^7.5.0",
+    "fastify": "^5.5.0",
+    "fastify-type-provider-zod": "^6.0.0",
+    "http-status-codes": "^2.3.0",
+    "mongoose": "^8.0.0",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.8.0",
+    "winston": "^3.17.0",
+    "zod": "^4.1.9"
+  }
+}
