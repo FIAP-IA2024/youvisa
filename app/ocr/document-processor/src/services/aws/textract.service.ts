@@ -5,6 +5,7 @@ import {
   AnalyzeDocumentCommand,
   FeatureType,
 } from '@aws-sdk/client-textract';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { env, logger } from '../../config';
 import {
   DocumentType,
@@ -17,6 +18,7 @@ import {
 
 export class TextractService {
   private textractClient: TextractClient;
+  private s3Client: S3Client;
 
   constructor() {
     logger.info('Initializing TextractClient', {
@@ -26,6 +28,37 @@ export class TextractService {
     this.textractClient = new TextractClient({
       region: env.AWS_TEXTRACT_REGION
     });
+    this.s3Client = new S3Client({
+      region: env.AWS_REGION
+    });
+  }
+
+  private async getDocumentBytes(bucket: string, key: string): Promise<Uint8Array> {
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    const response = await this.s3Client.send(command);
+
+    if (!response.Body) {
+      throw new Error('Empty response body from S3');
+    }
+
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return result;
   }
 
   async analyzeDocument(bucket: string, key: string, docType: DocumentType): Promise<ExtractionResult> {
@@ -51,13 +84,12 @@ export class TextractService {
 
   private async analyzeID(bucket: string, key: string, docType: DocumentType): Promise<PassportData | IDCardData> {
     try {
+      const documentBytes = await this.getDocumentBytes(bucket, key);
+
       const command = new AnalyzeIDCommand({
         DocumentPages: [
           {
-            S3Object: {
-              Bucket: bucket,
-              Name: key,
-            },
+            Bytes: documentBytes,
           },
         ],
       });
@@ -120,12 +152,11 @@ export class TextractService {
     docType: DocumentType.RECEIPT | DocumentType.INVOICE
   ): Promise<ReceiptData> {
     try {
+      const documentBytes = await this.getDocumentBytes(bucket, key);
+
       const command = new AnalyzeExpenseCommand({
         Document: {
-          S3Object: {
-            Bucket: bucket,
-            Name: key,
-          },
+          Bytes: documentBytes,
         },
       });
 
@@ -170,12 +201,11 @@ export class TextractService {
 
   private async analyzeForm(bucket: string, key: string): Promise<FormData> {
     try {
+      const documentBytes = await this.getDocumentBytes(bucket, key);
+
       const command = new AnalyzeDocumentCommand({
         Document: {
-          S3Object: {
-            Bucket: bucket,
-            Name: key,
-          },
+          Bytes: documentBytes,
         },
         FeatureTypes: [FeatureType.FORMS, FeatureType.TABLES],
       });
@@ -222,12 +252,11 @@ export class TextractService {
 
   private async analyzeGeneric(bucket: string, key: string): Promise<FormData> {
     try {
+      const documentBytes = await this.getDocumentBytes(bucket, key);
+
       const command = new AnalyzeDocumentCommand({
         Document: {
-          S3Object: {
-            Bucket: bucket,
-            Name: key,
-          },
+          Bytes: documentBytes,
         },
         FeatureTypes: [FeatureType.FORMS],
       });
