@@ -29,8 +29,8 @@ resource "aws_lambda_function" "api" {
   handler          = "lambda.handler"
   runtime          = "nodejs22.x"
   role             = aws_iam_role.lambda_exec_role.arn
-  source_code_hash = filebase64sha256("${path.module}/../../../backend/dist.zip")
-  filename         = "${path.module}/../../../backend/dist.zip"
+  source_code_hash = filebase64sha256("${path.module}/../../../api/dist.zip")
+  filename         = "${path.module}/../../../api/dist.zip"
   timeout          = 30
   memory_size      = 512
 
@@ -55,10 +55,10 @@ resource "aws_lambda_function" "api" {
 
 # Lambda Layer for node_modules
 resource "aws_lambda_layer_version" "node_modules" {
-  filename            = "${path.module}/../../../backend/nodejs-layer.zip"
+  filename            = "${path.module}/../../../api/nodejs-layer.zip"
   layer_name          = "${var.environment}-${var.project_name}-layer"
   compatible_runtimes = ["nodejs22.x"]
-  source_code_hash    = filebase64sha256("${path.module}/../../../backend/nodejs-layer.zip")
+  source_code_hash    = filebase64sha256("${path.module}/../../../api/nodejs-layer.zip")
 }
 
 # IAM Role for Lambda
