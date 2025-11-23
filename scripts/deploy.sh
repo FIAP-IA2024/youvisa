@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: tf-state, s3, backend, ocr, all"
+    echo -e "Available options: tf-state, s3, api, ocr, all"
     exit 1
 fi
 
@@ -51,8 +51,8 @@ deploy_s3() {
     echo -e "${BLUE}S3 infrastructure deployed successfully!${NC}"
 }
 
-deploy_backend() {
-    echo -e "${BLUE}Deploying Backend infrastructure...${NC}"
+deploy_api() {
+    echo -e "${BLUE}Deploying API infrastructure...${NC}"
 
     # Check if .env exists
     if [ ! -f .env ]; then
@@ -66,8 +66,8 @@ deploy_backend() {
     export $(grep -v '^#' .env | xargs)
 
     # Build and package Lambda
-    echo -e "${BLUE}Building backend...${NC}"
-    cd app/backend
+    echo -e "${BLUE}Building API...${NC}"
+    cd app/api
     npm install
     npm run build
     bash scripts/package-lambda.sh
@@ -75,16 +75,16 @@ deploy_backend() {
 
     # Copy shared backend configuration
     echo -e "${BLUE}Copying shared backend.tf...${NC}"
-    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/backend/backend.tf
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/api/backend.tf
 
     # Deploy with Terraform
     echo -e "${BLUE}Deploying Lambda...${NC}"
-    cd app/infrastructure/terraform/backend
+    cd app/infrastructure/terraform/api
 
     # Remove local state files
     rm -rf .terraform
 
-    terraform init -backend-config="key=backend/terraform.tfstate"
+    terraform init -backend-config="key=api/terraform.tfstate"
     terraform apply -auto-approve \
         -var="api_key=${API_KEY}" \
         -var="mongodb_uri=${MONGODB_URI}" \
@@ -92,7 +92,7 @@ deploy_backend() {
         -var="s3_bucket_name=${S3_BUCKET_NAME}"
     cd ../../../../
 
-    echo -e "${BLUE}Backend infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}API infrastructure deployed successfully!${NC}"
 }
 
 deploy_ocr() {
@@ -145,20 +145,20 @@ case "$APP" in
     s3)
         deploy_s3
         ;;
-    backend)
-        deploy_backend
+    api)
+        deploy_api
         ;;
     ocr)
         deploy_ocr
         ;;
     all)
         deploy_s3
-        deploy_backend
+        deploy_api
         deploy_ocr
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: tf-state, s3, backend, ocr, all"
+        echo -e "Available options: tf-state, s3, api, ocr, all"
         exit 1
         ;;
 esac

@@ -7,7 +7,7 @@ import { injectable } from 'tsyringe';
 
 // Only load .env in development (Lambda has env vars configured)
 if (process.env.NODE_ENV !== 'production') {
-  // Try to find .env in project root (handles both running from root and from app/backend)
+  // Try to find .env in project root (handles both running from root and from app/api)
   const possiblePaths = [
     path.resolve(process.cwd(), '.env'),
     path.resolve(process.cwd(), '../../.env'),
@@ -23,27 +23,26 @@ if (process.env.NODE_ENV !== 'production') {
 export class EnvConfig {
   // Try prefixed version first, fallback to unprefixed for backwards compatibility
   public readonly NODE_ENV = envVar
-    .get('BACKEND_NODE_ENV')
+    .get('API_NODE_ENV')
     .default(envVar.get('NODE_ENV').default('development').asString())
     .asString();
   public readonly IS_PRODUCTION = this.NODE_ENV === 'production';
   public readonly IS_DEBUG = envVar
-    .get('BACKEND_IS_DEBUG')
+    .get('API_IS_DEBUG')
     .default(envVar.get('IS_DEBUG').default('false').asString())
     .asBool();
 
   // API Configuration
   public readonly API_HOST = envVar
-    .get('BACKEND_API_HOST')
-    .default(envVar.get('API_HOST').default('0.0.0.0').asString())
+    .get('API_HOST')
+    .default('0.0.0.0')
     .asString();
   public readonly API_PORT = envVar
-    .get('BACKEND_API_PORT')
-    .default(envVar.get('API_PORT').default('5555').asString())
+    .get('API_PORT')
+    .default('5555')
     .asPortNumber();
   public readonly API_KEY = envVar
-    .get('BACKEND_API_KEY')
-    .default(envVar.get('API_KEY').asString())
+    .get('API_KEY')
     .required()
     .asString();
 

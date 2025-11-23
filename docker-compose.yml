@@ -1,24 +1,24 @@
 services:
-  backend:
+  api:
     build:
-      context: ./app/backend
+      context: ./app/api
       dockerfile: Dockerfile
-    container_name: youvisa-backend
+    container_name: youvisa-api
     restart: always
     ports:
       - "5555:5555"
     environment:
-      - BACKEND_NODE_ENV=${BACKEND_NODE_ENV:-development}
-      - BACKEND_API_HOST=${BACKEND_API_HOST:-0.0.0.0}
-      - BACKEND_API_PORT=${BACKEND_API_PORT:-5555}
-      - BACKEND_API_KEY=${BACKEND_API_KEY}
-      - BACKEND_IS_DEBUG=${BACKEND_IS_DEBUG:-true}
+      - API_NODE_ENV=${API_NODE_ENV:-development}
+      - API_HOST=${API_HOST:-0.0.0.0}
+      - API_PORT=${API_PORT:-5555}
+      - API_KEY=${API_KEY}
+      - API_IS_DEBUG=${API_IS_DEBUG:-true}
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
     volumes:
-      - ./app/backend:/app
+      - ./app/api:/app
       - /app/node_modules
     networks:
       - youvisa-network
@@ -34,8 +34,8 @@ services:
       - WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678/}
       - LAMBDA_FUNCTION_URL=${LAMBDA_FUNCTION_URL}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:5555}
-      - API_KEY=${BACKEND_API_KEY}
+      - API_URL=${API_URL:-http://host.docker.internal:5555}
+      - API_KEY=${API_KEY}
     volumes:
       - ./docker/n8n:/home/node/.n8n
       - ./app/n8n/workflows:/workflows

@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: backend, n8n, ocr, all"
+    echo -e "Available options: api, n8n, ocr, all"
     exit 1
 fi
 
@@ -23,15 +23,15 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-start_backend() {
-    echo -e "${BLUE}Starting Backend API...${NC}"
-    docker-compose up -d --build backend
+start_api() {
+    echo -e "${BLUE}Starting API...${NC}"
+    docker-compose up -d --build api
 
     # Get port from .env
     API_PORT=$(grep -E "^API_PORT=" .env | cut -d '=' -f2)
     API_PORT=${API_PORT:-5555}
 
-    echo -e "${BLUE}Backend API started!${NC}"
+    echo -e "${BLUE}API started!${NC}"
     echo -e "API: http://localhost:${API_PORT}"
 }
 
@@ -78,7 +78,7 @@ start_ocr() {
 
 start_all() {
     echo -e "${BLUE}Starting all services...${NC}"
-    start_backend
+    start_api
     sleep 2
     start_n8n
     sleep 2
@@ -89,8 +89,8 @@ start_all() {
 }
 
 case "$APP" in
-    backend)
-        start_backend
+    api)
+        start_api
         ;;
     n8n)
         start_n8n
@@ -103,7 +103,7 @@ case "$APP" in
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: backend, n8n, ocr, all"
+        echo -e "Available options: api, n8n, ocr, all"
         exit 1
         ;;
 esac

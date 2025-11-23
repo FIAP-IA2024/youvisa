@@ -1,7 +1,7 @@
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "youvisa"
+  default     = "youvisa-api"
 }
 
 variable "environment" {
