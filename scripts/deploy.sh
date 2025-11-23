@@ -89,7 +89,7 @@ deploy_api() {
         -var="api_key=${API_KEY}" \
         -var="mongodb_uri=${MONGODB_URI}" \
         -var="mongodb_database=${MONGODB_DATABASE}" \
-        -var="s3_bucket_name=${S3_BUCKET_NAME}"
+        -var="s3_bucket_name=${AWS_S3_BUCKET_NAME}"
     cd ../../../../
 
     echo -e "${BLUE}API infrastructure deployed successfully!${NC}"
@@ -132,7 +132,7 @@ deploy_ocr() {
     terraform apply -auto-approve \
         -var="mongodb_uri=${MONGODB_URI}" \
         -var="mongodb_database=${MONGODB_DATABASE}" \
-        -var="s3_bucket_name=${S3_BUCKET_NAME}"
+        -var="s3_bucket_name=${AWS_S3_BUCKET_NAME}"
     cd ../../../../
 
     echo -e "${BLUE}OCR infrastructure deployed successfully!${NC}"

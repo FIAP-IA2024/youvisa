@@ -16,7 +16,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
     volumes:
       - ./app/api:/app
       - /app/node_modules
@@ -33,7 +33,7 @@ services:
     environment:
       - WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678/}
       - LAMBDA_FUNCTION_URL=${LAMBDA_FUNCTION_URL}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
       - API_URL=${API_URL:-http://host.docker.internal:5555}
       - API_KEY=${API_KEY}
     volumes:

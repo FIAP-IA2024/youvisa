@@ -52,5 +52,9 @@ export class EnvConfig {
 
   // AWS Configuration
   public readonly AWS_REGION = envVar.get('AWS_REGION').default('sa-east-1').asString();
-  public readonly S3_BUCKET_NAME = envVar.get('S3_BUCKET_NAME').required().asString();
+  public readonly AWS_S3_BUCKET_NAME = envVar
+    .get('AWS_S3_BUCKET_NAME')
+    .default(envVar.get('S3_BUCKET_NAME').asString())
+    .required()
+    .asString();
 }
