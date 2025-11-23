@@ -1,0 +1,12 @@
+# Project Configuration
+project_name = "youvisa"
+environment  = "dev"
+
+# S3 Configuration
+# IMPORTANT: S3 bucket names must be globally unique across all AWS accounts
+# Replace 'youvisa-files-dev' with a unique name (e.g., add your company name or random suffix)
+s3_bucket_name = "youvisa-files-dev"
+
+# AWS Configuration
+# sa-east-1 (Sao Paulo) is required for LGPD compliance
+aws_region = "sa-east-1"
