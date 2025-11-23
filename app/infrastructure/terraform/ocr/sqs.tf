@@ -1,9 +1,9 @@
-# SQS Queue for OCR processing
+# SQS Queue for OCR Document Processing
 resource "aws_sqs_queue" "ocr_queue" {
-  name                       = "${var.environment}-${var.project_name}-ocr-queue"
-  visibility_timeout_seconds = 360 # 6 minutes (Lambda timeout * 6)
+  name                       = "${var.environment}-${var.project_name}-queue"
+  visibility_timeout_seconds = 360     # 6 minutes (Lambda timeout * 6)
   message_retention_seconds  = 1209600 # 14 days
-  receive_wait_time_seconds  = 20 # Long polling
+  receive_wait_time_seconds  = 20      # Long polling
 
   # Dead Letter Queue configuration
   redrive_policy = jsonencode({
@@ -12,17 +12,17 @@ resource "aws_sqs_queue" "ocr_queue" {
   })
 
   tags = {
-    Name = "${var.environment}-${var.project_name}-ocr-queue"
+    Name = "${var.environment}-${var.project_name}-queue"
   }
 }
 
 # Dead Letter Queue
 resource "aws_sqs_queue" "ocr_dlq" {
-  name                      = "${var.environment}-${var.project_name}-ocr-dlq"
+  name                      = "${var.environment}-${var.project_name}-dlq"
   message_retention_seconds = 1209600 # 14 days
 
   tags = {
-    Name = "${var.environment}-${var.project_name}-ocr-dlq"
+    Name = "${var.environment}-${var.project_name}-dlq"
   }
 }
 

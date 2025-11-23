@@ -1,6 +1,6 @@
-# Lambda Function for OCR processing
+# Lambda Function for OCR Document Processing
 resource "aws_lambda_function" "ocr_processor" {
-  function_name    = "${var.environment}-${var.project_name}-ocr"
+  function_name    = "${var.environment}-${var.project_name}"
   handler          = "index.handler"
   runtime          = "nodejs22.x"
   role             = aws_iam_role.ocr_lambda_role.arn
@@ -24,14 +24,14 @@ resource "aws_lambda_function" "ocr_processor" {
   reserved_concurrent_executions = 5
 
   tags = {
-    Name = "${var.environment}-${var.project_name}-ocr"
+    Name = "${var.environment}-${var.project_name}"
   }
 }
 
 # Lambda Layer for node_modules
 resource "aws_lambda_layer_version" "ocr_node_modules" {
   filename            = "${path.module}/../../../ocr/nodejs-layer.zip"
-  layer_name          = "${var.environment}-${var.project_name}-ocr-layer"
+  layer_name          = "${var.environment}-${var.project_name}-layer"
   compatible_runtimes = ["nodejs22.x"]
   source_code_hash    = filebase64sha256("${path.module}/../../../ocr/nodejs-layer.zip")
 }
@@ -57,6 +57,6 @@ resource "aws_cloudwatch_log_group" "ocr_lambda_logs" {
   retention_in_days = 7
 
   tags = {
-    Name = "${var.environment}-${var.project_name}-ocr-logs"
+    Name = "${var.environment}-${var.project_name}-logs"
   }
 }

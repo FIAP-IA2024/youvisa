@@ -1,6 +1,6 @@
-# IAM Role for Lambda
+# IAM Role for OCR Document Processor Lambda
 resource "aws_iam_role" "ocr_lambda_role" {
-  name = "${var.environment}-${var.project_name}-ocr-role"
+  name = "${var.environment}-${var.project_name}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -14,7 +14,7 @@ resource "aws_iam_role" "ocr_lambda_role" {
   })
 
   tags = {
-    Name = "${var.environment}-${var.project_name}-ocr-role"
+    Name = "${var.environment}-${var.project_name}-role"
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_logs" {
 
 # Custom policy for Textract, Comprehend, S3, SQS
 resource "aws_iam_role_policy" "ocr_services" {
-  name = "${var.environment}-${var.project_name}-ocr-services-policy"
+  name = "${var.environment}-${var.project_name}-services-policy"
   role = aws_iam_role.ocr_lambda_role.id
 
   policy = jsonencode({
