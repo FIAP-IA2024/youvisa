@@ -21,24 +21,35 @@ if (process.env.NODE_ENV !== 'production') {
 
 @injectable()
 export class EnvConfig {
-  public readonly NODE_ENV = envVar.get('NODE_ENV').default('development').asString();
+  // Try prefixed version first, fallback to unprefixed for backwards compatibility
+  public readonly NODE_ENV = envVar
+    .get('BACKEND_NODE_ENV')
+    .default(envVar.get('NODE_ENV').default('development').asString())
+    .asString();
   public readonly IS_PRODUCTION = this.NODE_ENV === 'production';
-  public readonly IS_DEBUG = envVar.get('IS_DEBUG').default('false').asBool();
+  public readonly IS_DEBUG = envVar
+    .get('BACKEND_IS_DEBUG')
+    .default(envVar.get('IS_DEBUG').default('false').asString())
+    .asBool();
 
   // API Configuration
-  public readonly API_HOST = envVar.get('API_HOST').default('0.0.0.0').asString();
-  public readonly API_PORT = envVar.get('API_PORT').default('5555').asPortNumber();
-  public readonly API_KEY = envVar.get('API_KEY').required().asString();
-
-  // MongoDB Configuration
-  public readonly MONGODB_URI = envVar
-    .get('MONGODB_URI')
+  public readonly API_HOST = envVar
+    .get('BACKEND_API_HOST')
+    .default(envVar.get('API_HOST').default('0.0.0.0').asString())
+    .asString();
+  public readonly API_PORT = envVar
+    .get('BACKEND_API_PORT')
+    .default(envVar.get('API_PORT').default('5555').asString())
+    .asPortNumber();
+  public readonly API_KEY = envVar
+    .get('BACKEND_API_KEY')
+    .default(envVar.get('API_KEY').asString())
     .required()
     .asString();
-  public readonly MONGODB_DATABASE = envVar
-    .get('MONGODB_DATABASE')
-    .default('youvisa')
-    .asString();
+
+  // MongoDB Configuration
+  public readonly MONGODB_URI = envVar.get('MONGODB_URI').required().asString();
+  public readonly MONGODB_DATABASE = envVar.get('MONGODB_DATABASE').default('youvisa').asString();
 
   // AWS Configuration
   public readonly AWS_REGION = envVar.get('AWS_REGION').default('sa-east-1').asString();

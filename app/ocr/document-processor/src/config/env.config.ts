@@ -16,21 +16,37 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export class EnvConfig {
-  public readonly NODE_ENV = envVar.get('NODE_ENV').default('development').asString();
+  // Try prefixed version first, fallback to unprefixed for backwards compatibility
+  public readonly NODE_ENV = envVar
+    .get('OCR_DOCUMENT_PROCESSOR_NODE_ENV')
+    .default(envVar.get('NODE_ENV').default('development').asString())
+    .asString();
   public readonly IS_PRODUCTION = this.NODE_ENV === 'production';
-  public readonly MODE = envVar.get('MODE').default('lambda').asString();
+  public readonly MODE = envVar
+    .get('OCR_DOCUMENT_PROCESSOR_MODE')
+    .default(envVar.get('MODE').default('lambda').asString())
+    .asString();
 
-  // MongoDB
+  // MongoDB (shared, no prefix)
   public readonly MONGODB_URI = envVar.get('MONGODB_URI').required().asString();
   public readonly MONGODB_DATABASE = envVar.get('MONGODB_DATABASE').default('dev').asString();
 
-  // AWS
+  // AWS (shared, no prefix - Lambda sets AWS_REGION automatically)
   public readonly AWS_REGION = envVar.get('AWS_REGION').default('sa-east-1').asString();
-  public readonly USE_MOCK_TEXTRACT = envVar.get('USE_MOCK_TEXTRACT').default('false').asBool();
+  public readonly USE_MOCK_TEXTRACT = envVar
+    .get('OCR_DOCUMENT_PROCESSOR_USE_MOCK_TEXTRACT')
+    .default(envVar.get('USE_MOCK_TEXTRACT').default('false').asString())
+    .asBool();
 
   // Local mode
-  public readonly WATCH_DIR = envVar.get('WATCH_DIR').default('./watch').asString();
-  public readonly API_PORT = envVar.get('API_PORT').default('3001').asPortNumber();
+  public readonly WATCH_DIR = envVar
+    .get('OCR_DOCUMENT_PROCESSOR_WATCH_DIR')
+    .default(envVar.get('WATCH_DIR').default('./watch').asString())
+    .asString();
+  public readonly API_PORT = envVar
+    .get('OCR_DOCUMENT_PROCESSOR_PORT')
+    .default(envVar.get('API_PORT').default('5556').asString())
+    .asPortNumber();
 }
 
 export const env = new EnvConfig();
