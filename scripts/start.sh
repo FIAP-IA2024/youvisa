@@ -69,7 +69,7 @@ start_ocr() {
     docker-compose up -d --build ocr
 
     # Get port from .env or default
-    OCR_PORT=3001
+    OCR_PORT=5556
 
     echo -e "${BLUE}OCR service started!${NC}"
     echo -e "API: http://localhost:${OCR_PORT}"

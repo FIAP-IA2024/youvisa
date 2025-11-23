@@ -49,7 +49,7 @@ services:
     container_name: youvisa-ocr
     restart: always
     ports:
-      - "3001:3001"
+      - "5556:5556"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - MODE=local
@@ -57,7 +57,7 @@ services:
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - WATCH_DIR=/app/watch
       - USE_MOCK_TEXTRACT=true
-      - API_PORT=3001
+      - API_PORT=5556
     volumes:
       - ./app/ocr/document-processor/watch:/app/watch
       - ./app/ocr/document-processor/src:/app/src
