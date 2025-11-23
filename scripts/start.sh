@@ -26,8 +26,13 @@ fi
 start_backend() {
     echo -e "${BLUE}Starting Backend API...${NC}"
     docker-compose up -d --build backend
+
+    # Get port from .env
+    API_PORT=$(grep -E "^API_PORT=" .env | cut -d '=' -f2)
+    API_PORT=${API_PORT:-5555}
+
     echo -e "${BLUE}Backend API started!${NC}"
-    echo -e "API: http://localhost:3000"
+    echo -e "API: http://localhost:${API_PORT}"
 }
 
 start_n8n() {

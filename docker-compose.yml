@@ -8,11 +8,11 @@ services:
     container_name: youvisa-backend
     restart: always
     ports:
-      - "3000:3000"
+      - "5555:5555"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - API_HOST=0.0.0.0
-      - API_PORT=3000
+      - API_PORT=5555
       - MONGODB_URI=${MONGODB_URI}
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
@@ -35,9 +35,10 @@ services:
       - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678/}
       - LAMBDA_FUNCTION_URL=${LAMBDA_FUNCTION_URL}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - BACKEND_URL=${BACKEND_URL:-http://host.docker.internal:5555}
     volumes:
       - ./docker/n8n:/home/node/.n8n
-      - ./app/n8n-workflows:/workflows
+      - ./app/n8n/workflows:/workflows
     networks:
       - youvisa-network
 

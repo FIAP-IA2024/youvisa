@@ -27,7 +27,7 @@ export class EnvConfig {
 
   // API Configuration
   public readonly API_HOST = envVar.get('API_HOST').default('0.0.0.0').asString();
-  public readonly API_PORT = envVar.get('API_PORT').default('3000').asPortNumber();
+  public readonly API_PORT = envVar.get('API_PORT').default('5555').asPortNumber();
 
   // MongoDB Configuration
   public readonly MONGODB_URI = envVar
