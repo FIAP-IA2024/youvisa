@@ -19,6 +19,13 @@ export class TextractService {
   private textractClient: TextractClient;
 
   constructor() {
+    logger.info('Initializing TextractClient', {
+      region: env.AWS_REGION,
+      allEnv: {
+        AWS_REGION: process.env.AWS_REGION,
+        NODE_ENV: process.env.NODE_ENV
+      }
+    });
     this.textractClient = new TextractClient({ region: env.AWS_REGION });
   }
 
