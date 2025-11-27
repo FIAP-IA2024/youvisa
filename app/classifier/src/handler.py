@@ -95,6 +95,13 @@ def handler(event, context):
                             notifier.send_message(chat_id, message)
                             logger.info(f"Notification sent to chat {chat_id}")
 
+                            # Save bot message to MongoDB
+                            mongo_client.save_bot_message(
+                                conversation_id=conversation.get('_id'),
+                                text=message,
+                                metadata={'document_type': result['document_type']}
+                            )
+
                 processed += 1
 
         except Exception as e:

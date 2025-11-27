@@ -96,6 +96,41 @@ class MongoDBClient:
             logger.error(f"Error getting conversation: {str(e)}")
             return None
 
+    def save_bot_message(
+        self,
+        conversation_id,
+        text: str,
+        metadata: dict = None
+    ) -> bool:
+        """
+        Save a bot message to the messages collection.
+
+        Args:
+            conversation_id: Conversation ObjectId
+            text: Message text
+            metadata: Optional metadata dict
+
+        Returns:
+            True if insert was successful
+        """
+        try:
+            message_doc = {
+                'conversation_id': conversation_id,
+                'message_id': f'bot_classifier_{datetime.utcnow().timestamp()}',
+                'text': text,
+                'message_type': 'text',
+                'direction': 'outgoing',
+                'timestamp': datetime.utcnow(),
+                'metadata': metadata or {}
+            }
+            self.db['messages'].insert_one(message_doc)
+            logger.info(f"Saved bot message for conversation {conversation_id}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error saving bot message: {str(e)}")
+            return False
+
     def close(self):
         """Close the MongoDB connection."""
         self.client.close()

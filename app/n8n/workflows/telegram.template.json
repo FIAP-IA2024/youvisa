@@ -165,6 +165,29 @@
     },
     {
       "parameters": {
+        "url": "=__API_URL__/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: 'bot_validation_' + Date.now(),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: 'A imagem do documento não passou na validação: ' + $node['Validate Image'].json.reason,\n  message_type: 'text',\n  direction: 'outgoing',\n  timestamp: new Date().toISOString(),\n  metadata: {\n    type: 'validation_error',\n    reason: $node['Validate Image'].json.reason\n  }\n}) }}",
+        "options": {}
+      },
+      "name": "Save Bot Response Validation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2050, 400]
+    },
+    {
+      "parameters": {
         "jsCode": "// Reconstruct binary data from the JSON saved in Extract Base64\n// (binary data is lost when passing through HTTP Request and IF nodes)\nconst binaryInfo = $node['Extract Base64'].json.binaryInfo;\nconst message = $node['Telegram Trigger'].json.message;\nconst conversation = $node['Upsert Conversation'].json.data;\nconst now = new Date();\n\nlet fileInfo;\nif (message.document) {\n  fileInfo = {\n    file_id: message.document.file_id,\n    file_name: message.document.file_name,\n    file_size: message.document.file_size,\n    mime_type: message.document.mime_type,\n    message_type: 'document'\n  };\n} else if (message.photo) {\n  const photo = message.photo[message.photo.length - 1];\n  fileInfo = {\n    file_id: photo.file_id,\n    file_name: `photo_${photo.file_unique_id}.jpg`,\n    file_size: photo.file_size,\n    mime_type: 'image/jpeg',\n    message_type: 'photo'\n  };\n}\n\nconst timestamp = now.getTime();\nconst fileName = `${fileInfo.file_id}_${timestamp}_${fileInfo.file_name}`;\nconst s3Key = fileName;\n\nreturn [{\n  json: {\n    s3Key: s3Key,\n    fileName: fileInfo.file_name,\n    fileSize: fileInfo.file_size,\n    mimeType: fileInfo.mime_type,\n    messageType: fileInfo.message_type,\n    fileId: fileInfo.file_id,\n    messageId: String(message.message_id),\n    conversationId: conversation._id,\n    userId: conversation.user_id,\n    timestamp: new Date(message.date * 1000).toISOString()\n  },\n  binary: {\n    data: {\n      data: binaryInfo.data,\n      mimeType: binaryInfo.mimeType,\n      fileName: binaryInfo.fileName,\n      fileExtension: binaryInfo.fileExtension\n    }\n  }\n}];"
       },
       "name": "Prepare S3 Upload",
@@ -258,6 +281,29 @@
           "name": "Telegram Bot API"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: 'bot_file_' + Date.now(),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: 'Documento recebido! Estamos processando a classificação...',\n  message_type: 'text',\n  direction: 'outgoing',\n  timestamp: new Date().toISOString(),\n  metadata: {\n    type: 'file_confirmation',\n    file_id: $node['Prepare S3 Upload'].json.fileId\n  }\n}) }}",
+        "options": {}
+      },
+      "name": "Save Bot Response File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2850, 100]
     },
     {
       "parameters": {
@@ -450,6 +496,17 @@
         ]
       ]
     },
+    "Send Validation Error": {
+      "main": [
+        [
+          {
+            "node": "Save Bot Response Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Prepare S3 Upload": {
       "main": [
         [
@@ -488,6 +545,17 @@
         [
           {
             "node": "Send File Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send File Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Save Bot Response File",
             "type": "main",
             "index": 0
           }
