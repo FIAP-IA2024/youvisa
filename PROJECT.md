@@ -101,11 +101,13 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 | **Telegram** | Canal de comunicação com o usuário |
 | **n8n** | Orquestra os fluxos entre componentes |
 | **API Lambda** | Backend que gerencia usuários, conversas e arquivos |
+| **NLP Lambda** | Processa mensagens de texto com IA conversacional |
 | **MongoDB** | Banco de dados para persistência |
 | **AWS S3** | Armazenamento de documentos |
 | **SQS** | Fila de mensagens para processamento assíncrono |
 | **Classifier Lambda** | Classifica documentos usando IA |
 | **AWS Bedrock** | Serviço de IA (modelo Claude 3 Haiku) |
+| **Frontend** | Console do operador para gerenciamento de conversas |
 
 ---
 
@@ -246,7 +248,114 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 
 ---
 
-### 3.4 Infraestrutura AWS
+### 3.4 NLP (Processador de Linguagem Natural)
+
+**Localização:** `app/nlp/`
+
+**Propósito:** Processar mensagens de texto dos usuários usando IA conversacional, gerenciar o fluxo de coleta de informações e transferência para atendentes humanos.
+
+**Tecnologias:**
+
+- Python 3.11
+- AWS Bedrock (Claude 3 Haiku)
+- boto3 (SDK AWS)
+- pymongo (MongoDB)
+
+**Funcionalidades:**
+
+| Funcionalidade | Descrição |
+|----------------|-----------|
+| **Coleta de Email** | Solicita e extrai email do usuário quando necessário |
+| **Detecção de Intenção** | Identifica se usuário quer falar com humano, enviar documento, etc. |
+| **Transferência** | Transfere conversa para atendente humano quando solicitado |
+| **Contexto** | Mantém histórico de mensagens para respostas contextualizadas |
+
+**Estados da Conversa:**
+
+```
++--------+     Email fornecido     +--------+
+|  NOVO  | ----------------------> | PRONTO |
++--------+                         +--------+
+    |                                  |
+    | Aguardando email                 | Usuário pede humano
+    v                                  v
++------------------+            +-------------+
+| AGUARDANDO_EMAIL |            | TRANSFERRED |
++------------------+            +-------------+
+```
+
+**Fluxo de Processamento:**
+
+```
++-------------+     +-------------+     +-------------+
+|             |     |             |     |             |
+|  Recebe     |---->|  Verifica   |---->|  Processa   |
+|  mensagem   |     |  contexto   |     |  com Claude |
+|             |     |  (email,    |     |             |
+|             |     |  estado)    |     |             |
++-------------+     +-------------+     +-------------+
+                                               |
+                                               v
++-------------+     +-------------+     +-------------+
+|             |     |             |     |             |
+|  Retorna    |<----|  Atualiza   |<----|  Extrai     |
+|  resposta   |     |  estado     |     |  intenção   |
+|             |     |             |     |             |
++-------------+     +-------------+     +-------------+
+```
+
+---
+
+### 3.5 Frontend (Console do Operador)
+
+**Localização:** `app/frontend/`
+
+**Propósito:** Interface web para operadores/atendentes gerenciarem conversas, visualizarem documentos e acompanharem estatísticas.
+
+**Tecnologias:**
+
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui (componentes)
+
+**Páginas do Dashboard:**
+
+| Página | Rota | Funcionalidade |
+|--------|------|----------------|
+| **Dashboard** | `/dashboard` | Visão geral com estatísticas |
+| **Conversas** | `/dashboard/conversations` | Gerenciar conversas e transferências |
+| **Usuários** | `/dashboard/users` | Lista de usuários cadastrados |
+| **Documentos** | `/dashboard/documents` | Visualizar documentos classificados |
+
+**Funcionalidade de Transferência:**
+
+O console permite que operadores:
+
+1. Visualizem conversas transferidas (status `transferred`)
+2. Devolvam conversas para o bot (status `active`)
+3. Acompanhem o histórico de mensagens
+
+```
++-------------------+
+|  Lista Conversas  |
+|                   |
+| [Ativas]          |
+| - Conversa 1      |
+| - Conversa 2      |
+|                   |
+| [Transferidas]    |  <-- Destaque para atendente
+| - Conversa 3      |
+|   [Voltar p/ Bot] |  <-- Botão para devolver
++-------------------+
+```
+
+**Autenticação:** Utiliza header `x-api-key` para comunicação com a API.
+
+---
+
+### 3.6 Infraestrutura AWS
 
 **Localização:** `app/infrastructure/terraform/`
 
@@ -346,7 +455,50 @@ Responda com apenas uma das seguintes categorias:
 Responda apenas o nome da categoria. Nada mais.
 ```
 
-### 4.3 Notificação ao Usuário
+### 4.3 Fluxo de Transferência para Atendente Humano
+
+Quando o usuário solicita falar com um atendente humano, o sistema transfere a conversa:
+
+```
+Usuário              Bot                  MongoDB              Console Operador
+   |                  |                      |                        |
+   | "quero humano"   |                      |                        |
+   |----------------->|                      |                        |
+   |                  |  status=transferred  |                        |
+   |                  |--------------------->|                        |
+   |                  |                      |                        |
+   | "Transferido!"   |                      |                        |
+   |<-----------------|                      |                        |
+   |                  |                      |                        |
+   |                  |                      |  Conversa aparece      |
+   |                  |                      |  em "Transferidas"     |
+   |                  |                      |----------------------->|
+   |                  |                      |                        |
+   | (novas msgs)     |                      |                        |
+   |----------------->|  Bot NAO responde    |                        |
+   |                  |  (skip_response)     |                        |
+   |                  |                      |                        |
+   |                  |                      |  [Voltar p/ Bot]       |
+   |                  |                      |<-----------------------|
+   |                  |                      |                        |
+   |                  |                      |  status=active         |
+   |                  |                      |                        |
+   | (nova msg)       |                      |                        |
+   |----------------->|  Bot responde        |                        |
+   |<-----------------|  normalmente         |                        |
+```
+
+**Comportamento:**
+
+1. Usuario diz "quero falar com atendente" ou similar
+2. NLP detecta intent `want_human` e atualiza status para `transferred`
+3. Bot envia mensagem de confirmacao e PARA de responder
+4. Conversa aparece no Console do Operador na secao "Transferidas"
+5. Operador pode devolver conversa para o bot clicando "Voltar para Bot"
+
+---
+
+### 4.4 Notificação ao Usuário
 
 Após a classificação, o usuário recebe uma notificação no Telegram:
 
@@ -385,10 +537,11 @@ Por favor, envie novamente seguindo estas dicas:
 | last_name        |       | status           |       | text             |
 | language_code    |       | started_at       |       | message_type     |
 | is_bot           |       | last_message_at  |       | direction        |
-| created_at       |       | metadata         |       | timestamp        |
-| updated_at       |       | created_at       |       | metadata         |
-+------------------+       | updated_at       |       | created_at       |
-                           +------------------+       +------------------+
+| email            |       | metadata         |       | timestamp        |
+| email_updated_at |       | created_at       |       | metadata         |
+| created_at       |       | updated_at       |       | created_at       |
+| updated_at       |       +------------------+       +------------------+
++------------------+
                                    |
                                    |
                                    v
@@ -412,9 +565,9 @@ Por favor, envie novamente seguindo estas dicas:
 
 ### Descrição das Entidades
 
-**User:** Representa um usuário do sistema, vinculado ao Telegram.
+**User:** Representa um usuário do sistema, vinculado ao Telegram. Armazena email coletado pelo bot para contato futuro.
 
-**Conversation:** Uma conversa entre usuário e sistema. Suporta múltiplos canais (telegram, whatsapp, webchat).
+**Conversation:** Uma conversa entre usuário e sistema. Suporta múltiplos canais (telegram, whatsapp, webchat). O campo `status` pode ser: `active` (bot respondendo), `transferred` (atendente humano), `resolved` ou `closed`. O campo `metadata.state` controla o fluxo do NLP (NOVO, AGUARDANDO_EMAIL, PRONTO).
 
 **Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
 
@@ -469,7 +622,18 @@ Por favor, envie novamente seguindo estas dicas:
 | `make deploy api` | Faz deploy da API Lambda |
 | `make deploy classifier` | Faz deploy do classificador |
 | `make logs api` | Visualiza logs da API |
+| `make logs nlp` | Visualiza logs do NLP |
 | `make stop` | Para todos os serviços |
+
+### Executar Frontend Localmente
+
+```bash
+cd app/frontend
+npm install
+npm run dev
+```
+
+O frontend estara disponivel em `http://localhost:3000`.
 
 ### Deploy Completo (Produção)
 
@@ -510,6 +674,24 @@ youvisa/
 │   │       ├── mongodb.py      # Operações MongoDB
 │   │       └── telegram.py     # Notificações Telegram
 │   │
+│   ├── nlp/                    # Lambda NLP conversacional (Python)
+│   │   └── src/
+│   │       ├── handler.py      # Entry point Lambda
+│   │       ├── bedrock.py      # Integração AWS Bedrock
+│   │       ├── mongodb.py      # Operações MongoDB
+│   │       └── prompts.py      # Prompts do sistema
+│   │
+│   ├── frontend/               # Console do Operador (Next.js)
+│   │   ├── src/
+│   │   │   ├── app/            # App Router (páginas)
+│   │   │   │   ├── dashboard/  # Páginas do dashboard
+│   │   │   │   └── layout.tsx  # Layout principal
+│   │   │   ├── components/     # Componentes React
+│   │   │   │   ├── ui/         # shadcn/ui
+│   │   │   │   └── layout/     # Header, Sidebar, etc.
+│   │   │   └── lib/            # Utilitários e API client
+│   │   └── package.json
+│   │
 │   ├── n8n/
 │   │   └── workflows/          # Workflows n8n
 │   │       └── telegram.template.json
@@ -545,7 +727,10 @@ youvisa/
 | Categoria | Tecnologia | Versão/Detalhes |
 |-----------|------------|-----------------|
 | **Backend** | TypeScript | - |
-| **Framework** | Fastify | 5.5.0 |
+| **Framework API** | Fastify | 5.5.0 |
+| **Frontend** | Next.js | 15 (App Router) |
+| **UI Components** | shadcn/ui | - |
+| **Estilização** | Tailwind CSS | 4.0 |
 | **Banco de Dados** | MongoDB | Atlas |
 | **Orquestração** | n8n | Latest |
 | **IA/ML** | AWS Bedrock | Claude 3 Haiku |
@@ -553,7 +738,7 @@ youvisa/
 | **IaC** | Terraform | >= 1.5.0 |
 | **Containers** | Docker | - |
 | **Runtime (API)** | Node.js | 22.x |
-| **Runtime (Classifier)** | Python | 3.11 |
+| **Runtime (NLP/Classifier)** | Python | 3.11 |
 
 ---
 
