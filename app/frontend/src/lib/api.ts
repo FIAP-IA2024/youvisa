@@ -79,14 +79,11 @@ export interface File {
   file_size?: number;
   mime_type?: string;
   uploaded_at: string;
-  metadata: {
-    document_type?: string;
-    classification_confidence?: number;
-    classification_status?: string;
-    classified_at?: string;
-    [key: string]: unknown;
-  };
   created_at: string;
+  document_type?: string;
+  classification_confidence?: number;
+  classification_status?: string;
+  classified_at?: string;
 }
 
 // API Functions
@@ -134,7 +131,7 @@ export async function getDashboardStats() {
 
   const classificationCounts = files.reduce(
     (acc, file) => {
-      const type = file.metadata?.document_type || "Sem classificacao";
+      const type = file.document_type || "Sem classificacao";
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     },

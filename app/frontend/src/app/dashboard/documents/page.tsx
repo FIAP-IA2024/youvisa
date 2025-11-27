@@ -49,7 +49,7 @@ export default async function DocumentsPage() {
   // Calculate stats
   const classificationCounts = files.reduce(
     (acc, file) => {
-      const type = file.metadata?.document_type || "Sem classificacao";
+      const type = file.document_type || "Sem classificacao";
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     },
@@ -108,7 +108,7 @@ export default async function DocumentsPage() {
               </TableHeader>
               <TableBody>
                 {files.map((file) => {
-                  const documentType = file.metadata?.document_type || "Sem classificacao";
+                  const documentType = file.document_type || "Sem classificacao";
 
                   return (
                     <TableRow key={file._id}>
@@ -134,7 +134,7 @@ export default async function DocumentsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {formatConfidence(file.metadata?.classification_confidence)}
+                        {formatConfidence(file.classification_confidence)}
                       </TableCell>
                       <TableCell>{formatFileSize(file.file_size)}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">

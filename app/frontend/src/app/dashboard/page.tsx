@@ -135,9 +135,9 @@ export default async function DashboardPage() {
                 </div>
                 <Badge
                   variant="outline"
-                  className={documentTypeColors[file.metadata?.document_type || "Sem classificacao"] || ""}
+                  className={documentTypeColors[file.document_type || "Sem classificacao"] || ""}
                 >
-                  {file.metadata?.document_type || "Sem classificacao"}
+                  {file.document_type || "Sem classificacao"}
                 </Badge>
               </div>
             ))}
