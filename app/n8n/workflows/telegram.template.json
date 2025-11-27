@@ -68,6 +68,45 @@
         "conditions": {
           "boolean": [
             {
+              "value1": "={{ $json.data.status === 'transferred' }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check if Transferred",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [750, 400]
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: String($node['Telegram Trigger'].json.message.message_id),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: $node['Telegram Trigger'].json.message.text || '',\n  message_type: $node['Telegram Trigger'].json.message.document ? 'document' : ($node['Telegram Trigger'].json.message.photo ? 'photo' : 'text'),\n  direction: 'incoming',\n  timestamp: new Date($node['Telegram Trigger'].json.message.date * 1000).toISOString()\n}) }}",
+        "options": {}
+      },
+      "name": "Save Message Only",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [950, 250]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
               "value1": "={{ $node['Telegram Trigger'].json.message.document !== undefined || $node['Telegram Trigger'].json.message.photo !== undefined }}",
               "value2": true
             }
@@ -77,7 +116,7 @@
       "name": "Check if File Exists",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [850, 400]
+      "position": [950, 500]
     },
     {
       "parameters": {
@@ -361,15 +400,31 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_response !== true }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Skip Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 550]
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
-        "text": "={{ $json.response }}"
+        "text": "={{ $node['Process NLP'].json.response }}"
       },
       "name": "Send NLP Response",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [1450, 550],
+      "position": [1650, 450],
       "credentials": {
         "telegramApi": {
           "id": "1",
@@ -426,6 +481,24 @@
     },
     "Upsert Conversation": {
       "main": [
+        [
+          {
+            "node": "Check if Transferred",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Transferred": {
+      "main": [
+        [
+          {
+            "node": "Save Message Only",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Check if File Exists",
@@ -585,11 +658,23 @@
       "main": [
         [
           {
-            "node": "Send NLP Response",
+            "node": "Check Skip Response",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Check Skip Response": {
+      "main": [
+        [
+          {
+            "node": "Send NLP Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
       ]
     },
     "Send NLP Response": {

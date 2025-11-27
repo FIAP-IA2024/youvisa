@@ -35,8 +35,12 @@ export class ConversationRepository {
     status?: string;
     channel?: string;
   }): Promise<IConversation[]> {
-    const query = filters || {};
-    return await ConversationModel.find(query).sort({ last_message_at: -1 });
+    const query = Object.fromEntries(
+      Object.entries(filters || {}).filter(([, v]) => v),
+    );
+    return Object.keys(query).length
+      ? await ConversationModel.find(query).sort({ last_message_at: -1 })
+      : await ConversationModel.find().sort({ last_message_at: -1 });
   }
 
   async updateById(
@@ -52,6 +56,23 @@ export class ConversationRepository {
     chatId: string,
     data: Partial<IConversation>,
   ): Promise<IConversation> {
+    // Check if conversation exists and is transferred - preserve the status
+    const existing = await ConversationModel.findOne({
+      user_id: userId,
+      channel,
+      chat_id: chatId,
+    });
+
+    if (existing && existing.status === 'transferred') {
+      // Only update last_message_at, don't change status
+      return await ConversationModel.findOneAndUpdate(
+        { user_id: userId, channel, chat_id: chatId },
+        { last_message_at: new Date() },
+        { new: true },
+      ) as IConversation;
+    }
+
+    // Normal upsert if not transferred
     return await ConversationModel.findOneAndUpdate(
       { user_id: userId, channel, chat_id: chatId },
       data,

@@ -1,78 +1,25 @@
-# FIAP - Faculdade de Informática e Administração Paulista
+# YOUVISA - Documentação Técnica do Projeto
 
-<p align="center">
-<a href= "https://www.fiap.com.br/"><img src="https://raw.githubusercontent.com/lfusca/templateFiap/main/assets/logo-fiap.png" alt="FIAP - Faculdade de Informática e Administração Paulista" border="0" width=40% height=40%></a>
-</p>
+## 1. Visão Geral
 
-<br>
+### O que é o YOUVISA
 
-## Integrantes do Grupo e responsabilidades no projeto
+O YOUVISA é uma plataforma de atendimento multicanal inteligente para serviços consulares e emissão de vistos. O sistema utiliza **Inteligência Artificial**, **automação de processos (RPA)** e **visão computacional** para otimizar o atendimento ao cliente.
 
-- `RM559800` - [Jonas Felipe dos Santos Lima](https://www.linkedin.com/in/jonas-felipe-dos-santos-lima-b2346811b/)
-- `RM560173` - [Gabriel Ribeiro](https://www.linkedin.com/in/ribeirogab/)
-- `RM559926` - [Marcos Trazzini](https://www.linkedin.com/in/mstrazzini/)
-- `RM559645` - [Edimilson Ribeiro](https://www.linkedin.com/in/edimilson-ribeiro/)
+A plataforma permite que usuários enviem documentos (passaportes, comprovantes, formulários) através do Telegram, que são automaticamente classificados por IA e armazenados de forma organizada.
 
-## Professores
+### Contexto Acadêmico
 
-### Coordenador(a)
+Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP** (Faculdade de Informática e Administração Paulista).
 
-- [André Godoi](https://www.linkedin.com/in/profandregodoi/)
-
----
-
-## Introdução
-
-A YOUVISA é uma empresa brasileira especializada em soluções digitais baseadas em **Inteligência Artificial, RPA e automação cognitiva** para otimizar processos consulares e de atendimento.
-
-Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP**, com foco em construir um **protótipo funcional avançado** capaz de receber, classificar e automatizar documentos, além de aprimorar a experiência de atendimento com IA Generativa, NLP, RPA e Visão Computacional.
-
-O sistema transforma documentos em tarefas automáticas, simulando um fluxo real de atendimento da YOUVISA - desde o recebimento de arquivos (passaporte, comprovante, formulário) até a confirmação de recebimento e direcionamento do caso.
-
----
-
-## Vídeo Demonstrativo
-
-<!-- TODO: Adicionar link do vídeo demonstrativo aqui -->
-> **Em breve**: Vídeo demonstrando o funcionamento completo da plataforma (2-4 minutos)
-
-```
-[ Placeholder para o vídeo ]
-
-Adicione o link do vídeo aqui após a gravação:
-- YouTube: https://www.youtube.com/watch?v=SEU_VIDEO_ID
-- ou embed direto: ![Demo](URL_DO_VIDEO)
-```
-
----
-
-## Demo ao Vivo
-
-A plataforma está disponível online para testes:
-
-| Componente | URL | Descrição |
-|------------|-----|-----------|
-| **n8n (Orquestrador)** | [youvisa-n8n.gabrielribeiro.work](https://youvisa-n8n.gabrielribeiro.work/) | Workflows de automação |
-| **Dashboard (Console)** | [youvisa-dashboard.gabrielribeiro.work](https://youvisa-dashboard.gabrielribeiro.work/) | Painel do operador |
-
-**Credenciais de Acesso:**
-
-- Usuário: `admin`
-- Senha: `Teste1234`
-
----
-
-## Objetivos da Sprint 2
+**Objetivos da Sprint 2:**
 
 - Automatizar o pipeline de documentos
 - Integrar chatbot à gestão de arquivos
 - Validar documentos com visão computacional
 - Aplicar NLP e IA Generativa para classificação
-- Concluir a arquitetura da plataforma
 
----
-
-## O que o Sistema Faz
+### O que o Sistema Faz
 
 ```
 +------------------+     +------------------+     +------------------+
@@ -95,7 +42,7 @@ A plataforma está disponível online para testes:
 
 ---
 
-## Arquitetura
+## 2. Arquitetura
 
 ### Diagrama Geral
 
@@ -164,7 +111,7 @@ A plataforma está disponível online para testes:
 
 ---
 
-## Componentes
+## 3. Componentes
 
 ### 3.1 Backend API
 
@@ -294,7 +241,7 @@ A plataforma está disponível online para testes:
 
 ```
 s3://bucket-name/
-+-- {file_id}_{timestamp}_{nome_original}
+└── {file_id}_{timestamp}_{nome_original}
 ```
 
 Os arquivos são armazenados diretamente na raiz do bucket, com nome único composto pelo ID do arquivo, timestamp e nome original.
@@ -449,60 +396,7 @@ O console permite que operadores:
 
 ---
 
-## Modelo de Dados
-
-### Diagrama ER
-
-```
-+------------------+       +------------------+       +------------------+
-|      User        |       |   Conversation   |       |     Message      |
-+------------------+       +------------------+       +------------------+
-| _id              |<------| user_id          |<------| conversation_id  |
-| telegram_id (UK) |       | _id              |       | _id              |
-| username         |       | channel          |       | message_id       |
-| first_name       |       | chat_id          |       | user_id          |
-| last_name        |       | status           |       | text             |
-| language_code    |       | started_at       |       | message_type     |
-| is_bot           |       | last_message_at  |       | direction        |
-| email            |       | metadata         |       | timestamp        |
-| email_updated_at |       | created_at       |       | metadata         |
-| created_at       |       | updated_at       |       | created_at       |
-| updated_at       |       +------------------+       +------------------+
-+------------------+
-                                   |
-                                   |
-                                   v
-                           +------------------+
-                           |      File        |
-                           +------------------+
-                           | _id              |
-                           | conversation_id  |
-                           | message_id       |
-                           | file_id          |
-                           | s3_bucket        |
-                           | s3_key           |
-                           | original_filename|
-                           | file_size        |
-                           | mime_type        |
-                           | uploaded_at      |
-                           | metadata         |
-                           | created_at       |
-                           +------------------+
-```
-
-### Descrição das Entidades
-
-**User:** Representa um usuário do sistema, vinculado ao Telegram. Armazena email coletado pelo bot para contato futuro.
-
-**Conversation:** Uma conversa entre usuário e sistema. Suporta múltiplos canais (telegram, whatsapp, webchat). O campo `status` pode ser: `active` (bot respondendo), `transferred` (atendente humano), `resolved` ou `closed`. O campo `metadata.state` controla o fluxo do NLP (NOVO, AGUARDANDO_EMAIL, PRONTO).
-
-**Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
-
-**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação.
-
----
-
-## Fluxos Principais
+## 4. Fluxos Principais
 
 ### 4.1 Fluxo Completo: Envio de Documento
 
@@ -581,7 +475,7 @@ Usuário              Bot                  MongoDB              Console Operador
    |                  |                      |----------------------->|
    |                  |                      |                        |
    | (novas msgs)     |                      |                        |
-   |----------------->|  Bot NÃO responde    |                        |
+   |----------------->|  Bot NAO responde    |                        |
    |                  |  (skip_response)     |                        |
    |                  |                      |                        |
    |                  |                      |  [Voltar p/ Bot]       |
@@ -596,10 +490,10 @@ Usuário              Bot                  MongoDB              Console Operador
 
 **Comportamento:**
 
-1. Usuário diz "quero falar com atendente" ou similar
+1. Usuario diz "quero falar com atendente" ou similar
 2. NLP detecta intent `want_human` e atualiza status para `transferred`
-3. Bot envia mensagem de confirmação e PARA de responder
-4. Conversa aparece no Console do Operador na seção "Transferidas"
+3. Bot envia mensagem de confirmacao e PARA de responder
+4. Conversa aparece no Console do Operador na secao "Transferidas"
 5. Operador pode devolver conversa para o bot clicando "Voltar para Bot"
 
 ---
@@ -628,27 +522,60 @@ Por favor, envie novamente seguindo estas dicas:
 
 ---
 
-## Tecnologias Utilizadas
+## 5. Modelo de Dados
 
-| Categoria | Tecnologia | Versão/Detalhes |
-|-----------|------------|-----------------|
-| **Backend** | TypeScript | - |
-| **Framework API** | Fastify | 5.5.0 |
-| **Frontend** | Next.js | 15 (App Router) |
-| **UI Components** | shadcn/ui | - |
-| **Estilização** | Tailwind CSS | 4.0 |
-| **Banco de Dados** | MongoDB | Atlas |
-| **Orquestração** | n8n | Latest |
-| **IA/ML** | AWS Bedrock | Claude 3 Haiku |
-| **Cloud** | AWS | sa-east-1 |
-| **IaC** | Terraform | >= 1.5.0 |
-| **Containers** | Docker | - |
-| **Runtime (API)** | Node.js | 22.x |
-| **Runtime (NLP/Classifier)** | Python | 3.11 |
+### Diagrama ER
+
+```
++------------------+       +------------------+       +------------------+
+|      User        |       |   Conversation   |       |     Message      |
++------------------+       +------------------+       +------------------+
+| _id              |<------| user_id          |<------| conversation_id  |
+| telegram_id (UK) |       | _id              |       | _id              |
+| username         |       | channel          |       | message_id       |
+| first_name       |       | chat_id          |       | user_id          |
+| last_name        |       | status           |       | text             |
+| language_code    |       | started_at       |       | message_type     |
+| is_bot           |       | last_message_at  |       | direction        |
+| email            |       | metadata         |       | timestamp        |
+| email_updated_at |       | created_at       |       | metadata         |
+| created_at       |       | updated_at       |       | created_at       |
+| updated_at       |       +------------------+       +------------------+
++------------------+
+                                   |
+                                   |
+                                   v
+                           +------------------+
+                           |      File        |
+                           +------------------+
+                           | _id              |
+                           | conversation_id  |
+                           | message_id       |
+                           | file_id          |
+                           | s3_bucket        |
+                           | s3_key           |
+                           | original_filename|
+                           | file_size        |
+                           | mime_type        |
+                           | uploaded_at      |
+                           | metadata         |
+                           | created_at       |
+                           +------------------+
+```
+
+### Descrição das Entidades
+
+**User:** Representa um usuário do sistema, vinculado ao Telegram. Armazena email coletado pelo bot para contato futuro.
+
+**Conversation:** Uma conversa entre usuário e sistema. Suporta múltiplos canais (telegram, whatsapp, webchat). O campo `status` pode ser: `active` (bot respondendo), `transferred` (atendente humano), `resolved` ou `closed`. O campo `metadata.state` controla o fluxo do NLP (NOVO, AGUARDANDO_EMAIL, PRONTO).
+
+**Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
+
+**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação.
 
 ---
 
-## Como Executar
+## 6. Como Executar
 
 ### Pré-requisitos
 
@@ -706,7 +633,7 @@ npm install
 npm run dev
 ```
 
-O frontend estará disponível em `http://localhost:3000`.
+O frontend estara disponivel em `http://localhost:3000`.
 
 ### Deploy Completo (Produção)
 
@@ -724,74 +651,94 @@ make deploy n8n
 
 ---
 
-## Estrutura do Projeto
+## 7. Estrutura do Projeto
 
 ```
 youvisa/
-+-- app/
-|   +-- api/                    # Backend API (TypeScript/Fastify)
-|   |   +-- src/
-|   |   |   +-- controllers/    # Lógica de negócio
-|   |   |   +-- models/         # Schemas MongoDB
-|   |   |   +-- repositories/   # Acesso a dados
-|   |   |   +-- config/         # Configurações
-|   |   |   +-- routes.ts       # Definição de rotas
-|   |   |   +-- lambda.ts       # Handler AWS Lambda
-|   |   |   +-- server.ts       # Servidor local
-|   |   +-- package.json
-|   |
-|   +-- classifier/             # Lambda classificador (Python)
-|   |   +-- src/
-|   |       +-- handler.py      # Entry point Lambda
-|   |       +-- bedrock.py      # Integração AWS Bedrock
-|   |       +-- mongodb.py      # Operações MongoDB
-|   |       +-- telegram.py     # Notificações Telegram
-|   |
-|   +-- nlp/                    # Lambda NLP conversacional (Python)
-|   |   +-- src/
-|   |       +-- handler.py      # Entry point Lambda
-|   |       +-- bedrock.py      # Integração AWS Bedrock
-|   |       +-- mongodb.py      # Operações MongoDB
-|   |       +-- prompts.py      # Prompts do sistema
-|   |
-|   +-- frontend/               # Console do Operador (Next.js)
-|   |   +-- src/
-|   |   |   +-- app/            # App Router (páginas)
-|   |   |   |   +-- dashboard/  # Páginas do dashboard
-|   |   |   |   +-- layout.tsx  # Layout principal
-|   |   |   +-- components/     # Componentes React
-|   |   |   |   +-- ui/         # shadcn/ui
-|   |   |   |   +-- layout/     # Header, Sidebar, etc.
-|   |   |   +-- lib/            # Utilitários e API client
-|   |   +-- package.json
-|   |
-|   +-- n8n/
-|   |   +-- workflows/          # Workflows n8n
-|   |       +-- telegram.template.json
-|   |
-|   +-- infrastructure/
-|       +-- terraform/          # Infraestrutura como código
-|           +-- s3/             # Bucket S3
-|           +-- api/            # Lambda API
-|           +-- classifier/     # Lambda Classifier + SQS
-|           +-- nlp/            # Lambda NLP
-|           +-- validation/     # Lambda Validation
-|           +-- n8n/            # EC2 para n8n
-|           +-- tf-state/       # Backend Terraform
-|
-+-- scripts/                    # Scripts de automação
-|   +-- deploy.sh              # Deploy de infraestrutura
-|   +-- start.sh               # Iniciar serviços
-|   +-- generate-workflow.sh   # Gerar workflow n8n
-|
-+-- docs/
-|   +-- diagramas/             # Diagramas da arquitetura
-|
-+-- docker-compose.yml         # Configuração Docker
-+-- Makefile                   # Comandos make
-+-- .env.example               # Exemplo de variáveis
-+-- README.md                  # Documentação principal
+├── app/
+│   ├── api/                    # Backend API (TypeScript/Fastify)
+│   │   ├── src/
+│   │   │   ├── controllers/    # Lógica de negócio
+│   │   │   ├── models/         # Schemas MongoDB
+│   │   │   ├── repositories/   # Acesso a dados
+│   │   │   ├── config/         # Configurações
+│   │   │   ├── routes.ts       # Definição de rotas
+│   │   │   ├── lambda.ts       # Handler AWS Lambda
+│   │   │   └── server.ts       # Servidor local
+│   │   └── package.json
+│   │
+│   ├── classifier/             # Lambda classificador (Python)
+│   │   └── src/
+│   │       ├── handler.py      # Entry point Lambda
+│   │       ├── bedrock.py      # Integração AWS Bedrock
+│   │       ├── mongodb.py      # Operações MongoDB
+│   │       └── telegram.py     # Notificações Telegram
+│   │
+│   ├── nlp/                    # Lambda NLP conversacional (Python)
+│   │   └── src/
+│   │       ├── handler.py      # Entry point Lambda
+│   │       ├── bedrock.py      # Integração AWS Bedrock
+│   │       ├── mongodb.py      # Operações MongoDB
+│   │       └── prompts.py      # Prompts do sistema
+│   │
+│   ├── frontend/               # Console do Operador (Next.js)
+│   │   ├── src/
+│   │   │   ├── app/            # App Router (páginas)
+│   │   │   │   ├── dashboard/  # Páginas do dashboard
+│   │   │   │   └── layout.tsx  # Layout principal
+│   │   │   ├── components/     # Componentes React
+│   │   │   │   ├── ui/         # shadcn/ui
+│   │   │   │   └── layout/     # Header, Sidebar, etc.
+│   │   │   └── lib/            # Utilitários e API client
+│   │   └── package.json
+│   │
+│   ├── n8n/
+│   │   └── workflows/          # Workflows n8n
+│   │       └── telegram.template.json
+│   │
+│   └── infrastructure/
+│       └── terraform/          # Infraestrutura como código
+│           ├── s3/             # Bucket S3
+│           ├── api/            # Lambda API
+│           ├── classifier/     # Lambda Classifier + SQS
+│           ├── nlp/            # Lambda NLP
+│           ├── validation/     # Lambda Validation
+│           ├── n8n/            # EC2 para n8n
+│           └── tf-state/       # Backend Terraform
+│
+├── scripts/                    # Scripts de automação
+│   ├── deploy.sh              # Deploy de infraestrutura
+│   ├── start.sh               # Iniciar serviços
+│   └── generate-workflow.sh   # Gerar workflow n8n
+│
+├── docs/
+│   └── diagramas/             # Diagramas da arquitetura
+│
+├── docker-compose.yml         # Configuração Docker
+├── Makefile                   # Comandos make
+├── .env.example               # Exemplo de variáveis
+└── README.md                  # Documentação principal
 ```
+
+---
+
+## Tecnologias Utilizadas
+
+| Categoria | Tecnologia | Versão/Detalhes |
+|-----------|------------|-----------------|
+| **Backend** | TypeScript | - |
+| **Framework API** | Fastify | 5.5.0 |
+| **Frontend** | Next.js | 15 (App Router) |
+| **UI Components** | shadcn/ui | - |
+| **Estilização** | Tailwind CSS | 4.0 |
+| **Banco de Dados** | MongoDB | Atlas |
+| **Orquestração** | n8n | Latest |
+| **IA/ML** | AWS Bedrock | Claude 3 Haiku |
+| **Cloud** | AWS | sa-east-1 |
+| **IaC** | Terraform | >= 1.5.0 |
+| **Containers** | Docker | - |
+| **Runtime (API)** | Node.js | 22.x |
+| **Runtime (NLP/Classifier)** | Python | 3.11 |
 
 ---
 
@@ -801,46 +748,3 @@ youvisa/
 - **Criptografia:** AES-256 para dados em repouso (S3)
 - **Autenticação:** API Key obrigatória em todas as requisições
 - **IAM:** Princípio do menor privilégio para permissões AWS
-
----
-
-## Indicadores de Sucesso
-
-**IMPORTANTE**: Os indicadores a seguir foram estimados, apenas a título de exemplificar áreas de ganho com o projeto, pois não obtivemos acesso aos indicadores reais da empresa. De qualquer forma, é possível adaptá-los à realidade da YOUVISA.
-
-| Métrica | Antes  | Depois | Variação |
-|---------|--------|--------|----------|
-| Tempo médio de atendimento | 35 min | 12 min | -65 % |
-| Retrabalho documental | 18 % | < 5 % | -72 % |
-| Custo por lead | R$ 100 | R$ 65 | -R$35 |
-| Conversão para cliente | 22 % | 38 % | +16 p.p. |
-| NPS médio | 70 | 90 | +20 pts |
-
----
-
-## Riscos e Mitigações
-
-| Risco | Impacto | Mitigação |
-|-------|---------|-----------|
-| Erro semântico do NLP | Médio | Fallback humano + retraining contínuo |
-| Falha de canal (API WA/Telegram) | Alto | Failover n8n + logs automáticos |
-| Vazamento de dados | Crítico | Criptografia + IAM + DLP + auditoria |
-| Resistência da equipe | Médio | Treinamento e onboarding progressivo |
-| Sobrecarga de fluxos | Médio | Escalabilidade cloud (EKS/Fargate) |
-
----
-
-## Conclusão
-
-A Sprint 2 do projeto YOUVISA consolida a implementação de uma plataforma de atendimento multicanal inteligente, unindo:
-
-- **Chatbot funcional** via Telegram com orquestração n8n
-- **Pipeline de automação** para recebimento e classificação de documentos
-- **IA Generativa** (Claude 3 Haiku) para classificação e NLP conversacional
-- **Visão Computacional** para validação de qualidade de imagem
-- **Console do Operador** em React/Next.js para gerenciamento de conversas
-- **Transferência humana** quando o usuário solicita atendente
-
-O sistema demonstra a viabilidade de automatizar processos consulares com IA, reduzindo tempo de atendimento e mantendo a opção de escalação para atendimento humano quando necessário.
-
-A arquitetura serverless na AWS (Lambda, S3, SQS) garante escalabilidade e conformidade com LGPD, enquanto o n8n proporciona flexibilidade para evolução dos fluxos de automação.

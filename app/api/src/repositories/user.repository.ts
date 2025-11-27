@@ -13,6 +13,10 @@ export class UserRepository {
     return await UserModel.findById(id);
   }
 
+  async findAll(): Promise<IUser[]> {
+    return await UserModel.find().sort({ created_at: -1 });
+  }
+
   async findByTelegramId(telegramId: string): Promise<IUser | null> {
     return await UserModel.findOne({ telegram_id: telegramId });
   }

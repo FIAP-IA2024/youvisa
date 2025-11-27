@@ -24,8 +24,12 @@ export class FileRepository {
   }
 
   async findAll(filters?: { conversation_id?: string }): Promise<IFile[]> {
-    const query = filters || {};
-    return await FileModel.find(query).sort({ uploaded_at: -1 });
+    const query = Object.fromEntries(
+      Object.entries(filters || {}).filter(([, v]) => v),
+    );
+    return Object.keys(query).length
+      ? await FileModel.find(query).sort({ uploaded_at: -1 })
+      : await FileModel.find().sort({ uploaded_at: -1 });
   }
 
   async deleteById(id: string): Promise<IFile | null> {

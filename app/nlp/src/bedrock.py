@@ -47,8 +47,13 @@ class BedrockNLP:
         Returns:
             dict with response, intent, extracted_email, new_state
         """
-        # Determine state
-        state = conversation_state or ('PRONTO' if has_email else 'NOVO')
+        # Determine state - if user has email, always use PRONTO
+        if has_email:
+            state = 'PRONTO'
+        else:
+            state = conversation_state or 'NOVO'
+
+        logger.info(f"Bedrock state computation - has_email: {has_email}, conversation_state: {conversation_state}, final_state: {state}")
 
         # Format history for context
         history_text = self._format_history(history) if history else "Nenhum historico"

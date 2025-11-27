@@ -58,7 +58,9 @@ export class FileController {
 
   async getAll(filters?: { conversation_id?: string }) {
     try {
+      this.logger.info('Getting files', { filters });
       const files = await this.fileRepository.findAll(filters);
+      this.logger.info('Files found', { count: files.length });
 
       return {
         statusCode: StatusCodes.OK,

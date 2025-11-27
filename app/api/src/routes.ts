@@ -25,6 +25,11 @@ export async function routes(fastify: FastifyInstance) {
     return reply.status(result.statusCode).send(result.body);
   });
 
+  fastify.get('/users', async (request, reply) => {
+    const result = await userController.getAll();
+    return reply.status(result.statusCode).send(result.body);
+  });
+
   fastify.get('/users/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
     const result = await userController.getById(id);

@@ -37,6 +37,24 @@ export class UserController {
     }
   }
 
+  async getAll() {
+    try {
+      const users = await this.userRepository.findAll();
+
+      return {
+        statusCode: StatusCodes.OK,
+        body: { success: true, data: users },
+      };
+    } catch (error: any) {
+      this.logger.error('Error getting users', { error: error.message });
+
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        body: { success: false, error: error.message },
+      };
+    }
+  }
+
   async getById(id: string) {
     try {
       const user = await this.userRepository.findById(id);
