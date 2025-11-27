@@ -1,5 +1,7 @@
 **Faculdade:** FIAP - Faculdade de Informatica e Administracao Paulista
+
 **Curso:** Inteligencia Artificial (Graduacao)
+
 **Turma:** 1TIAOR - 2024/2
 
 **Integrantes:**
@@ -10,6 +12,7 @@
 - RM559645 - Edimilson Ribeiro da Silva
 
 **Link do projeto no GitHub:** <https://github.com/ribeirogab/youvisa>
+
 **Link do video no YouTube:** <https://youtu.be/dyTIJXozWXk>
 
 ---
