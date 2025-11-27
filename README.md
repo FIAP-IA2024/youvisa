@@ -8,10 +8,10 @@
 
 ## Integrantes do Grupo e responsabilidades no projeto
 
-- `RM559800` - [Jonas Felipe dos Santos Lima](https://www.linkedin.com/in/jonas-felipe-dos-santos-lima-b2346811b/) (Revisão e testes)
-- `RM560173` - [Gabriel Ribeiro](https://www.linkedin.com/in/ribeirogab/) (Desenvolvimento de front-end)
-- `RM559926` - [Marcos Trazzini](https://www.linkedin.com/in/mstrazzini/) (Arquitetura e Desenvolvimento de backend)
-- `RM559645` - [Edimilson Ribeiro](https://www.linkedin.com/in/edimilson-ribeiro/) (Estruturas de dados)
+- `RM559800` - [Jonas Felipe dos Santos Lima](https://www.linkedin.com/in/jonas-felipe-dos-santos-lima-b2346811b/)
+- `RM560173` - [Gabriel Ribeiro](https://www.linkedin.com/in/ribeirogab/)
+- `RM559926` - [Marcos Trazzini](https://www.linkedin.com/in/mstrazzini/)
+- `RM559645` - [Edimilson Ribeiro](https://www.linkedin.com/in/edimilson-ribeiro/)
 
 ## Professores
 
