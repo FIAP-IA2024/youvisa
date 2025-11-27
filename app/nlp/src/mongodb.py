@@ -54,8 +54,14 @@ class MongoDBClient:
             User document or None
         """
         try:
-            if isinstance(user_id, str):
-                user_id = ObjectId(user_id)
+            # Try with ObjectId first
+            try:
+                result = self.users.find_one({'_id': ObjectId(user_id)})
+                if result:
+                    return result
+            except:
+                pass
+            # Fallback: try with string _id
             return self.users.find_one({'_id': user_id})
         except Exception as e:
             logger.error(f"Error getting user: {str(e)}")
@@ -89,14 +95,21 @@ class MongoDBClient:
             List of message documents
         """
         try:
-            if isinstance(conversation_id, str):
-                conversation_id = ObjectId(conversation_id)
-
-            messages = self.messages.find(
+            # Try with ObjectId first
+            try:
+                oid = ObjectId(conversation_id) if isinstance(conversation_id, str) else conversation_id
+                messages = list(self.messages.find(
+                    {'conversation_id': oid}
+                ).sort('timestamp', -1).limit(limit))
+                if messages:
+                    return messages[::-1]
+            except:
+                pass
+            # Fallback: try with string
+            messages = list(self.messages.find(
                 {'conversation_id': conversation_id}
-            ).sort('timestamp', -1).limit(limit)
-
-            return list(messages)[::-1]  # Reverse to get chronological order
+            ).sort('timestamp', -1).limit(limit))
+            return messages[::-1]
         except Exception as e:
             logger.error(f"Error getting messages: {str(e)}")
             return []
@@ -113,26 +126,27 @@ class MongoDBClient:
             True if update was successful
         """
         try:
-            if isinstance(user_id, str):
-                user_id = ObjectId(user_id)
-
+            # Try with ObjectId first
+            try:
+                result = self.users.update_one(
+                    {'_id': ObjectId(user_id)},
+                    {'$set': {'email': email, 'email_updated_at': datetime.utcnow()}}
+                )
+                if result.modified_count > 0:
+                    logger.info(f"Updated email for user {user_id}")
+                    return True
+            except:
+                pass
+            # Fallback: try with string _id
             result = self.users.update_one(
                 {'_id': user_id},
-                {
-                    '$set': {
-                        'email': email,
-                        'email_updated_at': datetime.utcnow()
-                    }
-                }
+                {'$set': {'email': email, 'email_updated_at': datetime.utcnow()}}
             )
-
             if result.modified_count > 0:
                 logger.info(f"Updated email for user {user_id}")
                 return True
-            else:
-                logger.warning(f"No user found with id: {user_id}")
-                return False
-
+            logger.warning(f"No user found with id: {user_id}")
+            return False
         except Exception as e:
             logger.error(f"Error updating user email: {str(e)}")
             return False
@@ -149,26 +163,22 @@ class MongoDBClient:
             True if update was successful
         """
         try:
-            if isinstance(conversation_id, str):
-                conversation_id = ObjectId(conversation_id)
-
-            result = self.conversations.update_one(
-                {'_id': conversation_id},
-                {
-                    '$set': {
-                        'status': status,
-                        'status_updated_at': datetime.utcnow()
-                    }
-                }
-            )
-
+            update_data = {'$set': {'status': status, 'status_updated_at': datetime.utcnow()}}
+            # Try with ObjectId first
+            try:
+                result = self.conversations.update_one({'_id': ObjectId(conversation_id)}, update_data)
+                if result.modified_count > 0:
+                    logger.info(f"Updated conversation {conversation_id} status to {status}")
+                    return True
+            except:
+                pass
+            # Fallback: try with string _id
+            result = self.conversations.update_one({'_id': conversation_id}, update_data)
             if result.modified_count > 0:
                 logger.info(f"Updated conversation {conversation_id} status to {status}")
                 return True
-            else:
-                logger.warning(f"No conversation found with id: {conversation_id}")
-                return False
-
+            logger.warning(f"No conversation found with id: {conversation_id}")
+            return False
         except Exception as e:
             logger.error(f"Error updating conversation status: {str(e)}")
             return False
@@ -185,26 +195,22 @@ class MongoDBClient:
             True if update was successful
         """
         try:
-            if isinstance(conversation_id, str):
-                conversation_id = ObjectId(conversation_id)
-
-            result = self.conversations.update_one(
-                {'_id': conversation_id},
-                {
-                    '$set': {
-                        'metadata.state': state,
-                        'metadata.state_updated_at': datetime.utcnow()
-                    }
-                }
-            )
-
+            update_data = {'$set': {'metadata.state': state, 'metadata.state_updated_at': datetime.utcnow()}}
+            # Try with ObjectId first
+            try:
+                result = self.conversations.update_one({'_id': ObjectId(conversation_id)}, update_data)
+                if result.modified_count > 0:
+                    logger.info(f"Updated conversation {conversation_id} state to {state}")
+                    return True
+            except:
+                pass
+            # Fallback: try with string _id
+            result = self.conversations.update_one({'_id': conversation_id}, update_data)
             if result.modified_count > 0:
                 logger.info(f"Updated conversation {conversation_id} state to {state}")
                 return True
-            else:
-                logger.warning(f"No conversation found with id: {conversation_id}")
-                return False
-
+            logger.warning(f"No conversation found with id: {conversation_id}")
+            return False
         except Exception as e:
             logger.error(f"Error updating conversation state: {str(e)}")
             return False

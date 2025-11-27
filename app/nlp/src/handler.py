@@ -104,11 +104,14 @@ def handler(event, context):
 
         if user_id:
             user = mongo.get_user(user_id)
+            logger.info(f"Got user by user_id={user_id}: {user}")
         elif telegram_id:
             user = mongo.get_user_by_telegram_id(telegram_id)
+            logger.info(f"Got user by telegram_id={telegram_id}: {user}")
 
         # Determine current state
         has_email = bool(user and user.get('email'))
+        logger.info(f"User email check - user exists: {user is not None}, email field: {user.get('email') if user else None}, has_email: {has_email}")
         conversation_state = None
         if conversation:
             conversation_state = conversation.get('metadata', {}).get('state')
@@ -130,6 +133,14 @@ def handler(event, context):
 
         logger.info(f"NLP result: {result}")
 
+        # FIX: If user has email but bot still asks for it, override response
+        response_lower = result.get('response', '').lower()
+        if has_email and ('email' in response_lower or 'e-mail' in response_lower):
+            logger.info("Override: Bot asked for email but user already has one")
+            result['response'] = "Ola! Como posso ajudar? Voce pode enviar seus documentos (passaporte, RG, comprovantes) ou pedir para falar com um atendente."
+            result['intent'] = 'general'
+            result['new_state'] = 'PRONTO'
+
         # Handle extracted email
         if result.get('extracted_email') and user_id:
             email = result['extracted_email']
@@ -143,10 +154,14 @@ def handler(event, context):
             result['response'] = TRANSFERRED_MESSAGE
             logger.info(f"Conversation {conversation['_id']} transferred to human")
 
-        # Update conversation state if needed
+        # Update conversation state if needed - but never regress to AGUARDANDO_EMAIL if user has email
         if result.get('new_state') and conversation:
-            mongo.update_conversation_state(conversation['_id'], result['new_state'])
-            logger.info(f"Updated conversation state to {result['new_state']}")
+            new_state = result['new_state']
+            # If user has email, force state to PRONTO (never go back to AGUARDANDO_EMAIL)
+            if has_email and new_state == 'AGUARDANDO_EMAIL':
+                new_state = 'PRONTO'
+            mongo.update_conversation_state(conversation['_id'], new_state)
+            logger.info(f"Updated conversation state to {new_state}")
 
         return {
             'statusCode': 200,
