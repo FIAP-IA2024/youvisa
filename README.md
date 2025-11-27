@@ -57,7 +57,7 @@ A plataforma está disponível online para testes:
 
 **Credenciais de Acesso:**
 
-- Usuário: `admin`
+- Usuário: `admin@admin.com`
 - Senha: `Teste1234`
 
 ---

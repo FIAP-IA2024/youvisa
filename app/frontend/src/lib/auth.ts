@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-const ADMIN_USER = "admin";
+const ADMIN_USER = "admin@admin.com";
 const ADMIN_PASS = "Teste1234";
 const SESSION_COOKIE = "youvisa_session";
 
