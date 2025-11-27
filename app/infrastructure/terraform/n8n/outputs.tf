@@ -10,7 +10,12 @@ output "public_ip" {
 
 output "n8n_url" {
   description = "URL to access n8n web interface"
-  value       = "http://${aws_eip.n8n.public_ip}:5678"
+  value       = var.n8n_domain != "" ? "https://${var.n8n_domain}" : "http://${aws_eip.n8n.public_ip}:5678"
+}
+
+output "n8n_domain" {
+  description = "Configured domain for n8n (empty if not set)"
+  value       = var.n8n_domain
 }
 
 output "ssh_command" {

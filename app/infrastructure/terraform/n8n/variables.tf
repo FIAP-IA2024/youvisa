@@ -56,6 +56,23 @@ variable "s3_bucket_name" {
   type        = string
 }
 
+variable "n8n_domain" {
+  description = "Domain for n8n (e.g., n8n.example.com). Leave empty for IP-only access"
+  type        = string
+  default     = ""
+}
+
+variable "api_url" {
+  description = "API URL for n8n workflows (Lambda Function URL)"
+  type        = string
+}
+
+variable "api_key" {
+  description = "API Key for n8n workflows"
+  type        = string
+  sensitive   = true
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string

@@ -61,6 +61,10 @@ resource "aws_instance" "n8n" {
     n8n_basic_auth_user     = var.n8n_basic_auth_user
     n8n_basic_auth_password = var.n8n_basic_auth_password
     aws_region              = var.aws_region
+    n8n_domain              = var.n8n_domain
+    api_url                 = var.api_url
+    api_key                 = var.api_key
+    s3_bucket_name          = var.s3_bucket_name
   }))
 
   tags = {

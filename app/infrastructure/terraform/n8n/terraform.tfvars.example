@@ -26,9 +26,19 @@ allowed_ssh_cidr_blocks = ["0.0.0.0/0"]
 n8n_basic_auth_user     = "admin"
 n8n_basic_auth_password = "CHANGE_THIS_PASSWORD"
 
+# n8n Domain (optional)
+# Leave empty for IP-only access, or set your domain for HTTPS via Cloudflare
+# Example: "n8n.example.com"
+n8n_domain = ""
+
 # S3 Bucket (from s3 module output)
 # Get bucket name with: cd ../s3 && terraform output bucket_name
 s3_bucket_name = "dev-youvisa-files-9k3m7x"
+
+# API Configuration (from api module)
+# Get URL with: cd ../api && terraform output function_url
+api_url = "https://your-lambda-url.lambda-url.sa-east-1.on.aws"
+api_key = "your-api-key"
 
 # VPC Configuration (optional - defaults work fine)
 # vpc_cidr           = "10.0.0.0/16"
