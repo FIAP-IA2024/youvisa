@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 const ADMIN_USER = "admin";
-const ADMIN_PASS = "admin";
+const ADMIN_PASS = "Teste1234";
 const SESSION_COOKIE = "youvisa_session";
 
 export async function login(formData: FormData): Promise<{ error?: string }> {
