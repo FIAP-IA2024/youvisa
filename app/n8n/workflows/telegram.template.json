@@ -361,15 +361,31 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip_response !== true }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Skip Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 550]
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
-        "text": "={{ $json.response }}"
+        "text": "={{ $node['Process NLP'].json.response }}"
       },
       "name": "Send NLP Response",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [1450, 550],
+      "position": [1650, 450],
       "credentials": {
         "telegramApi": {
           "id": "1",
@@ -585,11 +601,23 @@
       "main": [
         [
           {
-            "node": "Send NLP Response",
+            "node": "Check Skip Response",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "Check Skip Response": {
+      "main": [
+        [
+          {
+            "node": "Send NLP Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
       ]
     },
     "Send NLP Response": {

@@ -89,6 +89,19 @@ def handler(event, context):
         conversation = mongo.get_conversation_by_chat_id(chat_id)
         user = None
 
+        # Check if conversation is transferred to human agent - skip bot processing
+        if conversation and conversation.get('status') == 'transferred':
+            logger.info(f"Conversation {conversation['_id']} is transferred, skipping bot processing")
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({
+                    'response': '',
+                    'intent': 'transferred',
+                    'skip_response': True
+                })
+            }
+
         if user_id:
             user = mongo.get_user(user_id)
         elif telegram_id:

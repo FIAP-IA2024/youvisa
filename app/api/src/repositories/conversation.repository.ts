@@ -56,6 +56,23 @@ export class ConversationRepository {
     chatId: string,
     data: Partial<IConversation>,
   ): Promise<IConversation> {
+    // Check if conversation exists and is transferred - preserve the status
+    const existing = await ConversationModel.findOne({
+      user_id: userId,
+      channel,
+      chat_id: chatId,
+    });
+
+    if (existing && existing.status === 'transferred') {
+      // Only update last_message_at, don't change status
+      return await ConversationModel.findOneAndUpdate(
+        { user_id: userId, channel, chat_id: chatId },
+        { last_message_at: new Date() },
+        { new: true },
+      ) as IConversation;
+    }
+
+    // Normal upsert if not transferred
     return await ConversationModel.findOneAndUpdate(
       { user_id: userId, channel, chat_id: chatId },
       data,

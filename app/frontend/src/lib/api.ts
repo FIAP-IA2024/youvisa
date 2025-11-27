@@ -121,6 +121,14 @@ export async function getFiles(filters?: {
   return response.data || [];
 }
 
+export async function updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation | null> {
+  const response = await fetchApi<Conversation>(`/conversations/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+  return response.data || null;
+}
+
 // Dashboard Stats
 export async function getDashboardStats() {
   const [users, conversations, files] = await Promise.all([

@@ -1,6 +1,10 @@
-import { MessageSquare } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { MessageSquare, Bot, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getConversations } from "@/lib/api";
+import { getConversations, updateConversation, type Conversation } from "@/lib/api";
 
 const channelColors: Record<string, string> = {
   telegram: "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -34,8 +38,37 @@ function formatDate(dateString: string) {
   });
 }
 
-export default async function ConversationsPage() {
-  const conversations = await getConversations();
+export default function ConversationsPage() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const loadConversations = async () => {
+    setLoading(true);
+    try {
+      const data = await getConversations();
+      setConversations(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  const handleReturnToBot = async (id: string) => {
+    setUpdating(id);
+    try {
+      await updateConversation(id, { status: "active" });
+      await loadConversations();
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const transferredConversations = conversations.filter(c => c.status === "transferred");
+  const otherConversations = conversations.filter(c => c.status !== "transferred");
 
   const statusCounts = conversations.reduce(
     (acc, conv) => {
@@ -47,11 +80,17 @@ export default async function ConversationsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Conversas</h1>
-        <p className="text-muted-foreground">
-          Historico de conversas com usuarios
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Conversas</h1>
+          <p className="text-muted-foreground">
+            Historico de conversas com usuarios
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={loadConversations} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Atualizar
+        </Button>
       </div>
 
       {/* Status Summary */}
@@ -67,19 +106,89 @@ export default async function ConversationsPage() {
         ))}
       </div>
 
-      {/* Conversations Table */}
+      {/* Transferred Conversations */}
+      {transferredConversations.length > 0 && (
+        <Card className="border-yellow-500/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-600">
+              <MessageSquare className="h-5 w-5" />
+              Conversas Transferidas para Atendente
+            </CardTitle>
+            <CardDescription>
+              {transferredConversations.length} conversa(s) aguardando atendimento humano
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Chat ID</TableHead>
+                  <TableHead>Canal</TableHead>
+                  <TableHead>Iniciada em</TableHead>
+                  <TableHead>Ultima mensagem</TableHead>
+                  <TableHead>Acoes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transferredConversations.map((conversation) => (
+                  <TableRow key={conversation._id}>
+                    <TableCell className="font-medium">
+                      <span className="truncate max-w-[200px] block">
+                        {conversation.chat_id}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={channelColors[conversation.channel] || ""}
+                      >
+                        {conversation.channel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDate(conversation.started_at)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {conversation.last_message_at
+                        ? formatDate(conversation.last_message_at)
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReturnToBot(conversation._id)}
+                        disabled={updating === conversation._id}
+                      >
+                        <Bot className="h-4 w-4 mr-2" />
+                        {updating === conversation._id ? "Voltando..." : "Voltar para Bot"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* All Other Conversations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Lista de Conversas
+            {transferredConversations.length > 0 ? "Outras Conversas" : "Lista de Conversas"}
           </CardTitle>
           <CardDescription>
-            Total de {conversations.length} conversa(s)
+            Total de {otherConversations.length} conversa(s)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {conversations.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Carregando...
+            </div>
+          ) : otherConversations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nenhuma conversa encontrada
             </div>
@@ -95,7 +204,7 @@ export default async function ConversationsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {conversations.map((conversation) => (
+                {otherConversations.map((conversation) => (
                   <TableRow key={conversation._id}>
                     <TableCell className="font-medium">
                       <span className="truncate max-w-[200px] block">
