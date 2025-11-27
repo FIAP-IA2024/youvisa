@@ -24,6 +24,7 @@ DEFAULT_API_URL=""
 DEFAULT_API_KEY=""
 DEFAULT_S3_BUCKET=""
 DEFAULT_VALIDATION_URL=""
+DEFAULT_NLP_URL=""
 
 if [ -f "$ENV_FILE" ]; then
     echo -e "${GREEN}Loading defaults from .env...${NC}"
@@ -44,6 +45,9 @@ if [ -f "$ENV_FILE" ]; then
                 ;;
             LAMBDA_VALIDATION_FUNCTION_URL)
                 DEFAULT_VALIDATION_URL="${value%/}"
+                ;;
+            LAMBDA_NLP_FUNCTION_URL)
+                DEFAULT_NLP_URL="${value%/}"
                 ;;
         esac
     done < "$ENV_FILE"
@@ -111,6 +115,16 @@ if [ -z "$VALIDATION_URL" ]; then
 fi
 VALIDATION_URL="${VALIDATION_URL%/}"
 
+# Prompt for NLP_URL
+echo ""
+prompt_with_default "NLP Lambda URL:" "$DEFAULT_NLP_URL" "NLP_URL"
+
+if [ -z "$NLP_URL" ]; then
+    echo -e "${RED}Error: NLP_URL is required${NC}"
+    exit 1
+fi
+NLP_URL="${NLP_URL%/}"
+
 # Generate output file
 echo ""
 echo -e "${BLUE}Generating workflow file...${NC}"
@@ -119,6 +133,7 @@ sed -e "s|__API_URL__|${API_URL}|g" \
     -e "s|__API_KEY__|${API_KEY}|g" \
     -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
     -e "s|__VALIDATION_URL__|${VALIDATION_URL}|g" \
+    -e "s|__NLP_URL__|${NLP_URL}|g" \
     "$TEMPLATE_FILE" > "$OUTPUT_FILE"
 
 echo ""
@@ -133,3 +148,4 @@ echo -e "  API URL:        ${API_URL}"
 echo -e "  API Key:        ${API_KEY}"
 echo -e "  S3 Bucket:      ${S3_BUCKET}"
 echo -e "  Validation URL: ${VALIDATION_URL}"
+echo -e "  NLP URL:        ${NLP_URL}"

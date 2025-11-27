@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: tf-state, s3, api, validation, classifier, n8n, all"
+    echo -e "Available options: tf-state, s3, api, validation, classifier, nlp, n8n, all"
     exit 1
 fi
 
@@ -197,6 +197,50 @@ deploy_classifier() {
     echo -e "${BLUE}Classifier infrastructure deployed successfully!${NC}"
 }
 
+deploy_nlp() {
+    echo -e "${BLUE}Deploying NLP infrastructure...${NC}"
+
+    # Check if .env exists
+    if [ ! -f .env ]; then
+        echo -e "${RED}Error: .env file not found${NC}"
+        echo "Run: cp .env.example .env"
+        echo "Then edit .env with your credentials"
+        exit 1
+    fi
+
+    # Load environment variables from .env
+    export $(grep -v '^#' .env | xargs)
+
+    # Build and package Lambda
+    echo -e "${BLUE}Building NLP Lambda...${NC}"
+    cd app/nlp
+    bash scripts/package-lambda.sh
+    cd ../../
+
+    # Copy shared backend configuration
+    echo -e "${BLUE}Copying shared backend.tf...${NC}"
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/nlp/backend.tf
+
+    # Deploy with Terraform
+    echo -e "${BLUE}Deploying NLP Lambda...${NC}"
+    cd app/infrastructure/terraform/nlp
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init -backend-config="key=nlp/terraform.tfstate"
+    terraform apply -auto-approve \
+        -var="mongodb_uri=${MONGODB_URI}" \
+        -var="mongodb_database=${MONGODB_DATABASE}"
+    cd ../../../../
+
+    echo -e "${BLUE}NLP infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}Lambda URL:${NC}"
+    cd app/infrastructure/terraform/nlp
+    terraform output lambda_function_url
+    cd ../../../../
+}
+
 deploy_n8n() {
     echo -e "${BLUE}Deploying n8n infrastructure...${NC}"
 
@@ -273,6 +317,23 @@ deploy_n8n() {
         echo -e "${BLUE}Validation URL: ${VALIDATION_URL}${NC}"
     fi
 
+    # Get NLP Lambda URL from terraform nlp output (if deployed)
+    echo -e "${BLUE}Getting NLP Lambda URL from terraform...${NC}"
+    cd app/infrastructure/terraform/nlp
+    if terraform init -backend-config="key=nlp/terraform.tfstate" > /dev/null 2>&1; then
+        NLP_URL=$(terraform output -raw lambda_function_url 2>/dev/null || echo "")
+    else
+        NLP_URL=""
+    fi
+    cd ../../../../
+
+    if [ -z "$NLP_URL" ]; then
+        echo -e "${BLUE}Warning: NLP Lambda not deployed. Workflow will need manual configuration.${NC}"
+        NLP_URL="__NLP_URL_NOT_DEPLOYED__"
+    else
+        echo -e "${BLUE}NLP URL: ${NLP_URL}${NC}"
+    fi
+
     # Process workflow template
     echo -e "${BLUE}Processing n8n workflow template...${NC}"
     WORKFLOW_TEMPLATE="app/n8n/workflows/telegram.template.json"
@@ -288,6 +349,7 @@ deploy_n8n() {
         -e "s|__API_KEY__|${API_KEY}|g" \
         -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
         -e "s|__VALIDATION_URL__|${VALIDATION_URL}|g" \
+        -e "s|__NLP_URL__|${NLP_URL}|g" \
         "$WORKFLOW_TEMPLATE" > "$WORKFLOW_OUTPUT"
 
     echo -e "${BLUE}Workflow processed successfully${NC}"
@@ -382,6 +444,9 @@ case "$APP" in
     classifier)
         deploy_classifier
         ;;
+    nlp)
+        deploy_nlp
+        ;;
     n8n)
         deploy_n8n
         ;;
@@ -390,11 +455,12 @@ case "$APP" in
         deploy_api
         deploy_validation
         deploy_classifier
+        deploy_nlp
         deploy_n8n
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: tf-state, s3, api, validation, classifier, n8n, all"
+        echo -e "Available options: tf-state, s3, api, validation, classifier, nlp, n8n, all"
         exit 1
         ;;
 esac

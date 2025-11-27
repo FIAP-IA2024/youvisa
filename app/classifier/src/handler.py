@@ -78,7 +78,20 @@ def handler(event, context):
                         chat_id = conversation.get('chat_id')
                         if chat_id:
                             notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN)
-                            message = f"Seu documento foi classificado como: <b>{result['document_type']}</b>"
+
+                            # Different message for invalid documents
+                            if result['document_type'] == 'Documento invalido':
+                                message = (
+                                    "Nao conseguimos identificar o documento enviado.\n"
+                                    "Por favor, envie novamente seguindo estas dicas:\n\n"
+                                    "- Certifique-se de que o documento esta bem iluminado\n"
+                                    "- Capture o documento por inteiro\n"
+                                    "- Evite reflexos e sombras\n"
+                                    "- A imagem deve estar nitida (sem borroes)"
+                                )
+                            else:
+                                message = f"Seu documento foi classificado como: <b>{result['document_type']}</b>"
+
                             notifier.send_message(chat_id, message)
                             logger.info(f"Notification sent to chat {chat_id}")
 

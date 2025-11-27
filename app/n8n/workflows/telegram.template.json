@@ -284,15 +284,38 @@
     },
     {
       "parameters": {
+        "url": "__NLP_URL__",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  chat_id: String($node['Telegram Trigger'].json.message.chat.id),\n  text: $node['Telegram Trigger'].json.message.text || '',\n  user_id: $node['Upsert User'].json.data._id,\n  telegram_id: String($node['Telegram Trigger'].json.message.from.id)\n}) }}",
+        "options": {}
+      },
+      "name": "Process NLP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1250, 550]
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
-        "text": "Por favor, envie um arquivo (documento, imagem, PDF, etc.) para que eu possa processar."
+        "text": "={{ $json.response }}"
       },
-      "name": "Send Instructions",
+      "name": "Send NLP Response",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [1250, 550],
+      "position": [1450, 550],
       "credentials": {
         "telegramApi": {
           "id": "1",
@@ -452,7 +475,18 @@
       "main": [
         [
           {
-            "node": "Send Instructions",
+            "node": "Process NLP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process NLP": {
+      "main": [
+        [
+          {
+            "node": "Send NLP Response",
             "type": "main",
             "index": 0
           }
