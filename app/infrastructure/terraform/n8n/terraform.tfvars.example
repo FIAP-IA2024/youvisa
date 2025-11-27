@@ -33,7 +33,7 @@ n8n_domain = ""
 
 # S3 Bucket (from s3 module output)
 # Get bucket name with: cd ../s3 && terraform output bucket_name
-s3_bucket_name = "dev-youvisa-files-9k3m7x"
+s3_bucket_name = "dev-youvisa-files-9a7b6b"
 
 # API Configuration (from api module)
 # Get URL with: cd ../api && terraform output function_url

@@ -109,7 +109,7 @@
     {
       "parameters": {
         "operation": "upload",
-        "bucketName": "dev-youvisa-files-9k3m7x",
+        "bucketName": "dev-youvisa-files-9a7b6b",
         "fileName": "={{ $json.s3Key }}",
         "binaryData": true,
         "binaryPropertyName": "data",
@@ -167,7 +167,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: \"dev-youvisa-files-9k3m7x\",\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: \"dev-youvisa-files-9a7b6b\",\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
         "options": {}
       },
       "name": "Save File Record",

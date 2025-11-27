@@ -31,7 +31,7 @@ variable "mongodb_database" {
 variable "s3_bucket_name" {
   description = "S3 bucket name for file storage"
   type        = string
-  default     = "dev-youvisa-files-9k3m7x"
+  default     = "dev-youvisa-files-9a7b6b"
 }
 
 variable "api_key" {

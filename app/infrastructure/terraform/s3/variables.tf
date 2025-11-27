@@ -13,7 +13,7 @@ variable "environment" {
 variable "s3_bucket_name" {
   description = "Name of the S3 bucket for storing files"
   type        = string
-  default     = "dev-youvisa-files-9k3m7x"
+  default     = "dev-youvisa-files-9a7b6b"
 }
 
 variable "aws_region" {
