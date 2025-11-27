@@ -19,14 +19,14 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.API_URL }}/users/upsert/{{ $json.message.from.id }}",
+        "url": "={{ $env.N8N_API_URL }}/users/upsert/{{ $json.message.from.id }}",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "={{ $env.API_KEY }}"
+              "value": "={{ $env.N8N_API_KEY }}"
             }
           ]
         },
@@ -42,14 +42,14 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.API_URL }}/conversations/upsert",
+        "url": "={{ $env.N8N_API_URL }}/conversations/upsert",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "={{ $env.API_KEY }}"
+              "value": "={{ $env.N8N_API_KEY }}"
             }
           ]
         },
@@ -109,7 +109,7 @@
     {
       "parameters": {
         "operation": "upload",
-        "bucketName": "={{ $env.AWS_S3_BUCKET_NAME }}",
+        "bucketName": "={{ $env.N8N_AWS_S3_BUCKET_NAME }}",
         "fileName": "={{ $json.s3Key }}",
         "binaryData": true,
         "binaryPropertyName": "data",
@@ -131,14 +131,14 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.API_URL }}/messages",
+        "url": "={{ $env.N8N_API_URL }}/messages",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "={{ $env.API_KEY }}"
+              "value": "={{ $env.N8N_API_KEY }}"
             }
           ]
         },
@@ -154,20 +154,20 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.API_URL }}/files",
+        "url": "={{ $env.N8N_API_URL }}/files",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "={{ $env.API_KEY }}"
+              "value": "={{ $env.N8N_API_KEY }}"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: $env.AWS_S3_BUCKET_NAME,\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: $env.N8N_AWS_S3_BUCKET_NAME,\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
         "options": {}
       },
       "name": "Save File Record",
@@ -195,14 +195,14 @@
     },
     {
       "parameters": {
-        "url": "={{ $env.API_URL }}/messages",
+        "url": "={{ $env.N8N_API_URL }}/messages",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "={{ $env.API_KEY }}"
+              "value": "={{ $env.N8N_API_KEY }}"
             }
           ]
         },

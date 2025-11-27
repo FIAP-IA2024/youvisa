@@ -80,10 +80,10 @@ services:
       - AWS_DEFAULT_REGION=${aws_region}
       # Allow env access in workflows
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
-      # Workflow variables
-      - API_URL=${api_url}
-      - API_KEY=${api_key}
-      - AWS_S3_BUCKET_NAME=${s3_bucket_name}
+      # Workflow variables (prefixed with N8N_ to be accessible via \$env)
+      - N8N_API_URL=${api_url}
+      - N8N_API_KEY=${api_key}
+      - N8N_AWS_S3_BUCKET_NAME=${s3_bucket_name}
     volumes:
       - /opt/n8n-data:/home/node/.n8n
 EOF
