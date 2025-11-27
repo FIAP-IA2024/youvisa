@@ -20,13 +20,11 @@ const navItems = [
     title: "Conversas",
     href: "/dashboard/conversations",
     icon: MessageSquare,
-    disabled: true,
   },
   {
     title: "Usuarios",
     href: "/dashboard/users",
     icon: Users,
-    disabled: true,
   },
 ];
 
