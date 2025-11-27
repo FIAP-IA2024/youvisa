@@ -322,6 +322,29 @@
           "name": "Telegram Bot API"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: 'bot_' + Date.now(),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: $node['Process NLP'].json.response,\n  message_type: 'text',\n  direction: 'outgoing',\n  timestamp: new Date().toISOString(),\n  metadata: {\n    intent: $node['Process NLP'].json.intent\n  }\n}) }}",
+        "options": {}
+      },
+      "name": "Save Bot Response",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1650, 550]
     }
   ],
   "connections": {
@@ -487,6 +510,17 @@
         [
           {
             "node": "Send NLP Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send NLP Response": {
+      "main": [
+        [
+          {
+            "node": "Save Bot Response",
             "type": "main",
             "index": 0
           }
