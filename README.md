@@ -55,10 +55,15 @@ A plataforma está disponível online para testes:
 | **n8n (Orquestrador)** | [youvisa-n8n.gabrielribeiro.work](https://youvisa-n8n.gabrielribeiro.work/) | Workflows de automação |
 | **Dashboard (Console)** | [youvisa-dashboard.gabrielribeiro.work](https://youvisa-dashboard.gabrielribeiro.work/) | Painel do operador |
 
-**Credenciais de Acesso:**
+**Credenciais de Acesso (Dashboard):**
 
-- Usuário: `admin`
+- Usuario: `admin@admin.com`
 - Senha: `Teste1234`
+
+**Bot Telegram:**
+
+- Link direto: [https://web.telegram.org/a/#8196147608](https://web.telegram.org/a/#8196147608)
+- Ou procure por: `@youvisa_test_assistant_bot`
 
 ---
 
