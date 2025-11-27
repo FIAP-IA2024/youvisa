@@ -56,6 +56,7 @@ A plataforma está disponível online para testes:
 | **Dashboard (Console)** | [youvisa-dashboard.gabrielribeiro.work](https://youvisa-dashboard.gabrielribeiro.work/) | Painel do operador |
 
 **Credenciais de Acesso:**
+
 - Usuário: `admin`
 - Senha: `Teste1234`
 
