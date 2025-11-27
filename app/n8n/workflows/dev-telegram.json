@@ -1,0 +1,367 @@
+{
+  "name": "Telegram (Dev)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"]
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [250, 400],
+      "webhookId": "auto-generated-on-activation",
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/users/upsert/{{ $json.message.from.id }}",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  username: $json.message.from.username,\n  first_name: $json.message.from.first_name,\n  last_name: $json.message.from.last_name,\n  language_code: $json.message.from.language_code,\n  is_bot: $json.message.from.is_bot || false\n}) }}",
+        "options": {}
+      },
+      "name": "Upsert User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/conversations/upsert",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  user_id: $json.data._id,\n  channel: 'telegram',\n  chat_id: String($node['Telegram Trigger'].json.message.chat.id),\n  status: 'active'\n}) }}",
+        "options": {}
+      },
+      "name": "Upsert Conversation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $node['Telegram Trigger'].json.message.document !== undefined || $node['Telegram Trigger'].json.message.photo !== undefined }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check if File Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "fileId": "={{ $node['Telegram Trigger'].json.message.document ? $node['Telegram Trigger'].json.message.document.file_id : $node['Telegram Trigger'].json.message.photo[$node['Telegram Trigger'].json.message.photo.length - 1].file_id }}",
+        "download": true
+      },
+      "name": "Get File from Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1050, 250],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fileData = items[0].binary.data;\nconst message = $node['Telegram Trigger'].json.message;\nconst conversation = $node['Upsert Conversation'].json.data;\nconst now = new Date();\n\nlet fileInfo;\nif (message.document) {\n  fileInfo = {\n    file_id: message.document.file_id,\n    file_name: message.document.file_name,\n    file_size: message.document.file_size,\n    mime_type: message.document.mime_type,\n    message_type: 'document'\n  };\n} else if (message.photo) {\n  const photo = message.photo[message.photo.length - 1];\n  fileInfo = {\n    file_id: photo.file_id,\n    file_name: `photo_${photo.file_unique_id}.jpg`,\n    file_size: photo.file_size,\n    mime_type: 'image/jpeg',\n    message_type: 'photo'\n  };\n}\n\nconst timestamp = now.getTime();\nconst fileName = `${fileInfo.file_id}_${timestamp}_${fileInfo.file_name}`;\nconst s3Key = fileName;\n\nreturn [{\n  json: {\n    s3Key: s3Key,\n    fileName: fileInfo.file_name,\n    fileSize: fileInfo.file_size,\n    mimeType: fileInfo.mime_type,\n    messageType: fileInfo.message_type,\n    fileId: fileInfo.file_id,\n    messageId: String(message.message_id),\n    conversationId: conversation._id,\n    userId: conversation.user_id,\n    timestamp: new Date(message.date * 1000).toISOString()\n  },\n  binary: {\n    data: fileData\n  }\n}];"
+      },
+      "name": "Prepare S3 Upload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 250]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "dev-youvisa-files-9k3m7x",
+        "fileName": "={{ $json.s3Key }}",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "region": "sa-east-1",
+        "additionalFields": {
+          "contentType": "={{ $json.mimeType }}"
+        }
+      },
+      "name": "Upload to S3",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [1450, 250],
+      "credentials": {
+        "aws": {
+          "id": "2",
+          "name": "AWS Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Prepare S3 Upload'].json.messageId,\n  user_id: $node['Prepare S3 Upload'].json.userId,\n  text: $node['Telegram Trigger'].json.message.caption || '',\n  message_type: $node['Prepare S3 Upload'].json.messageType,\n  direction: 'incoming',\n  timestamp: $node['Prepare S3 Upload'].json.timestamp,\n  metadata: {\n    file_id: $node['Prepare S3 Upload'].json.fileId,\n    file_name: $node['Prepare S3 Upload'].json.fileName,\n    file_size: $node['Prepare S3 Upload'].json.fileSize,\n    mime_type: $node['Prepare S3 Upload'].json.mimeType\n  }\n}) }}",
+        "options": {}
+      },
+      "name": "Save File Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1650, 250]
+    },
+    {
+      "parameters": {
+        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/files",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: 'dev-youvisa-files-9k3m7x',\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
+        "options": {}
+      },
+      "name": "Save File Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1850, 250]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
+        "text": "Arquivo recebido e armazenado com sucesso!"
+      },
+      "name": "Send File Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2050, 250],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Upsert Conversation'].json.data._id,\n  message_id: String($node['Telegram Trigger'].json.message.message_id),\n  user_id: $node['Upsert Conversation'].json.data.user_id,\n  text: $node['Telegram Trigger'].json.message.text || '',\n  message_type: 'text',\n  direction: 'incoming',\n  timestamp: new Date($node['Telegram Trigger'].json.message.date * 1000).toISOString()\n}) }}",
+        "options": {}
+      },
+      "name": "Save Text Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 550]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
+        "text": "Por favor, envie um arquivo (documento, imagem, PDF, etc.) para que eu possa processar."
+      },
+      "name": "Send Instructions",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1250, 550],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Upsert User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert User": {
+      "main": [
+        [
+          {
+            "node": "Upsert Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Conversation": {
+      "main": [
+        [
+          {
+            "node": "Check if File Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if File Exists": {
+      "main": [
+        [
+          {
+            "node": "Get File from Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Text Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File from Telegram": {
+      "main": [
+        [
+          {
+            "node": "Prepare S3 Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare S3 Upload": {
+      "main": [
+        [
+          {
+            "node": "Upload to S3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to S3": {
+      "main": [
+        [
+          {
+            "node": "Save File Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save File Message": {
+      "main": [
+        [
+          {
+            "node": "Save File Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save File Record": {
+      "main": [
+        [
+          {
+            "node": "Send File Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Text Message": {
+      "main": [
+        [
+          {
+            "node": "Send Instructions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2",
+  "id": "1",
+  "meta": {
+    "instanceId": "youvisa-n8n"
+  },
+  "tags": []
+}
