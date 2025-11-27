@@ -13,6 +13,7 @@ A plataforma permite que usuarios enviem documentos (passaportes, comprovantes, 
 Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP** (Faculdade de Informatica e Administracao Paulista).
 
 **Objetivos da Sprint 2:**
+
 - Automatizar o pipeline de documentos
 - Integrar chatbot a gestao de arquivos
 - Validar documentos com visao computacional
@@ -59,8 +60,8 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
            v
     +------+------+         +-------------+         +-------------+
     |             |         |             |         |             |
-    |     n8n     |-------->|  API Lambda |-------->|   MongoDB   |
-    | (Orquestrador)        | (TypeScript)|         |  (Database) |
+    |     n8n     |-------->|   Lambda    |-------->|   MongoDB   |
+    | (Orquestrador)        | Function URL|         |  (Database) |
     |             |         |             |         |             |
     +------+------+         +-------------+         +------+------+
            |                                               ^
@@ -117,12 +118,14 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 **Proposito:** Gerenciar dados de usuarios, conversas, mensagens e arquivos. Serve como ponto central de persistencia do sistema.
 
 **Tecnologias:**
+
 - TypeScript
 - Fastify (framework web)
 - MongoDB + Mongoose (banco de dados)
 - AWS Lambda (deploy serverless)
 
 **Principais Funcionalidades:**
+
 - Criar e atualizar usuarios (sincronizado com Telegram)
 - Gerenciar conversas por canal (Telegram, WhatsApp, Webchat)
 - Armazenar mensagens trocadas
@@ -139,6 +142,7 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 **Proposito:** Classificar automaticamente documentos enviados pelos usuarios usando Inteligencia Artificial.
 
 **Tecnologias:**
+
 - Python 3.11
 - AWS Bedrock (Claude 3 Haiku)
 - boto3 (SDK AWS)
@@ -234,14 +238,13 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 ```
 
 **Estrutura de Armazenamento no S3:**
+
 ```
 s3://bucket-name/
-└── telegram/
-    └── YYYY/
-        └── MM/
-            └── DD/
-                └── {file_id}_{timestamp}_{nome_original}
+└── {file_id}_{timestamp}_{nome_original}
 ```
+
+Os arquivos sao armazenados diretamente na raiz do bucket, com nome unico composto pelo ID do arquivo, timestamp e nome original.
 
 ---
 
@@ -258,15 +261,15 @@ s3://bucket-name/
     |                                                          |
     |  +-------------+     +-------------+     +-------------+ |
     |  |             |     |             |     |             | |
-    |  |  S3 Bucket  |     | API Gateway |     |   Lambda    | |
-    |  | (documentos)|     |   Lambda    |     | (Classifier)| |
-    |  |             |     |             |     |             | |
+    |  |  S3 Bucket  |     |   Lambda    |     |   Lambda    | |
+    |  | (documentos)|     |    (API)    |     | (Classifier)| |
+    |  |             |     | Function URL|     |             | |
     |  +-------------+     +-------------+     +-------------+ |
     |                                                          |
     |  +-------------+     +-------------+     +-------------+ |
     |  |             |     |             |     |             | |
     |  |     SQS     |     |     IAM     |     |     EC2     | |
-    |  | (filas)     |     |  (permissoes)|    |   (n8n)     | |
+    |  |   (filas)   |     | (permissoes)|     |    (n8n)    | |
     |  |             |     |             |     |             | |
     |  +-------------+     +-------------+     +-------------+ |
     |                                                          |
@@ -276,7 +279,7 @@ s3://bucket-name/
 | Recurso | Proposito |
 |---------|-----------|
 | **S3** | Armazena documentos com criptografia AES-256 |
-| **Lambda (API)** | Executa o backend (Node.js 22) |
+| **Lambda (API)** | Executa o backend via Function URL (Node.js 22) |
 | **Lambda (Classifier)** | Classifica documentos (Python 3.11) |
 | **SQS** | Fila para processamento assincrono de documentos |
 | **EC2** | Hospeda o n8n em producao |
@@ -331,6 +334,7 @@ Usuario              Telegram            n8n                API               S3
 O Classifier Lambda utiliza o modelo **Claude 3 Haiku** da AWS Bedrock para analisar imagens de documentos.
 
 **Prompt utilizado (em portugues):**
+
 ```
 Voce e um classificador de documentos da plataforma YOUVISA.
 Analise a imagem fornecida e identifique qual documento ela representa.
@@ -349,11 +353,13 @@ Responda apenas o nome da categoria. Nada mais.
 Apos a classificacao, o usuario recebe uma notificacao no Telegram:
 
 **Documento valido:**
+
 ```
 Seu documento foi classificado como: Passaporte
 ```
 
 **Documento invalido:**
+
 ```
 Nao conseguimos identificar o documento enviado.
 Por favor, envie novamente seguindo estas dicas:
@@ -431,11 +437,13 @@ Por favor, envie novamente seguindo estas dicas:
 ### Configuracao
 
 1. **Copie o arquivo de ambiente:**
+
    ```bash
    cp .env.example .env
    ```
 
 2. **Configure as variaveis principais:**
+
    ```bash
    # Telegram
    TELEGRAM_BOT_TOKEN=seu_token_do_botfather
