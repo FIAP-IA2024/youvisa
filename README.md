@@ -31,18 +31,11 @@ O sistema transforma documentos em tarefas automáticas, simulando um fluxo real
 
 ---
 
-## Vídeo Demonstrativo
+## Video Demonstrativo
 
-<!-- TODO: Adicionar link do vídeo demonstrativo aqui -->
-> **Em breve**: Vídeo demonstrando o funcionamento completo da plataforma (2-4 minutos)
+[![Video Demonstrativo](https://img.youtube.com/vi/dyTIJXozWXk/0.jpg)](https://youtu.be/dyTIJXozWXk)
 
-```
-[ Placeholder para o vídeo ]
-
-Adicione o link do vídeo aqui após a gravação:
-- YouTube: https://www.youtube.com/watch?v=SEU_VIDEO_ID
-- ou embed direto: ![Demo](URL_DO_VIDEO)
-```
+**Assista no YouTube:** [https://youtu.be/dyTIJXozWXk](https://youtu.be/dyTIJXozWXk)
 
 ---
 
