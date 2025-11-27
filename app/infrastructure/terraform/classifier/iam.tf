@@ -56,6 +56,16 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "bedrock:InvokeModel"
         ]
         Resource = "arn:aws:bedrock:${var.bedrock_region}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+      },
+      {
+        Sid    = "AWSMarketplace"
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe",
+          "aws-marketplace:Unsubscribe"
+        ]
+        Resource = "*"
       }
     ]
   })
