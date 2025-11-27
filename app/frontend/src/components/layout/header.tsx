@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { logout } from "@/lib/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -37,11 +37,6 @@ export function Header() {
                 <p className="text-xs text-muted-foreground">admin@youvisa.com</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>
-              <User className="mr-2 h-4 w-4" />
-              <span>Perfil</span>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive cursor-pointer"
