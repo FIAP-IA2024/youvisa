@@ -19,7 +19,7 @@ variable "aws_region" {
 variable "state_bucket_name" {
   description = "S3 bucket name for Terraform state"
   type        = string
-  default     = "youvisa-terraform-state-7k9m2x"
+  default     = "youvisa-terraform-state-9a7b6b"
 }
 
 variable "lock_table_name" {

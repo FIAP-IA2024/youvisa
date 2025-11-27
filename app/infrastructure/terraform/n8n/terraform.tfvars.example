@@ -1,0 +1,45 @@
+# Project Configuration
+project_name = "youvisa"
+environment  = "dev"
+
+# AWS Configuration
+# sa-east-1 (Sao Paulo) is required for LGPD compliance
+aws_region = "sa-east-1"
+
+# EC2 Configuration
+instance_type   = "t3.small"
+ebs_volume_size = 20
+
+# SSH Key - Must exist in AWS EC2 Key Pairs
+# Create one with:
+#   aws ec2 create-key-pair --key-name youvisa-n8n-key --region sa-east-1 \
+#     --query 'KeyMaterial' --output text > ~/.ssh/youvisa-n8n-key.pem
+#   chmod 400 ~/.ssh/youvisa-n8n-key.pem
+ssh_key_name = "youvisa-n8n-key"
+
+# SSH Access Control
+# IMPORTANT: For production, restrict to your IP address
+# Example: ["YOUR_IP/32"]
+allowed_ssh_cidr_blocks = ["0.0.0.0/0"]
+
+# n8n Authentication
+n8n_basic_auth_user     = "admin"
+n8n_basic_auth_password = "CHANGE_THIS_PASSWORD"
+
+# n8n Domain (optional)
+# Leave empty for IP-only access, or set your domain for HTTPS via Cloudflare
+# Example: "n8n.example.com"
+n8n_domain = ""
+
+# S3 Bucket (from s3 module output)
+# Get bucket name with: cd ../s3 && terraform output bucket_name
+s3_bucket_name = "dev-youvisa-files-9a7b6b"
+
+# API Configuration (from api module)
+# Get URL with: cd ../api && terraform output function_url
+api_url = "https://your-lambda-url.lambda-url.sa-east-1.on.aws"
+api_key = "your-api-key"
+
+# VPC Configuration (optional - defaults work fine)
+# vpc_cidr           = "10.0.0.0/16"
+# public_subnet_cidr = "10.0.1.0/24"
