@@ -104,6 +104,20 @@ deploy_validation() {
     bash scripts/package-lambda.sh
     cd ../../
 
+    # Get S3 bucket name from terraform s3 output
+    echo -e "${BLUE}Getting S3 bucket name from terraform...${NC}"
+    cd app/infrastructure/terraform/s3
+    terraform init -backend-config="key=s3/terraform.tfstate" > /dev/null 2>&1
+    S3_BUCKET=$(terraform output -raw bucket_name 2>/dev/null)
+    cd ../../../../
+
+    if [ -z "$S3_BUCKET" ]; then
+        echo -e "${RED}Error: Could not get S3 bucket name from terraform${NC}"
+        echo "Deploy S3 first: make deploy s3"
+        exit 1
+    fi
+    echo -e "${BLUE}S3 Bucket: ${S3_BUCKET}${NC}"
+
     # Copy shared backend configuration
     echo -e "${BLUE}Copying shared backend.tf...${NC}"
     cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/validation/backend.tf
@@ -116,7 +130,8 @@ deploy_validation() {
     rm -rf .terraform
 
     terraform init -backend-config="key=validation/terraform.tfstate"
-    terraform apply -auto-approve
+    terraform apply -auto-approve \
+        -var="s3_bucket_name=${S3_BUCKET}"
     cd ../../../../
 
     echo -e "${BLUE}Validation infrastructure deployed successfully!${NC}"

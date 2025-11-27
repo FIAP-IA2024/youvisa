@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 # Environment variables
 MONGODB_URI = os.environ.get('MONGODB_URI')
 MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE', 'youvisa')
-AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+BEDROCK_REGION = os.environ.get('BEDROCK_REGION', 'us-east-1')
 
 
 def handler(event, context):
@@ -36,7 +36,7 @@ def handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     # Initialize clients
-    classifier = BedrockClassifier(region=AWS_REGION)
+    classifier = BedrockClassifier(region=BEDROCK_REGION)
     mongo_client = MongoDBClient(MONGODB_URI, MONGODB_DATABASE)
 
     processed = 0

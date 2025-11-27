@@ -9,3 +9,8 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "s3_bucket_name" {
+  description = "S3 bucket name for Lambda layer upload"
+  type        = string
+}

@@ -1,10 +1,10 @@
 # Lambda Function
 resource "aws_lambda_function" "classifier" {
-  filename         = "${path.module}/../../../../classifier/lambda.zip"
+  filename         = "${path.module}/../../../classifier/lambda.zip"
   function_name    = local.function_name
   role             = aws_iam_role.lambda_role.arn
   handler          = "handler.handler"
-  source_code_hash = filebase64sha256("${path.module}/../../../../classifier/lambda.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../../classifier/lambda.zip")
   runtime          = "python3.11"
   timeout          = 60
   memory_size      = 512
@@ -14,7 +14,7 @@ resource "aws_lambda_function" "classifier" {
       NODE_ENV         = var.environment
       MONGODB_URI      = var.mongodb_uri
       MONGODB_DATABASE = var.mongodb_database
-      AWS_REGION       = var.bedrock_region
+      BEDROCK_REGION   = var.bedrock_region
     }
   }
 }
