@@ -26,8 +26,12 @@ export class MessageRepository {
     conversation_id?: string;
     message_type?: string;
   }): Promise<IMessage[]> {
-    const query = filters || {};
-    return await MessageModel.find(query).sort({ timestamp: -1 });
+    const query = Object.fromEntries(
+      Object.entries(filters || {}).filter(([, v]) => v),
+    );
+    return Object.keys(query).length
+      ? await MessageModel.find(query).sort({ timestamp: -1 })
+      : await MessageModel.find().sort({ timestamp: -1 });
   }
 
   async deleteById(id: string): Promise<IMessage | null> {

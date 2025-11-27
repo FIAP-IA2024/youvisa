@@ -35,8 +35,12 @@ export class ConversationRepository {
     status?: string;
     channel?: string;
   }): Promise<IConversation[]> {
-    const query = filters || {};
-    return await ConversationModel.find(query).sort({ last_message_at: -1 });
+    const query = Object.fromEntries(
+      Object.entries(filters || {}).filter(([, v]) => v),
+    );
+    return Object.keys(query).length
+      ? await ConversationModel.find(query).sort({ last_message_at: -1 })
+      : await ConversationModel.find().sort({ last_message_at: -1 });
   }
 
   async updateById(
