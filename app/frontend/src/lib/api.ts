@@ -11,6 +11,7 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<Api
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": API_KEY,
