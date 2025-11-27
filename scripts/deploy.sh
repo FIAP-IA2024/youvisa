@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: tf-state, s3, api, ocr, all"
+    echo -e "Available options: tf-state, s3, api, ocr, n8n, all"
     exit 1
 fi
 
@@ -138,6 +138,58 @@ deploy_ocr() {
     echo -e "${BLUE}OCR infrastructure deployed successfully!${NC}"
 }
 
+deploy_n8n() {
+    echo -e "${BLUE}Deploying n8n infrastructure...${NC}"
+
+    # Check if .env exists
+    if [ ! -f .env ]; then
+        echo -e "${RED}Error: .env file not found${NC}"
+        echo "Run: cp .env.example .env"
+        echo "Then edit .env with your credentials"
+        exit 1
+    fi
+
+    # Load environment variables from .env
+    export $(grep -v '^#' .env | xargs)
+
+    # Check required variables
+    if [ -z "$N8N_SSH_KEY_NAME" ]; then
+        echo -e "${RED}Error: N8N_SSH_KEY_NAME not set in .env${NC}"
+        exit 1
+    fi
+
+    if [ -z "$N8N_BASIC_AUTH_PASSWORD" ] || [ "$N8N_BASIC_AUTH_PASSWORD" = "change_this_password" ]; then
+        echo -e "${RED}Error: N8N_BASIC_AUTH_PASSWORD not set or using default value${NC}"
+        echo "Please set a strong password in .env"
+        exit 1
+    fi
+
+    # Deploy with Terraform
+    echo -e "${BLUE}Deploying n8n EC2 instance...${NC}"
+    cd app/infrastructure/terraform/n8n
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init
+    terraform apply -auto-approve \
+        -var="ssh_key_name=${N8N_SSH_KEY_NAME}" \
+        -var="n8n_basic_auth_user=${N8N_BASIC_AUTH_USER:-admin}" \
+        -var="n8n_basic_auth_password=${N8N_BASIC_AUTH_PASSWORD}" \
+        -var="s3_bucket_name=${AWS_S3_BUCKET_NAME}"
+
+    echo ""
+    echo -e "${BLUE}n8n infrastructure deployed successfully!${NC}"
+    echo ""
+    echo -e "${BLUE}Access n8n at:${NC}"
+    terraform output n8n_url
+    echo ""
+    echo -e "${BLUE}SSH command:${NC}"
+    terraform output ssh_command
+
+    cd ../../../../
+}
+
 case "$APP" in
     tf-state)
         deploy_tf_state
@@ -151,14 +203,18 @@ case "$APP" in
     ocr)
         deploy_ocr
         ;;
+    n8n)
+        deploy_n8n
+        ;;
     all)
         deploy_s3
         deploy_api
         deploy_ocr
+        deploy_n8n
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: tf-state, s3, api, ocr, all"
+        echo -e "Available options: tf-state, s3, api, ocr, n8n, all"
         exit 1
         ;;
 esac
