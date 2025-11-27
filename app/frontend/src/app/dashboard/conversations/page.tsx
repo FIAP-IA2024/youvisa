@@ -13,7 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getConversations, updateConversation, type Conversation } from "@/lib/api";
+import { type Conversation } from "@/lib/api";
+import { fetchConversations, setConversationStatus } from "./actions";
 
 const channelColors: Record<string, string> = {
   telegram: "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -46,7 +47,7 @@ export default function ConversationsPage() {
   const loadConversations = async () => {
     setLoading(true);
     try {
-      const data = await getConversations();
+      const data = await fetchConversations();
       setConversations(data);
     } finally {
       setLoading(false);
@@ -60,7 +61,7 @@ export default function ConversationsPage() {
   const handleReturnToBot = async (id: string) => {
     setUpdating(id);
     try {
-      await updateConversation(id, { status: "active" });
+      await setConversationStatus(id, "active");
       await loadConversations();
     } finally {
       setUpdating(null);
