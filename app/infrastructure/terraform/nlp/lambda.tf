@@ -15,6 +15,7 @@ resource "aws_lambda_function" "nlp" {
       MONGODB_URI      = var.mongodb_uri
       MONGODB_DATABASE = var.mongodb_database
       BEDROCK_REGION   = var.bedrock_region
+      API_KEY          = var.api_key
     }
   }
 }

@@ -116,6 +116,10 @@
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
             }
           ]
         },
@@ -338,6 +342,10 @@
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
             }
           ]
         },

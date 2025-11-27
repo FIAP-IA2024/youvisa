@@ -3,9 +3,21 @@ Lambda handler for image validation using OpenCV.
 Validates image quality before upload to S3.
 """
 
+import os
 import json
 import base64
 from validator import ImageValidator
+
+# Environment variables
+API_KEY = os.environ.get('API_KEY')
+
+
+def _validate_api_key(event: dict) -> bool:
+    """Validate API key from request headers."""
+    headers = event.get('headers', {})
+    # Lambda Function URL headers are lowercase
+    api_key = headers.get('x-api-key') or headers.get('X-Api-Key')
+    return api_key == API_KEY
 
 
 def handler(event, context):
@@ -30,6 +42,13 @@ def handler(event, context):
         }
     }
     """
+    # Validate API key
+    if not _validate_api_key(event):
+        return response(401, {
+            'valid': False,
+            'reason': 'Unauthorized: Invalid or missing API key'
+        })
+
     try:
         # Parse body
         if isinstance(event.get('body'), str):

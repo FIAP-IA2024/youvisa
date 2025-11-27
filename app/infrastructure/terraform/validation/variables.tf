@@ -14,3 +14,9 @@ variable "s3_bucket_name" {
   description = "S3 bucket name for Lambda layer upload"
   type        = string
 }
+
+variable "api_key" {
+  description = "API key for authentication"
+  type        = string
+  sensitive   = true
+}

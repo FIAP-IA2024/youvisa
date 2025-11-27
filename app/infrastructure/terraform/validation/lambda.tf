@@ -31,6 +31,7 @@ resource "aws_lambda_function" "validation" {
   environment {
     variables = {
       NODE_ENV = var.environment
+      API_KEY  = var.api_key
     }
   }
 }

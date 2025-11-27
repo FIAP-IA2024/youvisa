@@ -27,3 +27,9 @@ variable "bedrock_region" {
   type        = string
   default     = "sa-east-1"
 }
+
+variable "api_key" {
+  description = "API key for authentication"
+  type        = string
+  sensitive   = true
+}

@@ -18,6 +18,15 @@ logger.setLevel(logging.INFO)
 MONGODB_URI = os.environ.get('MONGODB_URI')
 MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE', 'youvisa')
 BEDROCK_REGION = os.environ.get('BEDROCK_REGION', 'us-east-1')
+API_KEY = os.environ.get('API_KEY')
+
+
+def _validate_api_key(event: dict) -> bool:
+    """Validate API key from request headers."""
+    headers = event.get('headers', {})
+    # Lambda Function URL headers are lowercase
+    api_key = headers.get('x-api-key') or headers.get('X-Api-Key')
+    return api_key == API_KEY
 
 
 def handler(event, context):
@@ -39,6 +48,14 @@ def handler(event, context):
     }
     """
     logger.info(f"Received event: {json.dumps(event)}")
+
+    # Validate API key
+    if not _validate_api_key(event):
+        return {
+            'statusCode': 401,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Unauthorized: Invalid or missing API key'})
+        }
 
     # Parse request body
     try:

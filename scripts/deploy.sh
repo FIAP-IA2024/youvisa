@@ -98,6 +98,17 @@ deploy_api() {
 deploy_validation() {
     echo -e "${BLUE}Deploying Validation infrastructure...${NC}"
 
+    # Check if .env exists
+    if [ ! -f .env ]; then
+        echo -e "${RED}Error: .env file not found${NC}"
+        echo "Run: cp .env.example .env"
+        echo "Then edit .env with your credentials"
+        exit 1
+    fi
+
+    # Load environment variables from .env
+    export $(grep -v '^#' .env | xargs)
+
     # Build and package Lambda
     echo -e "${BLUE}Building Validation Lambda...${NC}"
     cd app/validation
@@ -131,7 +142,8 @@ deploy_validation() {
 
     terraform init -backend-config="key=validation/terraform.tfstate"
     terraform apply -auto-approve \
-        -var="s3_bucket_name=${S3_BUCKET}"
+        -var="s3_bucket_name=${S3_BUCKET}" \
+        -var="api_key=${API_KEY}"
     cd ../../../../
 
     echo -e "${BLUE}Validation infrastructure deployed successfully!${NC}"
@@ -231,7 +243,8 @@ deploy_nlp() {
     terraform init -backend-config="key=nlp/terraform.tfstate"
     terraform apply -auto-approve \
         -var="mongodb_uri=${MONGODB_URI}" \
-        -var="mongodb_database=${MONGODB_DATABASE}"
+        -var="mongodb_database=${MONGODB_DATABASE}" \
+        -var="api_key=${API_KEY}"
     cd ../../../../
 
     echo -e "${BLUE}NLP infrastructure deployed successfully!${NC}"
