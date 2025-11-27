@@ -1,5 +1,5 @@
 {
-  "name": "Telegram (Dev)",
+  "name": "Telegram",
   "nodes": [
     {
       "parameters": {
@@ -19,14 +19,14 @@
     },
     {
       "parameters": {
-        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/users/upsert/{{ $json.message.from.id }}",
+        "url": "=__API_URL__/users/upsert/{{ $json.message.from.id }}",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "fiap-iatron"
+              "value": "__API_KEY__"
             }
           ]
         },
@@ -42,14 +42,14 @@
     },
     {
       "parameters": {
-        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/conversations/upsert",
+        "url": "=__API_URL__/conversations/upsert",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "fiap-iatron"
+              "value": "__API_KEY__"
             }
           ]
         },
@@ -109,7 +109,7 @@
     {
       "parameters": {
         "operation": "upload",
-        "bucketName": "dev-youvisa-files-9a7b6b",
+        "bucketName": "__S3_BUCKET__",
         "fileName": "={{ $json.s3Key }}",
         "binaryData": true,
         "binaryPropertyName": "data",
@@ -131,14 +131,14 @@
     },
     {
       "parameters": {
-        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/messages",
+        "url": "=__API_URL__/messages",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "fiap-iatron"
+              "value": "__API_KEY__"
             }
           ]
         },
@@ -154,20 +154,20 @@
     },
     {
       "parameters": {
-        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/files",
+        "url": "=__API_URL__/files",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "fiap-iatron"
+              "value": "__API_KEY__"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: \"dev-youvisa-files-9a7b6b\",\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $node['Prepare S3 Upload'].json.conversationId,\n  message_id: $node['Save File Message'].json.data._id,\n  file_id: $node['Prepare S3 Upload'].json.fileId,\n  s3_bucket: \"__S3_BUCKET__\",\n  s3_key: $node['Prepare S3 Upload'].json.s3Key,\n  original_filename: $node['Prepare S3 Upload'].json.fileName,\n  file_size: $node['Prepare S3 Upload'].json.fileSize,\n  mime_type: $node['Prepare S3 Upload'].json.mimeType,\n  uploaded_at: $node['Prepare S3 Upload'].json.timestamp\n}) }}",
         "options": {}
       },
       "name": "Save File Record",
@@ -195,14 +195,14 @@
     },
     {
       "parameters": {
-        "url": "=https://e5gnqxzkr32j5hzwox4nmlnnfq0iibrz.lambda-url.sa-east-1.on.aws/messages",
+        "url": "=__API_URL__/messages",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "fiap-iatron"
+              "value": "__API_KEY__"
             }
           ]
         },
@@ -358,7 +358,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "2",
+  "versionId": "1",
   "id": "1",
   "meta": {
     "instanceId": "youvisa-n8n"

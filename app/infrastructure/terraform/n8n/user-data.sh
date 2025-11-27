@@ -119,6 +119,30 @@ fi
 cd /opt/n8n
 docker-compose up -d
 
+# Wait for n8n to be ready
+echo "Waiting for n8n to start..."
+sleep 30
+
+# Download and import workflow from S3
+echo "Downloading workflow from S3..."
+WORKFLOW_S3_PATH="s3://${s3_bucket_name}/n8n/workflows/telegram.json"
+WORKFLOW_LOCAL_PATH="/opt/n8n-data/workflows-import/telegram.json"
+
+mkdir -p /opt/n8n-data/workflows-import
+chown -R 1000:1000 /opt/n8n-data/workflows-import
+
+# Download workflow
+aws s3 cp "$WORKFLOW_S3_PATH" "$WORKFLOW_LOCAL_PATH" || echo "Warning: Could not download workflow from S3"
+
+# Import workflow into n8n
+if [ -f "$WORKFLOW_LOCAL_PATH" ]; then
+  echo "Importing workflow into n8n..."
+  docker exec n8n n8n import:workflow --input=/home/node/.n8n/workflows-import/telegram.json || echo "Warning: Could not import workflow"
+  echo "Workflow imported successfully"
+else
+  echo "Warning: Workflow file not found, skipping import"
+fi
+
 echo "n8n setup completed!"
 echo "Domain: $N8N_DOMAIN"
 echo "Webhook URL: $WEBHOOK_URL"

@@ -164,16 +164,61 @@ deploy_n8n() {
         exit 1
     fi
 
-    if [ -z "$LAMBDA_FUNCTION_URL" ]; then
-        echo -e "${RED}Error: LAMBDA_FUNCTION_URL not set in .env${NC}"
-        echo "Deploy the API first: make deploy api"
-        exit 1
-    fi
-
     if [ -z "$API_KEY" ]; then
         echo -e "${RED}Error: API_KEY not set in .env${NC}"
         exit 1
     fi
+
+    # Get API URL from terraform api output
+    echo -e "${BLUE}Getting API URL from terraform...${NC}"
+    cd app/infrastructure/terraform/api
+    terraform init -backend-config="key=api/terraform.tfstate" > /dev/null 2>&1
+    API_URL=$(terraform output -raw lambda_function_url 2>/dev/null | sed 's:/*$::')
+    cd ../../../../
+
+    if [ -z "$API_URL" ]; then
+        echo -e "${RED}Error: Could not get API URL from terraform${NC}"
+        echo "Deploy the API first: make deploy api"
+        exit 1
+    fi
+    echo -e "${BLUE}API URL: ${API_URL}${NC}"
+
+    # Get S3 bucket name from terraform s3 output
+    echo -e "${BLUE}Getting S3 bucket name from terraform...${NC}"
+    cd app/infrastructure/terraform/s3
+    terraform init -backend-config="key=s3/terraform.tfstate" > /dev/null 2>&1
+    S3_BUCKET=$(terraform output -raw bucket_name 2>/dev/null)
+    cd ../../../../
+
+    if [ -z "$S3_BUCKET" ]; then
+        echo -e "${RED}Error: Could not get S3 bucket name from terraform${NC}"
+        echo "Deploy S3 first: make deploy s3"
+        exit 1
+    fi
+    echo -e "${BLUE}S3 Bucket: ${S3_BUCKET}${NC}"
+
+    # Process workflow template
+    echo -e "${BLUE}Processing n8n workflow template...${NC}"
+    WORKFLOW_TEMPLATE="app/n8n/workflows/telegram.template.json"
+    WORKFLOW_OUTPUT="/tmp/telegram-workflow.json"
+
+    if [ ! -f "$WORKFLOW_TEMPLATE" ]; then
+        echo -e "${RED}Error: Workflow template not found: ${WORKFLOW_TEMPLATE}${NC}"
+        exit 1
+    fi
+
+    # Replace placeholders with actual values
+    sed -e "s|__API_URL__|${API_URL}|g" \
+        -e "s|__API_KEY__|${API_KEY}|g" \
+        -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
+        "$WORKFLOW_TEMPLATE" > "$WORKFLOW_OUTPUT"
+
+    echo -e "${BLUE}Workflow processed successfully${NC}"
+
+    # Upload workflow to S3
+    echo -e "${BLUE}Uploading workflow to S3...${NC}"
+    aws s3 cp "$WORKFLOW_OUTPUT" "s3://${S3_BUCKET}/n8n/workflows/telegram.json"
+    echo -e "${BLUE}Workflow uploaded to s3://${S3_BUCKET}/n8n/workflows/telegram.json${NC}"
 
     # Ask for domain (interactive)
     echo ""
@@ -202,9 +247,9 @@ deploy_n8n() {
         -var="ssh_key_name=${N8N_SSH_KEY_NAME}" \
         -var="n8n_basic_auth_user=${N8N_BASIC_AUTH_USER:-admin}" \
         -var="n8n_basic_auth_password=${N8N_BASIC_AUTH_PASSWORD}" \
-        -var="s3_bucket_name=${AWS_S3_BUCKET_NAME}" \
+        -var="s3_bucket_name=${S3_BUCKET}" \
         -var="n8n_domain=${N8N_DOMAIN:-}" \
-        -var="api_url=${LAMBDA_FUNCTION_URL%/}" \
+        -var="api_url=${API_URL}" \
         -var="api_key=${API_KEY}"
 
     echo ""
@@ -237,6 +282,9 @@ deploy_n8n() {
     echo ""
     echo ""
     echo -e "${BLUE}EC2 Public IP:${NC} ${PUBLIC_IP}"
+    echo ""
+    echo -e "${BLUE}Workflow will be automatically imported on first boot.${NC}"
+    echo -e "${BLUE}You may need to configure Telegram Bot credentials in n8n.${NC}"
 
     cd ../../../../
 }
