@@ -43,19 +43,6 @@ export function Sidebar() {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 
-          if (item.disabled) {
-            return (
-              <div
-                key={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-md text-muted-foreground/50 cursor-not-allowed"
-              >
-                <Icon className="h-5 w-5" />
-                <span>{item.title}</span>
-                <span className="ml-auto text-xs">(em breve)</span>
-              </div>
-            );
-          }
-
           return (
             <Link
               key={item.href}
