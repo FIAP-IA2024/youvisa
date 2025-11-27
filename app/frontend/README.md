@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YOUVISA Frontend
 
-## Getting Started
+Frontend da plataforma YOUVISA - Sistema de atendimento multicanal inteligente para serviços consulares.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** - Framework React com App Router
+- **React 19** - Biblioteca UI
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS 4** - Estilização utility-first
+- **shadcn/ui** - Componentes base (New York style)
+- **Magic UI** - Componentes animados e efeitos visuais
+- **Coss UI** - Componentes extras baseados em Base UI
+- **next-themes** - Gerenciamento de tema (light/dark/system)
+- **framer-motion** - Animações
+
+## Estrutura do Projeto
+
+```text
+src/
+├── app/                    # App Router (Next.js)
+│   ├── layout.tsx          # Layout raiz com ThemeProvider
+│   ├── page.tsx            # Página inicial
+│   └── globals.css         # Estilos globais + CSS variables
+├── components/
+│   ├── ui/                 # Componentes shadcn/ui
+│   ├── magicui/            # Componentes Magic UI
+│   ├── theme-provider.tsx  # Provider de tema
+│   └── theme-toggle.tsx    # Toggle de tema
+└── lib/
+    └── utils.ts            # Utilitários (cn function)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Desenvolvimento
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Instalar dependências
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Rodar em desenvolvimento
+npm run dev
 
-## Learn More
+# Build de produção
+npm run build
 
-To learn more about Next.js, take a look at the following resources:
+# Rodar build de produção
+npm start
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Lint
+npm run lint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Acesse [http://localhost:3000](http://localhost:3000) para ver a aplicação.
 
-## Deploy on Vercel
+## Adicionando Componentes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### shadcn/ui (Componentes Base)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx shadcn@latest add button
+npx shadcn@latest add dialog
+npx shadcn@latest add input
+npx shadcn@latest add table
+```
+
+### Magic UI (Animações e Efeitos)
+
+```bash
+npx shadcn@latest add "https://magicui.design/r/shimmer-button"
+npx shadcn@latest add "https://magicui.design/r/animated-gradient-text"
+npx shadcn@latest add "https://magicui.design/r/globe"
+```
+
+### Coss UI (Componentes Extras)
+
+```bash
+npx shadcn@latest add @coss/alert
+npx shadcn@latest add @coss/spinner
+npx shadcn@latest add @coss/notification
+```
+
+## Tema
+
+O projeto suporta tema claro, escuro e automático (sistema). O toggle de tema está disponível no componente `ThemeToggle`.
+
+As cores são definidas via CSS variables em `globals.css` e se adaptam automaticamente ao tema selecionado. Evite usar cores fixas - sempre use as variáveis do tema:
+
+```tsx
+// Correto
+<div className="bg-background text-foreground">
+<p className="text-muted-foreground">
+
+// Evitar
+<div className="bg-white text-black">
+<p className="text-gray-500">
+```
+
+## Referências
+
+- [Next.js 16 Docs](https://nextjs.org/docs)
+- [Tailwind CSS v4](https://tailwindcss.com/docs)
+- [shadcn/ui](https://ui.shadcn.com)
+- [Magic UI](https://magicui.design)
+- [Coss UI](https://coss.com/ui/docs)
