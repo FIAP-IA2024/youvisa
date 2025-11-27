@@ -8,6 +8,7 @@ import json
 import logging
 from bedrock import BedrockClassifier
 from mongodb import MongoDBClient
+from telegram import TelegramNotifier
 
 # Configure logging
 logger = logging.getLogger()
@@ -17,6 +18,7 @@ logger.setLevel(logging.INFO)
 MONGODB_URI = os.environ.get('MONGODB_URI')
 MONGODB_DATABASE = os.environ.get('MONGODB_DATABASE', 'youvisa')
 BEDROCK_REGION = os.environ.get('BEDROCK_REGION', 'us-east-1')
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
 
 def handler(event, context):
@@ -68,6 +70,17 @@ def handler(event, context):
                     document_type=result['document_type'],
                     confidence=result.get('confidence', 1.0)
                 )
+
+                # Send Telegram notification
+                if TELEGRAM_BOT_TOKEN:
+                    conversation = mongo_client.get_conversation_by_s3_key(key)
+                    if conversation and conversation.get('channel') == 'telegram':
+                        chat_id = conversation.get('chat_id')
+                        if chat_id:
+                            notifier = TelegramNotifier(TELEGRAM_BOT_TOKEN)
+                            message = f"Seu documento foi classificado como: <b>{result['document_type']}</b>"
+                            notifier.send_message(chat_id, message)
+                            logger.info(f"Notification sent to chat {chat_id}")
 
                 processed += 1
 

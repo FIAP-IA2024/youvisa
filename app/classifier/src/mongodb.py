@@ -65,6 +65,37 @@ class MongoDBClient:
             logger.error(f"Error updating file classification: {str(e)}")
             return False
 
+    def get_conversation_by_s3_key(self, s3_key: str) -> dict:
+        """
+        Get conversation info (including chat_id) from a file's s3_key.
+
+        Args:
+            s3_key: S3 object key
+
+        Returns:
+            Conversation document with chat_id, or None if not found
+        """
+        try:
+            # Find file by s3_key
+            file = self.files_collection.find_one({'s3_key': s3_key})
+            if not file:
+                logger.warning(f"File not found with s3_key: {s3_key}")
+                return None
+
+            # Find conversation by conversation_id
+            conversation = self.db['conversations'].find_one({
+                '_id': file['conversation_id']
+            })
+            if not conversation:
+                logger.warning(f"Conversation not found for file: {s3_key}")
+                return None
+
+            return conversation
+
+        except Exception as e:
+            logger.error(f"Error getting conversation: {str(e)}")
+            return None
+
     def close(self):
         """Close the MongoDB connection."""
         self.client.close()

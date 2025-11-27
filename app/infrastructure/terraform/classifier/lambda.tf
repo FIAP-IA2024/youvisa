@@ -11,10 +11,11 @@ resource "aws_lambda_function" "classifier" {
 
   environment {
     variables = {
-      NODE_ENV         = var.environment
-      MONGODB_URI      = var.mongodb_uri
-      MONGODB_DATABASE = var.mongodb_database
-      BEDROCK_REGION   = var.bedrock_region
+      NODE_ENV           = var.environment
+      MONGODB_URI        = var.mongodb_uri
+      MONGODB_DATABASE   = var.mongodb_database
+      BEDROCK_REGION     = var.bedrock_region
+      TELEGRAM_BOT_TOKEN = var.telegram_bot_token
     }
   }
 }

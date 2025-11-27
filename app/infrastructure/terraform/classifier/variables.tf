@@ -32,3 +32,9 @@ variable "bedrock_region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "telegram_bot_token" {
+  description = "Telegram Bot Token for notifications"
+  type        = string
+  sensitive   = true
+}

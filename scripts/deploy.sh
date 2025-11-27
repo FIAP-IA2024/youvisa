@@ -190,7 +190,8 @@ deploy_classifier() {
     terraform apply -auto-approve \
         -var="mongodb_uri=${MONGODB_URI}" \
         -var="mongodb_database=${MONGODB_DATABASE}" \
-        -var="s3_bucket_name=${S3_BUCKET}"
+        -var="s3_bucket_name=${S3_BUCKET}" \
+        -var="telegram_bot_token=${TELEGRAM_BOT_TOKEN}"
     cd ../../../../
 
     echo -e "${BLUE}Classifier infrastructure deployed successfully!${NC}"
