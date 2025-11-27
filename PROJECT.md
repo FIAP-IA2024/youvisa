@@ -1,30 +1,30 @@
-# YOUVISA - Documentacao Tecnica do Projeto
+# YOUVISA - Documentação Técnica do Projeto
 
-## 1. Visao Geral
+## 1. Visão Geral
 
-### O que e o YOUVISA
+### O que é o YOUVISA
 
-O YOUVISA e uma plataforma de atendimento multicanal inteligente para servicos consulares e emissao de vistos. O sistema utiliza **Inteligencia Artificial**, **automacao de processos (RPA)** e **visao computacional** para otimizar o atendimento ao cliente.
+O YOUVISA é uma plataforma de atendimento multicanal inteligente para serviços consulares e emissão de vistos. O sistema utiliza **Inteligência Artificial**, **automação de processos (RPA)** e **visão computacional** para otimizar o atendimento ao cliente.
 
-A plataforma permite que usuarios enviem documentos (passaportes, comprovantes, formularios) atraves do Telegram, que sao automaticamente classificados por IA e armazenados de forma organizada.
+A plataforma permite que usuários enviem documentos (passaportes, comprovantes, formulários) através do Telegram, que são automaticamente classificados por IA e armazenados de forma organizada.
 
-### Contexto Academico
+### Contexto Acadêmico
 
-Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP** (Faculdade de Informatica e Administracao Paulista).
+Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP** (Faculdade de Informática e Administração Paulista).
 
 **Objetivos da Sprint 2:**
 
 - Automatizar o pipeline de documentos
-- Integrar chatbot a gestao de arquivos
-- Validar documentos com visao computacional
-- Aplicar NLP e IA Generativa para classificacao
+- Integrar chatbot à gestão de arquivos
+- Validar documentos com visão computacional
+- Aplicar NLP e IA Generativa para classificação
 
 ### O que o Sistema Faz
 
 ```
 +------------------+     +------------------+     +------------------+
 |                  |     |                  |     |                  |
-|  Usuario envia   |---->|  Sistema recebe  |---->|  IA classifica   |
+|  Usuário envia   |---->|  Sistema recebe  |---->|  IA classifica   |
 |  documento via   |     |  e armazena no   |     |  o documento     |
 |  Telegram        |     |  AWS S3          |     |  automaticamente |
 |                  |     |                  |     |                  |
@@ -33,8 +33,8 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
                                                           v
                          +------------------+     +------------------+
                          |                  |     |                  |
-                         |  Usuario recebe  |<----|  Resultado salvo |
-                         |  notificacao     |     |  no banco de     |
+                         |  Usuário recebe  |<----|  Resultado salvo |
+                         |  notificação     |     |  no banco de     |
                          |  no Telegram     |     |  dados           |
                          |                  |     |                  |
                          +------------------+     +------------------+
@@ -51,7 +51,7 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 
     +-------------+
     |             |
-    |   Usuario   |
+    |   Usuário   |
     |  (Telegram) |
     |             |
     +------+------+
@@ -88,24 +88,24 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
                                    v
                             +------+------+
                             |             |
-                            | Notificacao |
+                            | Notificação |
                             |  Telegram   |
                             |             |
                             +-------------+
 ```
 
-### Descricao dos Componentes
+### Descrição dos Componentes
 
-| Componente | Funcao |
+| Componente | Função |
 |------------|--------|
-| **Telegram** | Canal de comunicacao com o usuario |
+| **Telegram** | Canal de comunicação com o usuário |
 | **n8n** | Orquestra os fluxos entre componentes |
-| **API Lambda** | Backend que gerencia usuarios, conversas e arquivos |
-| **MongoDB** | Banco de dados para persistencia |
+| **API Lambda** | Backend que gerencia usuários, conversas e arquivos |
+| **MongoDB** | Banco de dados para persistência |
 | **AWS S3** | Armazenamento de documentos |
-| **SQS** | Fila de mensagens para processamento assincrono |
+| **SQS** | Fila de mensagens para processamento assíncrono |
 | **Classifier Lambda** | Classifica documentos usando IA |
-| **AWS Bedrock** | Servico de IA (modelo Claude 3 Haiku) |
+| **AWS Bedrock** | Serviço de IA (modelo Claude 3 Haiku) |
 
 ---
 
@@ -113,9 +113,9 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 
 ### 3.1 Backend API
 
-**Localizacao:** `app/api/`
+**Localização:** `app/api/`
 
-**Proposito:** Gerenciar dados de usuarios, conversas, mensagens e arquivos. Serve como ponto central de persistencia do sistema.
+**Propósito:** Gerenciar dados de usuários, conversas, mensagens e arquivos. Serve como ponto central de persistência do sistema.
 
 **Tecnologias:**
 
@@ -126,20 +126,20 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 
 **Principais Funcionalidades:**
 
-- Criar e atualizar usuarios (sincronizado com Telegram)
+- Criar e atualizar usuários (sincronizado com Telegram)
 - Gerenciar conversas por canal (Telegram, WhatsApp, Webchat)
 - Armazenar mensagens trocadas
 - Registrar metadados de arquivos enviados
 
-**Autenticacao:** Todas as requisicoes (exceto `/health`) exigem header `x-api-key`.
+**Autenticação:** Todas as requisições (exceto `/health`) exigem header `x-api-key`.
 
 ---
 
 ### 3.2 Classificador de Documentos
 
-**Localizacao:** `app/classifier/`
+**Localização:** `app/classifier/`
 
-**Proposito:** Classificar automaticamente documentos enviados pelos usuarios usando Inteligencia Artificial.
+**Propósito:** Classificar automaticamente documentos enviados pelos usuários usando Inteligência Artificial.
 
 **Tecnologias:**
 
@@ -148,17 +148,17 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 - boto3 (SDK AWS)
 - pymongo (MongoDB)
 
-**Categorias de Classificacao:**
+**Categorias de Classificação:**
 
-| Categoria | Descricao |
+| Categoria | Descrição |
 |-----------|-----------|
 | **Passaporte** | Documento de viagem internacional |
 | **RG** | Registro Geral (identidade brasileira) |
-| **Comprovante** | Comprovantes de residencia, renda, etc. |
-| **Formulario** | Formularios preenchidos |
-| **Documento invalido** | Documento nao reconhecido ou ilegivel |
+| **Comprovante** | Comprovantes de residência, renda, etc. |
+| **Formulário** | Formulários preenchidos |
+| **Documento inválido** | Documento não reconhecido ou ilegível |
 
-**Fluxo de Classificacao:**
+**Fluxo de Classificação:**
 
 ```
 +-------------+     +-------------+     +-------------+
@@ -172,7 +172,7 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 +-------------+     +-------------+     +-------------+
 |             |     |             |     |             |
 |  Notifica   |<----|  Salva no   |<----|  Categoria  |
-|  usuario    |     |  MongoDB    |     |  definida   |
+|  usuário    |     |  MongoDB    |     |  definida   |
 |             |     |             |     |             |
 +-------------+     +-------------+     +-------------+
 ```
@@ -181,11 +181,11 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 
 ### 3.3 n8n (Orquestrador)
 
-**Localizacao:** `app/n8n/workflows/`
+**Localização:** `app/n8n/workflows/`
 
-**Proposito:** Orquestrar a comunicacao entre Telegram, API e S3. E o "cerebro" que coordena todos os fluxos.
+**Propósito:** Orquestrar a comunicação entre Telegram, API e S3. É o "cérebro" que coordena todos os fluxos.
 
-**Tecnologia:** n8n (plataforma de automacao low-code)
+**Tecnologia:** n8n (plataforma de automação low-code)
 
 **Workflow Principal (Telegram):**
 
@@ -200,7 +200,7 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
 +--------+---------+
 |  Upsert User     |
 |  (cria/atualiza  |
-|  usuario na API) |
+|  usuário na API) |
 +--------+---------+
          |
          v
@@ -212,7 +212,7 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
          |
          v
 +--------+---------+
-|  Tem arquivo?    +-------> NAO -------> Envia instrucoes
+|  Tem arquivo?    +-------> NÃO -------> Envia instruções
 +--------+---------+
          |
         SIM
@@ -226,14 +226,12 @@ Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na
          v
 +--------+---------+
 |  Upload p/ S3    |
-|  (organizado     |
-|  por data)       |
 +--------+---------+
          |
          v
 +--------+---------+
-|  Confirmacao     |
-|  ao usuario      |
+|  Confirmação     |
+|  ao usuário      |
 +------------------+
 ```
 
@@ -244,18 +242,18 @@ s3://bucket-name/
 └── {file_id}_{timestamp}_{nome_original}
 ```
 
-Os arquivos sao armazenados diretamente na raiz do bucket, com nome unico composto pelo ID do arquivo, timestamp e nome original.
+Os arquivos são armazenados diretamente na raiz do bucket, com nome único composto pelo ID do arquivo, timestamp e nome original.
 
 ---
 
 ### 3.4 Infraestrutura AWS
 
-**Localizacao:** `app/infrastructure/terraform/`
+**Localização:** `app/infrastructure/terraform/`
 
 **Recursos Provisionados:**
 
 ```
-                        AWS (sa-east-1 - Sao Paulo)
+                        AWS (sa-east-1 - São Paulo)
 
     +----------------------------------------------------------+
     |                                                          |
@@ -269,23 +267,23 @@ Os arquivos sao armazenados diretamente na raiz do bucket, com nome unico compos
     |  +-------------+     +-------------+     +-------------+ |
     |  |             |     |             |     |             | |
     |  |     SQS     |     |     IAM     |     |     EC2     | |
-    |  |   (filas)   |     | (permissoes)|     |    (n8n)    | |
+    |  |   (filas)   |     | (permissões)|     |    (n8n)    | |
     |  |             |     |             |     |             | |
     |  +-------------+     +-------------+     +-------------+ |
     |                                                          |
     +----------------------------------------------------------+
 ```
 
-| Recurso | Proposito |
+| Recurso | Propósito |
 |---------|-----------|
 | **S3** | Armazena documentos com criptografia AES-256 |
 | **Lambda (API)** | Executa o backend via Function URL (Node.js 22) |
 | **Lambda (Classifier)** | Classifica documentos (Python 3.11) |
-| **SQS** | Fila para processamento assincrono de documentos |
-| **EC2** | Hospeda o n8n em producao |
-| **IAM** | Gerencia permissoes de acesso |
+| **SQS** | Fila para processamento assíncrono de documentos |
+| **EC2** | Hospeda o n8n em produção |
+| **IAM** | Gerencia permissões de acesso |
 
-**Regiao:** `sa-east-1` (Sao Paulo) para conformidade com LGPD.
+**Região:** `sa-east-1` (São Paulo) para conformidade com LGPD.
 
 ---
 
@@ -294,7 +292,7 @@ Os arquivos sao armazenados diretamente na raiz do bucket, com nome unico compos
 ### 4.1 Fluxo Completo: Envio de Documento
 
 ```
-Usuario              Telegram            n8n                API               S3                SQS           Classifier         MongoDB
+Usuário              Telegram            n8n                API               S3                SQS           Classifier         MongoDB
    |                    |                 |                  |                 |                  |                |                |
    |  Envia documento   |                 |                  |                 |                  |                |                |
    |------------------->|                 |                  |                 |                  |                |                |
@@ -324,50 +322,50 @@ Usuario              Telegram            n8n                API               S3
    |                    |                 |                  |                 |                  |                |  Salva result  |
    |                    |                 |                  |                 |                  |                |--------------->|
    |                    |                 |                  |                 |                  |                |                |
-   |  Notificacao       |                 |                  |                 |                  |                |                |
+   |  Notificação       |                 |                  |                 |                  |                |                |
    |<-------------------|<----------------|------------------|-----------------|------------------|----------------|                |
    |                    |                 |                  |                 |                  |                |                |
 ```
 
-### 4.2 Classificacao com IA
+### 4.2 Classificação com IA
 
 O Classifier Lambda utiliza o modelo **Claude 3 Haiku** da AWS Bedrock para analisar imagens de documentos.
 
-**Prompt utilizado (em portugues):**
+**Prompt utilizado (em português):**
 
 ```
-Voce e um classificador de documentos da plataforma YOUVISA.
+Você é um classificador de documentos da plataforma YOUVISA.
 Analise a imagem fornecida e identifique qual documento ela representa.
 Responda com apenas uma das seguintes categorias:
 - Passaporte
 - RG
 - Comprovante
-- Formulario
-- Documento invalido
+- Formulário
+- Documento inválido
 
 Responda apenas o nome da categoria. Nada mais.
 ```
 
-### 4.3 Notificacao ao Usuario
+### 4.3 Notificação ao Usuário
 
-Apos a classificacao, o usuario recebe uma notificacao no Telegram:
+Após a classificação, o usuário recebe uma notificação no Telegram:
 
-**Documento valido:**
+**Documento válido:**
 
 ```
 Seu documento foi classificado como: Passaporte
 ```
 
-**Documento invalido:**
+**Documento inválido:**
 
 ```
-Nao conseguimos identificar o documento enviado.
+Não conseguimos identificar o documento enviado.
 Por favor, envie novamente seguindo estas dicas:
 
-- Certifique-se de que o documento esta bem iluminado
+- Certifique-se de que o documento está bem iluminado
 - Capture o documento por inteiro
 - Evite reflexos e sombras
-- A imagem deve estar nitida (sem borroes)
+- A imagem deve estar nítida (sem borrões)
 ```
 
 ---
@@ -412,29 +410,29 @@ Por favor, envie novamente seguindo estas dicas:
                            +------------------+
 ```
 
-### Descricao das Entidades
+### Descrição das Entidades
 
-**User:** Representa um usuario do sistema, vinculado ao Telegram.
+**User:** Representa um usuário do sistema, vinculado ao Telegram.
 
-**Conversation:** Uma conversa entre usuario e sistema. Suporta multiplos canais (telegram, whatsapp, webchat).
+**Conversation:** Uma conversa entre usuário e sistema. Suporta múltiplos canais (telegram, whatsapp, webchat).
 
-**Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, video ou audio.
+**Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
 
-**File:** Metadados de arquivos enviados. Armazena referencia ao S3 e resultados de classificacao.
+**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação.
 
 ---
 
 ## 6. Como Executar
 
-### Pre-requisitos
+### Pré-requisitos
 
 - Docker e Docker Compose
 - Terraform (>= 1.5.0)
 - AWS CLI configurado
 - Conta Telegram (para criar bot via @BotFather)
-- MongoDB Atlas (ou instancia local)
+- MongoDB Atlas (ou instância local)
 
-### Configuracao
+### Configuração
 
 1. **Copie o arquivo de ambiente:**
 
@@ -442,7 +440,7 @@ Por favor, envie novamente seguindo estas dicas:
    cp .env.example .env
    ```
 
-2. **Configure as variaveis principais:**
+2. **Configure as variáveis principais:**
 
    ```bash
    # Telegram
@@ -463,17 +461,17 @@ Por favor, envie novamente seguindo estas dicas:
 
 ### Comandos Principais
 
-| Comando | Descricao |
+| Comando | Descrição |
 |---------|-----------|
-| `make help` | Lista todos os comandos disponiveis |
-| `make start all` | Inicia todos os servicos localmente |
+| `make help` | Lista todos os comandos disponíveis |
+| `make start all` | Inicia todos os serviços localmente |
 | `make deploy s3` | Faz deploy do bucket S3 |
 | `make deploy api` | Faz deploy da API Lambda |
 | `make deploy classifier` | Faz deploy do classificador |
 | `make logs api` | Visualiza logs da API |
-| `make stop` | Para todos os servicos |
+| `make stop` | Para todos os serviços |
 
-### Deploy Completo (Producao)
+### Deploy Completo (Produção)
 
 ```bash
 # 1. Criar backend do Terraform
@@ -496,11 +494,11 @@ youvisa/
 ├── app/
 │   ├── api/                    # Backend API (TypeScript/Fastify)
 │   │   ├── src/
-│   │   │   ├── controllers/    # Logica de negocio
+│   │   │   ├── controllers/    # Lógica de negócio
 │   │   │   ├── models/         # Schemas MongoDB
 │   │   │   ├── repositories/   # Acesso a dados
-│   │   │   ├── config/         # Configuracoes
-│   │   │   ├── routes.ts       # Definicao de rotas
+│   │   │   ├── config/         # Configurações
+│   │   │   ├── routes.ts       # Definição de rotas
 │   │   │   ├── lambda.ts       # Handler AWS Lambda
 │   │   │   └── server.ts       # Servidor local
 │   │   └── package.json
@@ -508,16 +506,16 @@ youvisa/
 │   ├── classifier/             # Lambda classificador (Python)
 │   │   └── src/
 │   │       ├── handler.py      # Entry point Lambda
-│   │       ├── bedrock.py      # Integracao AWS Bedrock
-│   │       ├── mongodb.py      # Operacoes MongoDB
-│   │       └── telegram.py     # Notificacoes Telegram
+│   │       ├── bedrock.py      # Integração AWS Bedrock
+│   │       ├── mongodb.py      # Operações MongoDB
+│   │       └── telegram.py     # Notificações Telegram
 │   │
 │   ├── n8n/
 │   │   └── workflows/          # Workflows n8n
 │   │       └── telegram.template.json
 │   │
 │   └── infrastructure/
-│       └── terraform/          # Infraestrutura como codigo
+│       └── terraform/          # Infraestrutura como código
 │           ├── s3/             # Bucket S3
 │           ├── api/            # Lambda API
 │           ├── classifier/     # Lambda Classifier + SQS
@@ -526,30 +524,30 @@ youvisa/
 │           ├── n8n/            # EC2 para n8n
 │           └── tf-state/       # Backend Terraform
 │
-├── scripts/                    # Scripts de automacao
+├── scripts/                    # Scripts de automação
 │   ├── deploy.sh              # Deploy de infraestrutura
-│   ├── start.sh               # Iniciar servicos
+│   ├── start.sh               # Iniciar serviços
 │   └── generate-workflow.sh   # Gerar workflow n8n
 │
 ├── docs/
 │   └── diagramas/             # Diagramas da arquitetura
 │
-├── docker-compose.yml         # Configuracao Docker
+├── docker-compose.yml         # Configuração Docker
 ├── Makefile                   # Comandos make
-├── .env.example               # Exemplo de variaveis
-└── README.md                  # Documentacao principal
+├── .env.example               # Exemplo de variáveis
+└── README.md                  # Documentação principal
 ```
 
 ---
 
 ## Tecnologias Utilizadas
 
-| Categoria | Tecnologia | Versao/Detalhes |
+| Categoria | Tecnologia | Versão/Detalhes |
 |-----------|------------|-----------------|
 | **Backend** | TypeScript | - |
 | **Framework** | Fastify | 5.5.0 |
 | **Banco de Dados** | MongoDB | Atlas |
-| **Orquestracao** | n8n | Latest |
+| **Orquestração** | n8n | Latest |
 | **IA/ML** | AWS Bedrock | Claude 3 Haiku |
 | **Cloud** | AWS | sa-east-1 |
 | **IaC** | Terraform | >= 1.5.0 |
@@ -559,9 +557,9 @@ youvisa/
 
 ---
 
-## Conformidade e Seguranca
+## Conformidade e Segurança
 
-- **LGPD:** Dados processados na regiao `sa-east-1` (Sao Paulo)
+- **LGPD:** Dados processados na região `sa-east-1` (São Paulo)
 - **Criptografia:** AES-256 para dados em repouso (S3)
-- **Autenticacao:** API Key obrigatoria em todas as requisicoes
-- **IAM:** Principio do menor privilegio para permissoes AWS
+- **Autenticação:** API Key obrigatória em todas as requisições
+- **IAM:** Princípio do menor privilégio para permissões AWS
