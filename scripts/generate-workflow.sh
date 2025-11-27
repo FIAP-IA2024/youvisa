@@ -28,7 +28,7 @@ DEFAULT_NLP_URL=""
 
 if [ -f "$ENV_FILE" ]; then
     echo -e "${GREEN}Loading defaults from .env...${NC}"
-    while IFS='=' read -r key value; do
+    while IFS='=' read -r key value || [ -n "$key" ]; do
         [[ "$key" =~ ^#.*$ ]] && continue
         [[ -z "$key" ]] && continue
         key=$(echo "$key" | xargs)
