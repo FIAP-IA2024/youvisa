@@ -61,6 +61,9 @@ vendor/
 .env.local
 .env.bak
 
+# n8n workflow output (contains sensitive data)
+app/n8n/workflows/telegram.output.json
+
 # Terraform
 *.tfstate
 *.tfstate.*

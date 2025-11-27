@@ -1,4 +1,4 @@
-.PHONY: help deploy start stop logs s3-list
+.PHONY: help deploy start stop logs s3-list workflow
 
 # Colors
 BLUE := \033[0;34m
@@ -28,6 +28,7 @@ help:
 	@echo "  make stop            - Stop all services"
 	@echo "  make logs <service>  - Show logs (backend, n8n, ocr)"
 	@echo "  make s3-list         - List files in S3 bucket"
+	@echo "  make workflow        - Generate n8n workflow file (interactive)"
 	@echo ""
 
 # Deploy command
@@ -65,6 +66,10 @@ logs:
 # S3 list
 s3-list:
 	@./scripts/s3-list.sh
+
+# Generate n8n workflow
+workflow:
+	@./scripts/generate-workflow.sh
 
 # Catch-all target to prevent "No rule to make target" errors
 %:
