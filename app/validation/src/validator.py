@@ -45,7 +45,7 @@ class ImageValidator:
         if image is None:
             return {
                 'valid': False,
-                'reason': 'Could not decode image. Invalid format.',
+                'reason': 'Não foi possível decodificar a imagem. Formato inválido.',
                 'details': {}
             }
 
@@ -72,8 +72,8 @@ class ImageValidator:
         if width < self.MIN_WIDTH or height < self.MIN_HEIGHT:
             return {
                 'valid': False,
-                'reason': f'Image too small. Minimum size: {self.MIN_WIDTH}x{self.MIN_HEIGHT} pixels. '
-                         f'Your image: {width}x{height} pixels.',
+                'reason': f'Imagem muito pequena. Tamanho mínimo: {self.MIN_WIDTH}x{self.MIN_HEIGHT} pixels. '
+                         f'Sua imagem: {width}x{height} pixels.',
                 'details': details
             }
 
@@ -81,7 +81,7 @@ class ImageValidator:
         if blur_score < self.MIN_BLUR_SCORE:
             return {
                 'valid': False,
-                'reason': 'Image is too blurry. Please take a clearer photo.',
+                'reason': 'A imagem está muito desfocada. Por favor, tire uma foto mais nítida.',
                 'details': details
             }
 
@@ -89,21 +89,21 @@ class ImageValidator:
         if brightness < self.MIN_BRIGHTNESS:
             return {
                 'valid': False,
-                'reason': 'Image is too dark. Please take a photo with better lighting.',
+                'reason': 'A imagem está muito escura. Por favor, tire uma foto com melhor iluminação.',
                 'details': details
             }
 
         if brightness > self.MAX_BRIGHTNESS:
             return {
                 'valid': False,
-                'reason': 'Image is too bright or overexposed. Please take a photo with less light.',
+                'reason': 'A imagem está muito clara ou superexposta. Por favor, tire uma foto com menos luz.',
                 'details': details
             }
 
         # All validations passed
         return {
             'valid': True,
-            'reason': 'Image passed all quality checks.',
+            'reason': 'A imagem passou em todas as verificações de qualidade.',
             'details': details
         }
 

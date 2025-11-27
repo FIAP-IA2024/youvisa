@@ -150,7 +150,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
-        "text": "={{ 'A imagem do documento nao passou na validacao: ' + $node['Validate Image'].json.reason + '\\n\\nPor favor, envie uma foto mais nitida.' }}"
+        "text": "={{ 'A imagem do documento não passou na validação: ' + $node['Validate Image'].json.reason }}"
       },
       "name": "Send Validation Error",
       "type": "n8n-nodes-base.telegram",
@@ -246,7 +246,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
-        "text": "Documento recebido! Estamos processando a classificacao..."
+        "text": "Documento recebido! Estamos processando a classificação..."
       },
       "name": "Send File Confirmation",
       "type": "n8n-nodes-base.telegram",
