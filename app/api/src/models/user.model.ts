@@ -7,6 +7,8 @@ export interface IUser extends Document {
   last_name?: string;
   language_code?: string;
   is_bot: boolean;
+  email?: string;
+  email_updated_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -38,6 +40,14 @@ const userSchema = new Schema<IUser>(
     is_bot: {
       type: Boolean,
       default: false,
+    },
+    email: {
+      type: String,
+      required: false,
+    },
+    email_updated_at: {
+      type: Date,
+      required: false,
     },
   },
   {

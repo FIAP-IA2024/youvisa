@@ -38,6 +38,8 @@ export interface User {
   last_name?: string;
   language_code?: string;
   is_bot: boolean;
+  email?: string;
+  email_updated_at?: string;
   created_at: string;
   updated_at: string;
 }
