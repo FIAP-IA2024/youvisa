@@ -11,7 +11,7 @@ APP=$1
 
 if [ -z "$APP" ]; then
     echo -e "${RED}Error: No app specified${NC}"
-    echo -e "Available options: tf-state, s3, api, ocr, n8n, all"
+    echo -e "Available options: tf-state, s3, api, validation, classifier, n8n, all"
     exit 1
 fi
 
@@ -95,8 +95,39 @@ deploy_api() {
     echo -e "${BLUE}API infrastructure deployed successfully!${NC}"
 }
 
-deploy_ocr() {
-    echo -e "${BLUE}Deploying OCR infrastructure...${NC}"
+deploy_validation() {
+    echo -e "${BLUE}Deploying Validation infrastructure...${NC}"
+
+    # Build and package Lambda
+    echo -e "${BLUE}Building Validation Lambda...${NC}"
+    cd app/validation
+    bash scripts/package-lambda.sh
+    cd ../../
+
+    # Copy shared backend configuration
+    echo -e "${BLUE}Copying shared backend.tf...${NC}"
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/validation/backend.tf
+
+    # Deploy with Terraform
+    echo -e "${BLUE}Deploying Validation Lambda...${NC}"
+    cd app/infrastructure/terraform/validation
+
+    # Remove local state files
+    rm -rf .terraform
+
+    terraform init -backend-config="key=validation/terraform.tfstate"
+    terraform apply -auto-approve
+    cd ../../../../
+
+    echo -e "${BLUE}Validation infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}Lambda URL:${NC}"
+    cd app/infrastructure/terraform/validation
+    terraform output lambda_function_url
+    cd ../../../../
+}
+
+deploy_classifier() {
+    echo -e "${BLUE}Deploying Classifier infrastructure...${NC}"
 
     # Check if .env exists
     if [ ! -f .env ]; then
@@ -110,32 +141,44 @@ deploy_ocr() {
     export $(grep -v '^#' .env | xargs)
 
     # Build and package Lambda
-    echo -e "${BLUE}Building OCR...${NC}"
-    cd app/ocr/document-processor
-    npm install
-    npm run build
+    echo -e "${BLUE}Building Classifier Lambda...${NC}"
+    cd app/classifier
     bash scripts/package-lambda.sh
-    cd ../../../
+    cd ../../
+
+    # Get S3 bucket name from terraform s3 output
+    echo -e "${BLUE}Getting S3 bucket name from terraform...${NC}"
+    cd app/infrastructure/terraform/s3
+    terraform init -backend-config="key=s3/terraform.tfstate" > /dev/null 2>&1
+    S3_BUCKET=$(terraform output -raw bucket_name 2>/dev/null)
+    cd ../../../../
+
+    if [ -z "$S3_BUCKET" ]; then
+        echo -e "${RED}Error: Could not get S3 bucket name from terraform${NC}"
+        echo "Deploy S3 first: make deploy s3"
+        exit 1
+    fi
+    echo -e "${BLUE}S3 Bucket: ${S3_BUCKET}${NC}"
 
     # Copy shared backend configuration
     echo -e "${BLUE}Copying shared backend.tf...${NC}"
-    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/ocr/backend.tf
+    cp app/infrastructure/terraform/shared/backend.tf app/infrastructure/terraform/classifier/backend.tf
 
     # Deploy with Terraform
-    echo -e "${BLUE}Deploying OCR Lambda...${NC}"
-    cd app/infrastructure/terraform/ocr
+    echo -e "${BLUE}Deploying Classifier Lambda...${NC}"
+    cd app/infrastructure/terraform/classifier
 
     # Remove local state files
     rm -rf .terraform
 
-    terraform init -backend-config="key=ocr/terraform.tfstate"
+    terraform init -backend-config="key=classifier/terraform.tfstate"
     terraform apply -auto-approve \
         -var="mongodb_uri=${MONGODB_URI}" \
         -var="mongodb_database=${MONGODB_DATABASE}" \
-        -var="s3_bucket_name=${AWS_S3_BUCKET_NAME}"
+        -var="s3_bucket_name=${S3_BUCKET}"
     cd ../../../../
 
-    echo -e "${BLUE}OCR infrastructure deployed successfully!${NC}"
+    echo -e "${BLUE}Classifier infrastructure deployed successfully!${NC}"
 }
 
 deploy_n8n() {
@@ -197,6 +240,23 @@ deploy_n8n() {
     fi
     echo -e "${BLUE}S3 Bucket: ${S3_BUCKET}${NC}"
 
+    # Get Validation Lambda URL from terraform validation output (if deployed)
+    echo -e "${BLUE}Getting Validation Lambda URL from terraform...${NC}"
+    cd app/infrastructure/terraform/validation
+    if terraform init -backend-config="key=validation/terraform.tfstate" > /dev/null 2>&1; then
+        VALIDATION_URL=$(terraform output -raw lambda_function_url 2>/dev/null || echo "")
+    else
+        VALIDATION_URL=""
+    fi
+    cd ../../../../
+
+    if [ -z "$VALIDATION_URL" ]; then
+        echo -e "${BLUE}Warning: Validation Lambda not deployed. Workflow will need manual configuration.${NC}"
+        VALIDATION_URL="__VALIDATION_URL_NOT_DEPLOYED__"
+    else
+        echo -e "${BLUE}Validation URL: ${VALIDATION_URL}${NC}"
+    fi
+
     # Process workflow template
     echo -e "${BLUE}Processing n8n workflow template...${NC}"
     WORKFLOW_TEMPLATE="app/n8n/workflows/telegram.template.json"
@@ -211,6 +271,7 @@ deploy_n8n() {
     sed -e "s|__API_URL__|${API_URL}|g" \
         -e "s|__API_KEY__|${API_KEY}|g" \
         -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
+        -e "s|__VALIDATION_URL__|${VALIDATION_URL}|g" \
         "$WORKFLOW_TEMPLATE" > "$WORKFLOW_OUTPUT"
 
     echo -e "${BLUE}Workflow processed successfully${NC}"
@@ -299,8 +360,11 @@ case "$APP" in
     api)
         deploy_api
         ;;
-    ocr)
-        deploy_ocr
+    validation)
+        deploy_validation
+        ;;
+    classifier)
+        deploy_classifier
         ;;
     n8n)
         deploy_n8n
@@ -308,12 +372,13 @@ case "$APP" in
     all)
         deploy_s3
         deploy_api
-        deploy_ocr
+        deploy_validation
+        deploy_classifier
         deploy_n8n
         ;;
     *)
         echo -e "${RED}Error: Unknown app '${APP}'${NC}"
-        echo -e "Available options: tf-state, s3, api, ocr, n8n, all"
+        echo -e "Available options: tf-state, s3, api, validation, classifier, n8n, all"
         exit 1
         ;;
 esac

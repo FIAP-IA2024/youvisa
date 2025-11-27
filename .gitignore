@@ -84,6 +84,14 @@ __pycache__/
 *.exe
 *.bkp
 
+# Lambda packages
+app/**/lambda.zip
+app/**/layer.zip
+app/**/dist/
+app/**/layer/
+app/api/lambda.zip
+app/api/nodejs-layer.zip
+
 # Docker volumes
 docker/
 

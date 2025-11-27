@@ -50,6 +50,19 @@ if [ -z "$S3_BUCKET" ]; then
     exit 1
 fi
 
+# Prompt for VALIDATION_URL
+echo ""
+echo -e "${BLUE}Enter the Validation Lambda URL (e.g., https://xxx.lambda-url.sa-east-1.on.aws):${NC}"
+read -p "> " VALIDATION_URL
+
+if [ -z "$VALIDATION_URL" ]; then
+    echo -e "${RED}Error: VALIDATION_URL is required${NC}"
+    exit 1
+fi
+
+# Remove trailing slash if present
+VALIDATION_URL="${VALIDATION_URL%/}"
+
 # Generate output file
 echo ""
 echo -e "${BLUE}Generating workflow file...${NC}"
@@ -57,6 +70,7 @@ echo -e "${BLUE}Generating workflow file...${NC}"
 sed -e "s|__API_URL__|${API_URL}|g" \
     -e "s|__API_KEY__|${API_KEY}|g" \
     -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
+    -e "s|__VALIDATION_URL__|${VALIDATION_URL}|g" \
     "$TEMPLATE_FILE" > "$OUTPUT_FILE"
 
 echo -e "${BLUE}Workflow generated successfully!${NC}"

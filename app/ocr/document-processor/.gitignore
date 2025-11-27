@@ -1,8 +1,0 @@
-node_modules/
-dist/
-dist.zip
-nodejs-layer.zip
-*.log
-.env
-watch/*
-!watch/.gitkeep
