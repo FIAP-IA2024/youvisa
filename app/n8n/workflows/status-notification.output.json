@@ -12,19 +12,22 @@
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [250, 400],
+      "position": [
+        250,
+        400
+      ],
       "webhookId": "auto-generated-on-activation"
     },
     {
       "parameters": {
-        "url": "=__API_URL__/processes/{{ $json.body.process_id }}",
+        "url": "=http://host.docker.internal:5555/processes/{{ $json.body.process_id }}",
         "method": "GET",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "__API_KEY__"
+              "value": "fiap-iatron"
             }
           ]
         },
@@ -33,18 +36,21 @@
       "name": "Get Process",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [500, 400]
+      "position": [
+        500,
+        400
+      ]
     },
     {
       "parameters": {
-        "url": "=__API_URL__/users/{{ $('Webhook Trigger').item.json.body.user_id }}",
+        "url": "=http://host.docker.internal:5555/users/{{ $('Webhook Trigger').item.json.body.user_id }}",
         "method": "GET",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "__API_KEY__"
+              "value": "fiap-iatron"
             }
           ]
         },
@@ -53,18 +59,21 @@
       "name": "Get User",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [750, 400]
+      "position": [
+        750,
+        400
+      ]
     },
     {
       "parameters": {
-        "url": "=__API_URL__/conversations?channel=telegram",
+        "url": "=http://host.docker.internal:5555/conversations?channel=telegram",
         "method": "GET",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "__API_KEY__"
+              "value": "fiap-iatron"
             }
           ]
         },
@@ -73,7 +82,10 @@
       "name": "Get Conversations",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [1000, 400]
+      "position": [
+        1000,
+        400
+      ]
     },
     {
       "parameters": {
@@ -82,7 +94,10 @@
       "name": "Generate Message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1250, 400]
+      "position": [
+        1250,
+        400
+      ]
     },
     {
       "parameters": {
@@ -98,7 +113,10 @@
       "name": "Has Chat ID?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [1500, 400]
+      "position": [
+        1500,
+        400
+      ]
     },
     {
       "parameters": {
@@ -109,24 +127,27 @@
       "name": "Send Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [1750, 300],
+      "position": [
+        1750,
+        300
+      ],
       "credentials": {
         "telegramApi": {
-          "id": "1",
-          "name": "Telegram Bot API"
+          "id": "J6WE0P62AV4X4KUt",
+          "name": "Telegram account"
         }
       }
     },
     {
       "parameters": {
-        "url": "__API_URL__/messages",
+        "url": "http://host.docker.internal:5555/messages",
         "method": "POST",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "__API_KEY__"
+              "value": "fiap-iatron"
             }
           ]
         },
@@ -138,7 +159,10 @@
       "name": "Save Message",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [2000, 300]
+      "position": [
+        2000,
+        300
+      ]
     },
     {
       "parameters": {
@@ -148,7 +172,10 @@
       "name": "Respond Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [2250, 300]
+      "position": [
+        2250,
+        300
+      ]
     },
     {
       "parameters": {
@@ -158,7 +185,10 @@
       "name": "Respond No Chat",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1750, 500]
+      "position": [
+        1750,
+        500
+      ]
     }
   ],
   "connections": {
