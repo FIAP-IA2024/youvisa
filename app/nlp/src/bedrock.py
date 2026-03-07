@@ -33,7 +33,8 @@ class BedrockNLP:
         text: str,
         conversation_state: str = None,
         has_email: bool = False,
-        history: list = None
+        history: list = None,
+        processes: list = None
     ) -> dict:
         """
         Process a text message and generate a response.
@@ -58,17 +59,40 @@ class BedrockNLP:
         # Format history for context
         history_text = self._format_history(history) if history else "Nenhum historico"
 
+        # Format processes for context
+        processes_text = self._format_processes(processes) if processes else "Nenhum processo encontrado"
+
         # Build prompt
         system_prompt = SYSTEM_PROMPT.format(
             state=state,
             has_email='Sim' if has_email else 'Nao',
-            history=history_text
+            history=history_text,
+            processes=processes_text
         )
 
         # Call Bedrock
         response = self._invoke_bedrock(system_prompt, text)
 
         return response
+
+    def _format_processes(self, processes: list) -> str:
+        """Format process data for context."""
+        if not processes:
+            return "Nenhum processo encontrado"
+
+        formatted = []
+        for p in processes:
+            visa_type = p.get('visa_type', 'N/A')
+            country = p.get('destination_country', 'N/A')
+            status = p.get('status', 'N/A')
+            created = str(p.get('created_at', 'N/A'))[:10]
+            docs_count = len(p.get('documents', []))
+            formatted.append(
+                f"- Visto: {visa_type} | Pais: {country} | Status: {status} | "
+                f"Criado em: {created} | Documentos: {docs_count}"
+            )
+
+        return "\n".join(formatted)
 
     def _format_history(self, history: list) -> str:
         """Format message history for context."""

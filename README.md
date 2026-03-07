@@ -375,10 +375,12 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 
 | Página | Rota | Funcionalidade |
 |--------|------|----------------|
-| **Dashboard** | `/dashboard` | Visão geral com estatísticas |
-| **Conversas** | `/dashboard/conversations` | Gerenciar conversas e transferências |
-| **Usuários** | `/dashboard/users` | Lista de usuários cadastrados |
+| **Dashboard** | `/dashboard` | Visao geral com estatisticas |
 | **Documentos** | `/dashboard/documents` | Visualizar documentos classificados |
+| **Processos** | `/dashboard/processes` | Acompanhamento de processos de visto |
+| **Processos Detalhe** | `/dashboard/processes/[id]` | Timeline, historico e mudanca de status |
+| **Conversas** | `/dashboard/conversations` | Gerenciar conversas e transferencias |
+| **Usuarios** | `/dashboard/users` | Lista de usuarios cadastrados |
 
 **Funcionalidade de Transferência:**
 
@@ -486,6 +488,22 @@ O console permite que operadores:
                            | metadata         |
                            | created_at       |
                            +------------------+
+
++------------------+       +------------------+
+|      User        |<------| Process (Sprint 3)|
++------------------+       +------------------+
+                           | _id              |
+                           | user_id (FK)     |
+                           | conversation_id  |
+                           | visa_type        |
+                           | destination_country|
+                           | status           |
+                           | status_history[] |
+                           | documents[] (FK) |
+                           | notes            |
+                           | created_at       |
+                           | updated_at       |
+                           +------------------+
 ```
 
 ### Descrição das Entidades
@@ -496,7 +514,9 @@ O console permite que operadores:
 
 **Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
 
-**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação.
+**File:** Metadados de arquivos enviados. Armazena referencia ao S3 e resultados de classificacao.
+
+**Process (Sprint 3):** Representa uma solicitacao de visto. Possui maquina de estados finitos (`recebido` -> `em_analise` -> `aprovado` -> `finalizado`), com historico completo de transicoes. Cada processo pode ter multiplos documentos associados.
 
 ---
 
@@ -828,7 +848,85 @@ youvisa/
 
 ---
 
-## Conclusão
+## Sprint 3: Acompanhamento de Processos
+
+A Sprint 3 evolui o sistema para uma **plataforma inteligente de acompanhamento de processos de visto**, adicionando visibilidade ao cliente e ao time interno sobre o andamento das solicitacoes.
+
+### Fluxo de Status do Processo
+
+```
+                    +-------------+
+                    |  recebido   |
+                    +------+------+
+                           |
+                           v
+                    +------+------+
+             +----->| em_analise  |<-----+
+             |      +------+------+      |
+             |             |             |
+             |     +-------+-------+     |
+             |     |       |       |     |
+             |     v       v       v     |
+         +---+---+ +------+ +-----+--+  |
+         |pendente| |aprova| |rejeita |  |
+         |_docs   | |do    | |do      |  |
+         +--------+ +--+---+ +--------+  |
+                        |                 |
+                        v                 |
+                  +-----+------+          |
+                  | finalizado |          |
+                  +------------+          |
+                                          |
+                  +------------+          |
+                  | cancelado  |<---------+
+                  +------------+   (de qualquer estado nao-final)
+```
+
+### Endpoints de Processos
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| POST | `/processes` | Criar processo |
+| GET | `/processes` | Listar com filtros (`?status=`, `?user_id=`, `?visa_type=`) |
+| GET | `/processes/:id` | Detalhe do processo |
+| GET | `/processes/:id/history` | Historico de transicoes |
+| GET | `/processes/user/:userId` | Processos por usuario |
+| GET | `/processes/telegram/:telegramId` | Processos por Telegram ID |
+| POST | `/processes/:id/status` | Mudar status (body: `{status, reason, changed_by?}`) |
+| POST | `/processes/:id/documents` | Associar documento ao processo |
+
+### Notificacoes Automaticas
+
+Quando um atendente altera o status de um processo, o sistema:
+1. Valida a transicao (FSM)
+2. Registra no historico
+3. Dispara webhook para n8n
+4. n8n gera mensagem deterministica e envia via Telegram
+
+### Consulta de Status via Chatbot
+
+O usuario pode perguntar "qual o status do meu processo?" e o bot responde com dados reais do MongoDB. Guardrails de governanca impedem que o bot:
+- Informe prazos especificos
+- Confirme aprovacao sem dados
+- Tome decisoes institucionais
+
+### Console do Operador - Processos
+
+Novas paginas no dashboard:
+- **Listagem**: tabela com filtros por status e tipo de visto
+- **Detalhe**: timeline visual, historico de transicoes, documentos associados, formulario de mudanca de status
+
+### Diagrama de Fluxo de Estados
+
+O diagrama completo esta disponivel em `docs/diagramas/fluxo_estados_processo.png`.
+
+### Relatorio Tecnico
+
+Disponivel em `docs/RELATORIO_SPRINT_3.md`.
+
+---
+
+## Conclusao
 
 A Sprint 2 do projeto YOUVISA consolida a implementação de uma plataforma de atendimento multicanal inteligente, unindo:
 

@@ -12,6 +12,8 @@ NC='\033[0m'
 
 TEMPLATE_FILE="app/n8n/workflows/telegram.template.json"
 OUTPUT_FILE="app/n8n/workflows/telegram.output.json"
+STATUS_TEMPLATE_FILE="app/n8n/workflows/status-notification.template.json"
+STATUS_OUTPUT_FILE="app/n8n/workflows/status-notification.output.json"
 ENV_FILE=".env"
 
 if [ ! -f "$TEMPLATE_FILE" ]; then
@@ -136,8 +138,17 @@ sed -e "s|__API_URL__|${API_URL}|g" \
     -e "s|__NLP_URL__|${NLP_URL}|g" \
     "$TEMPLATE_FILE" > "$OUTPUT_FILE"
 
+# Generate status notification workflow if template exists
+if [ -f "$STATUS_TEMPLATE_FILE" ]; then
+    echo -e "${BLUE}Generating status notification workflow...${NC}"
+    sed -e "s|__API_URL__|${API_URL}|g" \
+        -e "s|__API_KEY__|${API_KEY}|g" \
+        "$STATUS_TEMPLATE_FILE" > "$STATUS_OUTPUT_FILE"
+    echo -e "Status workflow: ${BLUE}${STATUS_OUTPUT_FILE}${NC}"
+fi
+
 echo ""
-echo -e "${GREEN}Workflow generated successfully!${NC}"
+echo -e "${GREEN}Workflows generated successfully!${NC}"
 echo ""
 echo -e "Output file: ${BLUE}${OUTPUT_FILE}${NC}"
 echo ""
