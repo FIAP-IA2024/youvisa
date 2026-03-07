@@ -4,6 +4,7 @@ import {
   ConversationController,
   FileController,
   MessageController,
+  ProcessController,
   UserController,
 } from './controllers';
 import { container } from './container';
@@ -13,6 +14,7 @@ export async function routes(fastify: FastifyInstance) {
   const conversationController = container.resolve(ConversationController);
   const messageController = container.resolve(MessageController);
   const fileController = container.resolve(FileController);
+  const processController = container.resolve(ProcessController);
 
   // Health check
   fastify.get('/health', async () => {
@@ -131,6 +133,64 @@ export async function routes(fastify: FastifyInstance) {
   fastify.get('/files', async (request, reply) => {
     const { conversation_id } = request.query as any;
     const result = await fileController.getAll({ conversation_id });
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  // Process routes (fixed paths before parameterized paths)
+  fastify.post('/processes', async (request, reply) => {
+    const result = await processController.create(request.body as any);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/processes', async (request, reply) => {
+    const { status, user_id, visa_type } = request.query as any;
+    const result = await processController.getAll({
+      status,
+      user_id,
+      visa_type,
+    });
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/processes/user/:userId', async (request, reply) => {
+    const { userId } = request.params as { userId: string };
+    const result = await processController.getByUserId(userId);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/processes/telegram/:telegramId', async (request, reply) => {
+    const { telegramId } = request.params as { telegramId: string };
+    const result = await processController.getByTelegramId(telegramId);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/processes/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const result = await processController.getById(id);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/processes/:id/history', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const result = await processController.getStatusHistory(id);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.post('/processes/:id/status', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const result = await processController.updateStatus(
+      id,
+      request.body as any,
+    );
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.post('/processes/:id/documents', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const result = await processController.addDocument(
+      id,
+      request.body as any,
+    );
     return reply.status(result.statusCode).send(result.body);
   });
 }

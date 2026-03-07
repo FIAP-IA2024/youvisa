@@ -26,6 +26,7 @@ class MongoDBClient:
         self.users = self.db['users']
         self.conversations = self.db['conversations']
         self.messages = self.db['messages']
+        self.processes = self.db['processes']
 
     def get_conversation_by_chat_id(self, chat_id: str) -> dict:
         """
@@ -214,6 +215,28 @@ class MongoDBClient:
         except Exception as e:
             logger.error(f"Error updating conversation state: {str(e)}")
             return False
+
+    def get_processes_by_telegram_id(self, telegram_id: str) -> list:
+        """
+        Get processes for a user by their Telegram ID.
+
+        Args:
+            telegram_id: Telegram user ID
+
+        Returns:
+            List of process documents (up to 5 most recent)
+        """
+        try:
+            user = self.users.find_one({'telegram_id': str(telegram_id)})
+            if not user:
+                return []
+            processes = list(self.processes.find(
+                {'user_id': user['_id']}
+            ).sort('created_at', -1).limit(5))
+            return processes
+        except Exception as e:
+            logger.error(f"Error getting processes by telegram_id: {str(e)}")
+            return []
 
     def close(self):
         """Close the MongoDB connection."""

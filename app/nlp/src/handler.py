@@ -121,14 +121,20 @@ def handler(event, context):
         if conversation:
             messages = mongo.get_recent_messages(conversation['_id'], limit=10)
 
-        logger.info(f"Processing message - chat_id: {chat_id}, has_email: {has_email}, state: {conversation_state}")
+        # Fetch user's processes
+        processes = []
+        if telegram_id:
+            processes = mongo.get_processes_by_telegram_id(telegram_id)
+
+        logger.info(f"Processing message - chat_id: {chat_id}, has_email: {has_email}, state: {conversation_state}, processes: {len(processes)}")
 
         # Process with Bedrock NLP
         result = nlp.process(
             text=text,
             conversation_state=conversation_state,
             has_email=has_email,
-            history=messages
+            history=messages,
+            processes=processes
         )
 
         logger.info(f"NLP result: {result}")

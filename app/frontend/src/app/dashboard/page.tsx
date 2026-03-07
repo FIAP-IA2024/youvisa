@@ -1,4 +1,4 @@
-import { Users, MessageSquare, FileText, FileCheck } from "lucide-react";
+import { Users, MessageSquare, FileText, FileCheck, ClipboardList } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getDashboardStats, type File } from "@/lib/api";
@@ -10,6 +10,26 @@ const documentTypeColors: Record<string, string> = {
   Formulario: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   "Documento invalido": "bg-red-500/10 text-red-500 border-red-500/20",
   "Sem classificacao": "bg-muted text-muted-foreground border-muted",
+};
+
+const processStatusColors: Record<string, string> = {
+  recebido: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  em_analise: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+  pendente_documentos: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  aprovado: "bg-green-500/10 text-green-500 border-green-500/20",
+  rejeitado: "bg-red-500/10 text-red-500 border-red-500/20",
+  finalizado: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  cancelado: "bg-muted text-muted-foreground border-muted",
+};
+
+const processStatusLabels: Record<string, string> = {
+  recebido: "Recebido",
+  em_analise: "Em Analise",
+  pendente_documentos: "Pendente Docs",
+  aprovado: "Aprovado",
+  rejeitado: "Rejeitado",
+  finalizado: "Finalizado",
+  cancelado: "Cancelado",
 };
 
 function formatDate(dateString: string) {
@@ -69,6 +89,17 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Processos</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalProcesses}</div>
+            <p className="text-xs text-muted-foreground">processos registrados</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Classificados</CardTitle>
             <FileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -104,6 +135,32 @@ export default async function DashboardPage() {
             ))}
             {Object.keys(stats.classificationCounts).length === 0 && (
               <p className="text-muted-foreground">Nenhum documento processado ainda</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Process Status Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Processos por Status</CardTitle>
+          <CardDescription>Distribuicao dos processos de visto</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            {Object.entries(stats.processStatusCounts).map(([status, count]) => (
+              <div
+                key={status}
+                className="flex items-center gap-2 p-3 rounded-lg border bg-card"
+              >
+                <Badge variant="outline" className={processStatusColors[status] || ""}>
+                  {processStatusLabels[status] || status}
+                </Badge>
+                <span className="font-semibold">{count}</span>
+              </div>
+            ))}
+            {Object.keys(stats.processStatusCounts).length === 0 && (
+              <p className="text-muted-foreground">Nenhum processo registrado ainda</p>
             )}
           </div>
         </CardContent>

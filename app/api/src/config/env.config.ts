@@ -56,4 +56,10 @@ export class EnvConfig {
     .get('AWS_S3_BUCKET_NAME')
     .required()
     .asString();
+
+  // n8n Status Webhook
+  public readonly N8N_STATUS_WEBHOOK_URL = envVar
+    .get('N8N_STATUS_WEBHOOK_URL')
+    .default('')
+    .asString();
 }

@@ -309,6 +309,120 @@
     },
     {
       "parameters": {
+        "url": "=__API_URL__/processes/telegram/{{ $node['Telegram Trigger'].json.message.from.id }}",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get User Processes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2650, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const processes = $json.data || [];\nconst fileId = $node['Save File Record'].json.data._id;\n\n// Find an open process (not in final state)\nconst openProcess = processes.find(p => \n  ['recebido', 'em_analise', 'pendente_documentos'].includes(p.status)\n);\n\nif (openProcess) {\n  return [{ json: { hasProcess: true, processId: openProcess._id, fileId } }];\n} else {\n  return [{ json: { hasProcess: false, fileId, userId: $node['Upsert User'].json.data._id } }];\n}"
+      },
+      "name": "Check Open Process",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2850, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.hasProcess }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Has Open Process?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [3050, 100]
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/processes/{{ $node['Check Open Process'].json.processId }}/documents",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ file_id: $node['Check Open Process'].json.fileId }) }}",
+        "options": {}
+      },
+      "name": "Associate Doc to Process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3250, 0]
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/processes",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  user_id: $node['Check Open Process'].json.userId,\n  visa_type: 'a_definir',\n  destination_country: 'A definir'\n}) }}",
+        "options": {}
+      },
+      "name": "Create New Process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3250, 200]
+    },
+    {
+      "parameters": {
+        "url": "=__API_URL__/processes/{{ $json.data._id }}/documents",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "__API_KEY__"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ file_id: $node['Check Open Process'].json.fileId }) }}",
+        "options": {}
+      },
+      "name": "Associate Doc to New Process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [3450, 200]
+    },
+    {
+      "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "={{ $node['Telegram Trigger'].json.message.chat.id }}",
@@ -317,7 +431,7 @@
       "name": "Send File Confirmation",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [2650, 100],
+      "position": [3650, 100],
       "credentials": {
         "telegramApi": {
           "id": "1",
@@ -346,7 +460,7 @@
       "name": "Save Bot Response File",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [2850, 100]
+      "position": [3850, 100]
     },
     {
       "parameters": {
@@ -622,6 +736,79 @@
       ]
     },
     "Save File Record": {
+      "main": [
+        [
+          {
+            "node": "Get User Processes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Processes": {
+      "main": [
+        [
+          {
+            "node": "Check Open Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Open Process": {
+      "main": [
+        [
+          {
+            "node": "Has Open Process?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Open Process?": {
+      "main": [
+        [
+          {
+            "node": "Associate Doc to Process",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create New Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate Doc to Process": {
+      "main": [
+        [
+          {
+            "node": "Send File Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Process": {
+      "main": [
+        [
+          {
+            "node": "Associate Doc to New Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate Doc to New Process": {
       "main": [
         [
           {

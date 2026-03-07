@@ -440,7 +440,240 @@ Digite `yes` para confirmar.
 
 ---
 
-## Referências
+## Sprint 3: Testes de Processos
+
+### Pre-requisitos Sprint 3
+
+- API rodando: `cd app/api && npm run dev`
+- Frontend rodando: `cd app/frontend && npm run dev`
+- Ter ao menos um usuario no MongoDB (criado via Telegram)
+
+---
+
+### T1. Backend API - Processos
+
+#### T1.1 Criar processo
+
+```bash
+# Substitua USER_ID por um _id real de usuario do MongoDB
+curl -X POST http://localhost:5555/processes \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: fiap-iatron" \
+  -d '{
+    "user_id": "USER_ID",
+    "visa_type": "turismo",
+    "destination_country": "Estados Unidos"
+  }'
+```
+
+Esperado: `201` com `status: "recebido"`.
+
+#### T1.2 Listar processos
+
+```bash
+# Todos
+curl http://localhost:5555/processes -H "x-api-key: fiap-iatron"
+
+# Com filtros
+curl "http://localhost:5555/processes?status=recebido&visa_type=turismo" \
+  -H "x-api-key: fiap-iatron"
+```
+
+#### T1.3 Mudar status (transicao valida)
+
+```bash
+curl -X POST http://localhost:5555/processes/PROCESS_ID/status \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: fiap-iatron" \
+  -d '{"status": "em_analise", "reason": "Documentos recebidos"}'
+```
+
+Esperado: `200` com status atualizado.
+
+#### T1.4 Mudar status (transicao INVALIDA)
+
+```bash
+# Se o processo esta em "recebido", tentar ir direto para "aprovado"
+curl -X POST http://localhost:5555/processes/PROCESS_ID/status \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: fiap-iatron" \
+  -d '{"status": "aprovado", "reason": "Tentativa invalida"}'
+```
+
+Esperado: `400` com `"Invalid transition from 'recebido' to 'aprovado'"`.
+
+#### T1.5 Consultar historico
+
+```bash
+curl http://localhost:5555/processes/PROCESS_ID/history \
+  -H "x-api-key: fiap-iatron"
+```
+
+Esperado: lista com `from_status`, `to_status`, `reason`, `changed_by`, `timestamp`.
+
+#### T1.6 Buscar por Telegram ID
+
+```bash
+curl http://localhost:5555/processes/telegram/TELEGRAM_ID \
+  -H "x-api-key: fiap-iatron"
+```
+
+#### T1.7 Associar documento
+
+```bash
+curl -X POST http://localhost:5555/processes/PROCESS_ID/documents \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: fiap-iatron" \
+  -d '{"file_id": "FILE_ID"}'
+```
+
+#### T1.8 Maquina de estados completa
+
+| Transicao | Esperado |
+|-----------|----------|
+| recebido -> em_analise | 200 OK |
+| em_analise -> pendente_documentos | 200 OK |
+| pendente_documentos -> em_analise | 200 OK (loop) |
+| em_analise -> aprovado | 200 OK |
+| aprovado -> finalizado | 200 OK |
+| recebido -> aprovado | 400 Erro |
+| rejeitado -> em_analise | 400 Erro (estado final) |
+| finalizado -> recebido | 400 Erro (estado final) |
+
+---
+
+### T2. Frontend - Processos
+
+#### T2.1 Sidebar
+
+- Acessar `http://localhost:3000/dashboard`
+- Verificar link "Processos" entre "Documentos" e "Conversas"
+
+#### T2.2 Dashboard
+
+- Card "Processos" com contagem total
+- Card "Processos por Status" com badges coloridos
+
+#### T2.3 Lista (`/dashboard/processes`)
+
+- Tabela com: Tipo de Visto, Pais, Status, Documentos, Criado em, Acoes
+- Filtro por status (dropdown)
+- Filtro por tipo de visto (dropdown)
+- Botao "Atualizar" recarrega dados
+- Botao "Detalhes" leva para detalhe
+
+#### T2.4 Detalhe (`/dashboard/processes/[id]`)
+
+- Cards: Tipo de Visto, Pais Destino, Status Atual, Criado em
+- **Timeline**: barra horizontal recebido -> em_analise -> aprovado -> finalizado
+  - Completos em verde, atual pulsando, rejeitado/cancelado em vermelho
+- **Alterar Status**: dropdown com APENAS transicoes validas
+  - Campo "Motivo" obrigatorio
+  - Apos alterar, pagina recarrega
+- **Historico**: tabela Data, De, Para, Motivo, Alterado por
+- **Documentos**: lista de docs associados
+
+---
+
+### T3. NLP Lambda (Chatbot com Status)
+
+Pre-requisito: usuario com processos no MongoDB.
+
+#### T3.1 Consulta de status
+
+Enviar pelo Telegram: **"qual o status do meu processo?"**
+
+Esperado: bot responde com dados reais (tipo visto, pais, status).
+
+#### T3.2 Guardrails
+
+| Mensagem | Esperado |
+|----------|----------|
+| "quando meu visto sera aprovado?" | NAO informa prazos |
+| "meu visto foi aprovado?" | Responde com status real |
+| "pode aprovar meu processo?" | Sugere falar com atendente |
+
+---
+
+### T4. Workflow n8n (Notificacoes)
+
+#### T4.1 Importar workflow
+
+```bash
+./scripts/generate-workflow.sh
+```
+
+Importar `app/n8n/workflows/status-notification.output.json` no n8n e ativar.
+
+#### T4.2 Testar webhook manualmente
+
+```bash
+curl -X POST http://localhost:5678/webhook/status-change \
+  -H "Content-Type: application/json" \
+  -d '{
+    "process_id": "PROCESS_ID",
+    "user_id": "USER_ID",
+    "old_status": "recebido",
+    "new_status": "em_analise",
+    "reason": "Documentos completos"
+  }'
+```
+
+Esperado: usuario recebe mensagem no Telegram.
+
+#### T4.3 Mensagens por transicao
+
+| Transicao | Mensagem |
+|-----------|----------|
+| recebido -> em_analise | "...foram recebidos e estao sendo analisados." |
+| em_analise -> pendente_documentos | "...Precisamos de documentos adicionais..." |
+| em_analise -> aprovado | "Parabens! ...foi aprovado!" |
+| em_analise -> rejeitado | "...nao foi aprovado..." |
+| aprovado -> finalizado | "...finalizado com sucesso!" |
+| * -> cancelado | "...foi cancelado. Motivo: ..." |
+
+---
+
+### T5. Criacao Automatica de Processo
+
+#### T5.1 Primeiro documento
+
+1. Envie documento pelo Telegram (foto de passaporte)
+2. Verificar via API que processo foi criado:
+   ```bash
+   curl http://localhost:5555/processes/telegram/SEU_TELEGRAM_ID \
+     -H "x-api-key: fiap-iatron"
+   ```
+3. Esperado: processo com `visa_type: "a_definir"`, `status: "recebido"`, documento no array
+
+#### T5.2 Segundo documento
+
+1. Envie outro documento pelo Telegram
+2. Verificar que foi associado ao MESMO processo (array `documents` com 2 itens)
+
+---
+
+### Checklist Sprint 3
+
+- [ ] API: `POST /processes` cria processo
+- [ ] API: Transicao valida retorna 200
+- [ ] API: Transicao invalida retorna 400
+- [ ] API: `GET /processes/:id/history` retorna historico
+- [ ] API: `GET /processes/telegram/:id` retorna processos
+- [ ] Frontend: Link "Processos" no sidebar
+- [ ] Frontend: Dashboard com card de processos
+- [ ] Frontend: Listagem com filtros
+- [ ] Frontend: Timeline visual no detalhe
+- [ ] Frontend: Dropdown mostra apenas transicoes validas
+- [ ] Frontend: Mudanca de status funciona
+- [ ] NLP: "qual o status?" retorna dados reais
+- [ ] NLP: Guardrails (sem prazos, sem decisoes)
+- [ ] n8n: Notificacao chega no Telegram
+- [ ] n8n: Documento cria processo automaticamente
+
+---
+
+## Referencias
 
 - [README.md](../README.md) - Documentação completa do projeto
 - [docs/n8n-workflows.md](n8n-workflows.md) - Documentação do workflow

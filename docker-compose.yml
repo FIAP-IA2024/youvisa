@@ -17,6 +17,7 @@ services:
       - MONGODB_DATABASE=${MONGODB_DATABASE:-dev}
       - AWS_REGION=${AWS_REGION}
       - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - N8N_STATUS_WEBHOOK_URL=http://youvisa-n8n:5678/webhook/status-change
     volumes:
       - ./app/api:/app
       - /app/node_modules

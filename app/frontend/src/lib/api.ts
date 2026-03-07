@@ -89,6 +89,39 @@ export interface File {
   classified_at?: string;
 }
 
+// Process Types
+export const VALID_TRANSITIONS: Record<string, string[]> = {
+  recebido: ["em_analise", "cancelado"],
+  em_analise: ["pendente_documentos", "aprovado", "rejeitado", "cancelado"],
+  pendente_documentos: ["em_analise", "cancelado"],
+  aprovado: ["finalizado", "cancelado"],
+  rejeitado: [],
+  finalizado: [],
+  cancelado: [],
+};
+
+export interface StatusHistoryEntry {
+  from_status: string;
+  to_status: string;
+  reason: string;
+  changed_by: string;
+  timestamp: string;
+}
+
+export interface Process {
+  _id: string;
+  user_id: string;
+  conversation_id?: string;
+  visa_type: string;
+  destination_country: string;
+  status: string;
+  status_history: StatusHistoryEntry[];
+  documents: File[];
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // API Functions
 export async function getUsers(): Promise<User[]> {
   const response = await fetchApi<User[]>("/users");
@@ -124,6 +157,65 @@ export async function getFiles(filters?: {
   return response.data || [];
 }
 
+// Process API Functions
+export async function getProcesses(filters?: {
+  status?: string;
+  user_id?: string;
+  visa_type?: string;
+}): Promise<Process[]> {
+  const params = new URLSearchParams();
+  if (filters?.status) params.append("status", filters.status);
+  if (filters?.user_id) params.append("user_id", filters.user_id);
+  if (filters?.visa_type) params.append("visa_type", filters.visa_type);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const response = await fetchApi<Process[]>(`/processes${query}`);
+  return response.data || [];
+}
+
+export async function getProcess(id: string): Promise<Process | null> {
+  const response = await fetchApi<Process>(`/processes/${id}`);
+  return response.data || null;
+}
+
+export async function getProcessHistory(id: string): Promise<{
+  status: string;
+  history: StatusHistoryEntry[];
+} | null> {
+  const response = await fetchApi<{ status: string; history: StatusHistoryEntry[] }>(`/processes/${id}/history`);
+  return response.data || null;
+}
+
+export async function updateProcessStatus(
+  id: string,
+  status: string,
+  reason?: string,
+  changed_by?: string
+): Promise<Process | null> {
+  const body: Record<string, string> = { status };
+  if (reason) body.reason = reason;
+  if (changed_by) body.changed_by = changed_by;
+  const response = await fetchApi<Process>(`/processes/${id}/status`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  return response.data || null;
+}
+
+export async function createProcess(data: {
+  user_id: string;
+  visa_type: string;
+  destination_country: string;
+  conversation_id?: string;
+  notes?: string;
+}): Promise<Process | null> {
+  const response = await fetchApi<Process>("/processes", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return response.data || null;
+}
+
 export async function updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation | null> {
   const response = await fetchApi<Conversation>(`/conversations/${id}`, {
     method: "PUT",
@@ -134,10 +226,11 @@ export async function updateConversation(id: string, data: Partial<Conversation>
 
 // Dashboard Stats
 export async function getDashboardStats() {
-  const [users, conversations, files] = await Promise.all([
+  const [users, conversations, files, processes] = await Promise.all([
     getUsers(),
     getConversations(),
     getFiles(),
+    getProcesses(),
   ]);
 
   const classificationCounts = files.reduce(
@@ -149,11 +242,21 @@ export async function getDashboardStats() {
     {} as Record<string, number>
   );
 
+  const processStatusCounts = processes.reduce(
+    (acc, process) => {
+      acc[process.status] = (acc[process.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
   return {
     totalUsers: users.length,
     totalConversations: conversations.length,
     totalFiles: files.length,
+    totalProcesses: processes.length,
     classificationCounts,
+    processStatusCounts,
     recentFiles: files.slice(0, 5),
   };
 }

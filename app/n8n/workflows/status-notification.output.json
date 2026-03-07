@@ -1,0 +1,296 @@
+{
+  "id": "status-notification-001",
+  "name": "Status Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "status-change",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        400
+      ],
+      "webhookId": "auto-generated-on-activation"
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:5555/processes/{{ $json.body.process_id }}",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:5555/users/{{ $('Webhook Trigger').item.json.body.user_id }}",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        750,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:5555/conversations?channel=telegram",
+        "method": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhook = $('Webhook Trigger').item.json.body;\nconst processData = $('Get Process').item.json.data;\nconst userData = $('Get User').item.json.data;\nconst conversations = $('Get Conversations').item.json.data || [];\n\nconst userName = userData.first_name || userData.username || 'Cliente';\n\nconst visaLabels = {\n  'turismo': 'Turismo',\n  'trabalho': 'Trabalho',\n  'estudante': 'Estudante',\n  'residencia': 'Residência',\n  'transito': 'Trânsito'\n};\n\nconst statusLabels = {\n  'recebido': 'Recebido',\n  'em_analise': 'Em Análise',\n  'pendente_documentos': 'Pendente de Documentos',\n  'aprovado': 'Aprovado',\n  'rejeitado': 'Rejeitado',\n  'finalizado': 'Finalizado',\n  'cancelado': 'Cancelado'\n};\n\nconst rawVisa = processData.visa_type || '';\nconst hasVisa = rawVisa && rawVisa !== 'a_definir';\nconst visaLabel = hasVisa ? (visaLabels[rawVisa] || rawVisa) : '';\nconst visaText = hasVisa ? ` de ${visaLabel}` : '';\n\nconst rawCountry = processData.destination_country || '';\nconst hasCountry = rawCountry && rawCountry.toLowerCase() !== 'a definir' && rawCountry !== 'a_definir';\nconst countryText = hasCountry ? ` para ${rawCountry}` : '';\n\nconst reason = webhook.reason || '';\nconst reasonText = reason ? ` Motivo: ${reason}.` : '';\nconst oldStatus = webhook.old_status;\nconst newStatus = webhook.new_status;\nconst newStatusLabel = statusLabels[newStatus] || newStatus;\n\nconst userConv = conversations.find(c => c.user_id === webhook.user_id);\nconst chatId = userConv ? userConv.chat_id : null;\n\nconst messages = {\n  'recebido_em_analise': `Olá ${userName}! Seus documentos para o processo de visto${visaText}${countryText} foram recebidos e estão sendo analisados.`,\n  'em_analise_pendente_documentos': `Olá ${userName}! Precisamos de documentos adicionais para seu processo de visto${visaText}${countryText}.${reasonText}`,\n  'em_analise_aprovado': `Parabéns ${userName}! Seu visto${visaText}${countryText} foi aprovado!`,\n  'em_analise_rejeitado': `Olá ${userName}. Seu processo de visto${visaText}${countryText} não foi aprovado. Recomendamos contato com nossa equipe.`,\n  'aprovado_finalizado': `Olá ${userName}! Seu processo de visto${visaText}${countryText} foi finalizado com sucesso!`,\n};\n\nconst key = `${oldStatus}_${newStatus}`;\nlet message = messages[key];\n\nif (!message && newStatus === 'cancelado') {\n  message = `Olá ${userName}. Seu processo de visto foi cancelado.${reasonText}`;\n}\n\nif (!message) {\n  message = `Olá ${userName}! Seu processo de visto${visaText}${countryText} foi atualizado para: ${newStatusLabel}.`;\n}\n\nreturn [{ json: { chatId, message, userId: webhook.user_id, conversationId: userConv ? userConv._id : null } }];"
+      },
+      "name": "Generate Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1250,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.chatId !== null }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Has Chat ID?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Generate Message').item.json.chatId }}",
+        "text": "={{ $('Generate Message').item.json.message }}",
+        "additionalFields": {
+          "parse_mode": "none"
+        }
+      },
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1750,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "J6WE0P62AV4X4KUt",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:5555/messages",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "fiap-iatron"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  conversation_id: $('Generate Message').item.json.conversationId,\n  message_id: 'status-notification-' + Date.now(),\n  user_id: $('Generate Message').item.json.userId,\n  text: $('Generate Message').item.json.message,\n  message_type: 'text',\n  direction: 'outgoing',\n  timestamp: new Date().toISOString(),\n  metadata: { source: 'status-notification' }\n}) }}",
+        "options": {}
+      },
+      "name": "Save Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Notification sent' }) }}"
+      },
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, message: 'No chat_id found for user' }) }}"
+      },
+      "name": "Respond No Chat",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1750,
+        500
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Process": {
+      "main": [
+        [
+          {
+            "node": "Get User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User": {
+      "main": [
+        [
+          {
+            "node": "Get Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversations": {
+      "main": [
+        [
+          {
+            "node": "Generate Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Message": {
+      "main": [
+        [
+          {
+            "node": "Has Chat ID?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Chat ID?": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond No Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram": {
+      "main": [
+        [
+          {
+            "node": "Save Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Message": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

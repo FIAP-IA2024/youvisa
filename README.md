@@ -25,48 +25,37 @@
 
 A YOUVISA é uma empresa brasileira especializada em soluções digitais baseadas em **Inteligência Artificial, RPA e automação cognitiva** para otimizar processos consulares e de atendimento.
 
-Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP**, com foco em construir um **protótipo funcional avançado** capaz de receber, classificar e automatizar documentos, além de aprimorar a experiência de atendimento com IA Generativa, NLP, RPA e Visão Computacional.
+Este projeto foi desenvolvido como parte do **Challenge YOUVISA** na **FIAP**. A **Sprint 3** evolui o sistema para uma **plataforma inteligente de acompanhamento de processos de visto**, adicionando gestão completa de processos com máquina de estados, notificações automáticas via Telegram, consulta de status pelo chatbot e guardrails de governança de IA.
 
-O sistema transforma documentos em tarefas automáticas, simulando um fluxo real de atendimento da YOUVISA - desde o recebimento de arquivos (passaporte, comprovante, formulário) até a confirmação de recebimento e direcionamento do caso.
+O sistema cobre o ciclo completo de atendimento — desde o recebimento e classificação de documentos com IA até o acompanhamento do processo de visto pelo cliente e pelo operador, com notificações em tempo real a cada mudança de status.
 
 ---
 
-## Video Demonstrativo
+## Vídeos Demonstrativos
 
-[![Video Demonstrativo](https://img.youtube.com/vi/dyTIJXozWXk/0.jpg)](https://youtu.be/dyTIJXozWXk)
+### Sprint 3
+
+[![Vídeo Sprint 3](https://img.youtube.com/vi/JOql8H0fl3Q/0.jpg)](https://youtu.be/JOql8H0fl3Q)
+
+**Assista no YouTube:** [https://youtu.be/JOql8H0fl3Q](https://youtu.be/JOql8H0fl3Q)
+
+### Sprint 2
+
+[![Vídeo Sprint 2](https://img.youtube.com/vi/dyTIJXozWXk/0.jpg)](https://youtu.be/dyTIJXozWXk)
 
 **Assista no YouTube:** [https://youtu.be/dyTIJXozWXk](https://youtu.be/dyTIJXozWXk)
 
----
-
-## Demo ao Vivo
-
-A plataforma está disponível online para testes:
-
-| Componente | URL | Descrição |
-|------------|-----|-----------|
-| **n8n (Orquestrador)** | [youvisa-n8n.gabrielribeiro.work](https://youvisa-n8n.gabrielribeiro.work/) | Workflows de automação |
-| **Dashboard (Console)** | [youvisa-dashboard.gabrielribeiro.work](https://youvisa-dashboard.gabrielribeiro.work/) | Painel do operador |
-
-**Credenciais de Acesso (Dashboard):**
-
-- Usuario: `admin@admin.com`
-- Senha: `Teste1234`
-
-**Bot Telegram:**
-
-- Link direto: [https://web.telegram.org/a/#8196147608](https://web.telegram.org/a/#8196147608)
-- Ou procure por: `@youvisa_test_assistant_bot`
+> O código da Sprint 2 está disponível na branch [`sprint/2`](https://github.com/FIAP-IA2024/youvisa/tree/sprint/2).
 
 ---
 
-## Objetivos da Sprint 2
+## Objetivos da Sprint 3
 
-- Automatizar o pipeline de documentos
-- Integrar chatbot à gestão de arquivos
-- Validar documentos com visão computacional
-- Aplicar NLP e IA Generativa para classificação
-- Concluir a arquitetura da plataforma
+- Implementar gestão de processos de visto com máquina de estados finitos
+- Notificar automaticamente o cliente via Telegram a cada mudança de status
+- Permitir consulta de status do processo pelo chatbot com guardrails de governança
+- Construir interface de acompanhamento com timeline visual no Console do Operador
+- Classificar documentos com IA e associá-los automaticamente ao processo
 
 ---
 
@@ -76,19 +65,19 @@ A plataforma está disponível online para testes:
 +------------------+     +------------------+     +------------------+
 |                  |     |                  |     |                  |
 |  Usuário envia   |---->|  Sistema recebe  |---->|  IA classifica   |
-|  documento via   |     |  e armazena no   |     |  o documento     |
-|  Telegram        |     |  AWS S3          |     |  automaticamente |
+|  documento via   |     |  e armazena no   |     |  o documento e   |
+|  Telegram        |     |  AWS S3          |     |  associa ao      |
+|                  |     |                  |     |  processo         |
++------------------+     +------------------+     +------------------+
+                                                         |
+                                                         v
++------------------+     +------------------+     +------------------+
+|                  |     |                  |     |                  |
+|  Operador muda   |---->|  Notificação     |---->|  Usuário consulta|
+|  status no       |     |  automática via  |     |  status pelo     |
+|  painel          |     |  Telegram        |     |  chatbot         |
 |                  |     |                  |     |                  |
 +------------------+     +------------------+     +------------------+
-                                                          |
-                                                          v
-                         +------------------+     +------------------+
-                         |                  |     |                  |
-                         |  Usuário recebe  |<----|  Resultado salvo |
-                         |  notificação     |     |  no banco de     |
-                         |  no Telegram     |     |  dados           |
-                         |                  |     |                  |
-                         +------------------+     +------------------+
 ```
 
 ---
@@ -125,24 +114,31 @@ A plataforma está disponível online para testes:
     |             |                                        |
     +------+------+                                        |
            |                                               |
-           | Evento S3                                     |
+           | Classifica documento                          |
            v                                               |
     +------+------+         +-------------+                |
     |             |         |             |                |
-    |     SQS     |-------->| Classifier  |----------------+
-    |   (Fila)    |         |   Lambda    |
-    |             |         |  (Python)   |
-    +-------------+         +------+------+
-                                   |
-                                   | AWS Bedrock
-                                   | (Claude 3 Haiku)
-                                   v
-                            +------+------+
-                            |             |
-                            | Notificação |
-                            |  Telegram   |
-                            |             |
-                            +-------------+
+    | Classifier  |-------->| Notificação |                |
+    |   Lambda    |         |  Telegram   |                |
+    |  (Python)   |         |             |                |
+    +------+------+         +-------------+                |
+           |                                               |
+           | AWS Bedrock (Claude 3 Haiku)                  |
+           |                                               |
+    +------+------+                                        |
+    |             |                                        |
+    |  Webhook    |  Status mudou                          |
+    |  n8n        |------> Notifica cliente via Telegram   |
+    |             |                                        |
+    +-------------+                                        |
+                                                           |
+    +-------------+                                        |
+    |             |                                        |
+    |  Console do |  Operador muda status do processo      |
+    |  Operador   |----------------------------------------+
+    |  (Next.js)  |
+    |             |
+    +-------------+
 ```
 
 ### Descrição dos Componentes
@@ -150,15 +146,14 @@ A plataforma está disponível online para testes:
 | Componente | Função |
 |------------|--------|
 | **Telegram** | Canal de comunicação com o usuário |
-| **n8n** | Orquestra os fluxos entre componentes |
-| **API Lambda** | Backend que gerencia usuários, conversas e arquivos |
-| **NLP Lambda** | Processa mensagens de texto com IA conversacional |
+| **n8n** | Orquestra os fluxos entre componentes e dispara notificações |
+| **API Lambda** | Backend que gerencia usuários, conversas, arquivos e processos |
+| **NLP Lambda** | Processa mensagens de texto com IA conversacional e consulta de status |
 | **MongoDB** | Banco de dados para persistência |
 | **AWS S3** | Armazenamento de documentos |
-| **SQS** | Fila de mensagens para processamento assíncrono |
-| **Classifier Lambda** | Classifica documentos usando IA |
+| **Classifier Lambda** | Classifica documentos usando IA (Claude 3 Haiku) |
 | **AWS Bedrock** | Serviço de IA (modelo Claude 3 Haiku) |
-| **Frontend** | Console do operador para gerenciamento de conversas |
+| **Frontend** | Console do operador para gerenciamento de conversas e processos |
 
 ---
 
@@ -168,7 +163,7 @@ A plataforma está disponível online para testes:
 
 **Localização:** `app/api/`
 
-**Propósito:** Gerenciar dados de usuários, conversas, mensagens e arquivos. Serve como ponto central de persistência do sistema.
+**Propósito:** Gerenciar dados de usuários, conversas, mensagens, arquivos e processos de visto. Serve como ponto central de persistência e lógica de negócio do sistema.
 
 **Tecnologias:**
 
@@ -183,6 +178,9 @@ A plataforma está disponível online para testes:
 - Gerenciar conversas por canal (Telegram, WhatsApp, Webchat)
 - Armazenar mensagens trocadas
 - Registrar metadados de arquivos enviados
+- Gestão de processos de visto com máquina de estados finitos
+- Validação de transições de status com histórico completo
+- Disparo de webhook para notificações automáticas
 
 **Autenticação:** Todas as requisições (exceto `/health`) exigem header `x-api-key`.
 
@@ -236,9 +234,16 @@ A plataforma está disponível online para testes:
 
 **Localização:** `app/n8n/workflows/`
 
-**Propósito:** Orquestrar a comunicação entre Telegram, API e S3. É o "cérebro" que coordena todos os fluxos.
+**Propósito:** Orquestrar a comunicação entre Telegram, API e S3. Coordena fluxos de documentos, mensagens e notificações de status.
 
 **Tecnologia:** n8n (plataforma de automação low-code)
+
+**Workflows:**
+
+| Workflow | Descrição |
+|----------|-----------|
+| **Telegram** | Recebe mensagens/documentos, processa com NLP/Classifier, responde ao usuário |
+| **Notificação de Status** | Recebe webhook de mudança de status, gera mensagem e notifica cliente via Telegram |
 
 **Workflow Principal (Telegram):**
 
@@ -265,7 +270,7 @@ A plataforma está disponível online para testes:
          |
          v
 +--------+---------+
-|  Tem arquivo?    +-------> NÃO -------> Envia instruções
+|  Tem arquivo?    +-------> NÃO -------> Processa com NLP
 +--------+---------+
          |
         SIM
@@ -283,19 +288,42 @@ A plataforma está disponível online para testes:
          |
          v
 +--------+---------+
+|  Classifica com  |
+|  IA (Classifier) |
++--------+---------+
+         |
+         v
++--------+---------+
 |  Confirmação     |
 |  ao usuário      |
 +------------------+
 ```
 
-**Estrutura de Armazenamento no S3:**
+**Workflow de Notificação de Status:**
 
 ```
-s3://bucket-name/
-+-- {file_id}_{timestamp}_{nome_original}
++------------------+     +------------------+     +------------------+
+|                  |     |                  |     |                  |
+|  Webhook recebe  |---->|  Busca dados do  |---->|  Gera mensagem   |
+|  mudança de      |     |  processo e do   |     |  determinística  |
+|  status          |     |  usuário         |     |  (sem LLM)       |
+|                  |     |                  |     |                  |
++------------------+     +------------------+     +------------------+
+                                                         |
+                                                         v
+                                                  +------------------+
+                                                  |                  |
+                                                  |  Envia via       |
+                                                  |  Telegram        |
+                                                  |                  |
+                                                  +------------------+
 ```
 
-Os arquivos são armazenados diretamente na raiz do bucket, com nome único composto pelo ID do arquivo, timestamp e nome original.
+**Exemplos de notificações:**
+
+- *"Olá {nome}! Seus documentos estão sendo analisados."*
+- *"Precisamos de documentos adicionais. Motivo: {motivo}."*
+- *"Parabéns {nome}! Seu visto foi aprovado!"*
 
 ---
 
@@ -303,7 +331,7 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 
 **Localização:** `app/nlp/`
 
-**Propósito:** Processar mensagens de texto dos usuários usando IA conversacional, gerenciar o fluxo de coleta de informações e transferência para atendentes humanos.
+**Propósito:** Processar mensagens de texto dos usuários usando IA conversacional, gerenciar o fluxo de coleta de informações, consulta de status de processos e transferência para atendentes humanos.
 
 **Tecnologias:**
 
@@ -317,9 +345,20 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 | Funcionalidade | Descrição |
 |----------------|-----------|
 | **Coleta de Email** | Solicita e extrai email do usuário quando necessário |
-| **Detecção de Intenção** | Identifica se usuário quer falar com humano, enviar documento, etc. |
+| **Detecção de Intenção** | Identifica se usuário quer falar com humano, enviar documento, consultar status, etc. |
+| **Consulta de Status** | Busca processos do usuário no MongoDB e responde com dados reais |
 | **Transferência** | Transfere conversa para atendente humano quando solicitado |
 | **Contexto** | Mantém histórico de mensagens para respostas contextualizadas |
+
+**Guardrails de Governança de IA:**
+
+O sistema implementa regras rígidas para garantir respostas responsáveis:
+
+- Nunca informa prazos específicos para conclusão do processo
+- Nunca confirma aprovação sem que o status seja explicitamente "Aprovado"
+- Nunca toma decisões institucionais (aprovar, rejeitar, cancelar)
+- Usa apenas informações reais do banco de dados, nunca inventa dados
+- Sugere contato com atendente humano para perguntas fora do escopo
 
 **Estados da Conversa:**
 
@@ -335,33 +374,13 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 +------------------+            +-------------+
 ```
 
-**Fluxo de Processamento:**
-
-```
-+-------------+     +-------------+     +-------------+
-|             |     |             |     |             |
-|  Recebe     |---->|  Verifica   |---->|  Processa   |
-|  mensagem   |     |  contexto   |     |  com Claude |
-|             |     |  (email,    |     |             |
-|             |     |  estado)    |     |             |
-+-------------+     +-------------+     +-------------+
-                                               |
-                                               v
-+-------------+     +-------------+     +-------------+
-|             |     |             |     |             |
-|  Retorna    |<----|  Atualiza   |<----|  Extrai     |
-|  resposta   |     |  estado     |     |  intenção   |
-|             |     |             |     |             |
-+-------------+     +-------------+     +-------------+
-```
-
 ---
 
 ### 3.5 Frontend (Console do Operador)
 
 **Localização:** `app/frontend/`
 
-**Propósito:** Interface web para operadores/atendentes gerenciarem conversas, visualizarem documentos e acompanharem estatísticas.
+**Propósito:** Interface web para operadores/atendentes gerenciarem conversas, visualizarem documentos, acompanharem processos de visto e monitorarem estatísticas.
 
 **Tecnologias:**
 
@@ -375,10 +394,22 @@ Os arquivos são armazenados diretamente na raiz do bucket, com nome único comp
 
 | Página | Rota | Funcionalidade |
 |--------|------|----------------|
-| **Dashboard** | `/dashboard` | Visão geral com estatísticas |
+| **Dashboard** | `/dashboard` | Visão geral com estatísticas de conversas, documentos e processos |
+| **Documentos** | `/dashboard/documents` | Visualizar documentos classificados pela IA |
+| **Processos** | `/dashboard/processes` | Listagem de processos com filtros por status e tipo de visto |
+| **Detalhe do Processo** | `/dashboard/processes/[id]` | Timeline visual, histórico de transições e mudança de status |
 | **Conversas** | `/dashboard/conversations` | Gerenciar conversas e transferências |
 | **Usuários** | `/dashboard/users` | Lista de usuários cadastrados |
-| **Documentos** | `/dashboard/documents` | Visualizar documentos classificados |
+
+**Gestão de Processos:**
+
+O console permite que operadores:
+
+1. Visualizem todos os processos com filtros por status e tipo de visto
+2. Acompanhem o progresso através de uma timeline visual
+3. Alterem o status do processo (apenas transições válidas)
+4. Consultem o histórico completo de transições
+5. Visualizem documentos associados ao processo
 
 **Funcionalidade de Transferência:**
 
@@ -387,20 +418,6 @@ O console permite que operadores:
 1. Visualizem conversas transferidas (status `transferred`)
 2. Devolvam conversas para o bot (status `active`)
 3. Acompanhem o histórico de mensagens
-
-```
-+-------------------+
-|  Lista Conversas  |
-|                   |
-| [Ativas]          |
-| - Conversa 1      |
-| - Conversa 2      |
-|                   |
-| [Transferidas]    |  <-- Destaque para atendente
-| - Conversa 3      |
-|   [Voltar p/ Bot] |  <-- Botão para devolver
-+-------------------+
-```
 
 **Autenticação:** Utiliza header `x-api-key` para comunicação com a API.
 
@@ -439,11 +456,92 @@ O console permite que operadores:
 | **S3** | Armazena documentos com criptografia AES-256 |
 | **Lambda (API)** | Executa o backend via Function URL (Node.js 22) |
 | **Lambda (Classifier)** | Classifica documentos (Python 3.11) |
+| **Lambda (NLP)** | Processamento de linguagem natural (Python 3.11) |
 | **SQS** | Fila para processamento assíncrono de documentos |
 | **EC2** | Hospeda o n8n em produção |
 | **IAM** | Gerencia permissões de acesso |
 
 **Região:** `sa-east-1` (São Paulo) para conformidade com LGPD.
+
+---
+
+## Gestão de Processos de Visto
+
+### Máquina de Estados Finitos
+
+Cada processo de visto segue uma máquina de estados com transições validadas:
+
+```
+                    +-------------+
+                    |  Recebido   |
+                    +------+------+
+                           |
+                           v
+                    +------+------+
+             +----->| Em Análise  |<-----+
+             |      +------+------+      |
+             |             |             |
+             |     +-------+-------+     |
+             |     |       |       |     |
+             |     v       v       v     |
+         +---+----+ +-----++ +----+---+  |
+         |Pendente | |Apro- | |Rejei-  |  |
+         |de Docs  | |vado  | |tado    |  |
+         +----+----+ +--+---+ +--------+  |
+              |          |                 |
+              +----------+                 |
+                         |                 |
+                         v                 |
+                  +------+------+          |
+                  | Finalizado  |          |
+                  +-------------+          |
+                                           |
+                  +-------------+          |
+                  | Cancelado   |<---------+
+                  +-------------+   (de qualquer estado não-final)
+```
+
+**Transições válidas:**
+
+| Estado Atual | Próximos Estados Possíveis |
+|-------------|---------------------------|
+| Recebido | Em Análise, Cancelado |
+| Em Análise | Pendente de Documentos, Aprovado, Rejeitado, Cancelado |
+| Pendente de Documentos | Em Análise, Cancelado |
+| Aprovado | Finalizado, Cancelado |
+| Rejeitado | *(estado final)* |
+| Finalizado | *(estado final)* |
+| Cancelado | *(estado final)* |
+
+### Endpoints de Processos
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| POST | `/processes` | Criar processo |
+| GET | `/processes` | Listar com filtros (`?status=`, `?user_id=`, `?visa_type=`) |
+| GET | `/processes/:id` | Detalhe do processo |
+| GET | `/processes/:id/history` | Histórico de transições |
+| GET | `/processes/user/:userId` | Processos por usuário |
+| GET | `/processes/telegram/:telegramId` | Processos por Telegram ID |
+| POST | `/processes/:id/status` | Mudar status (body: `{status, reason?, changed_by?}`) |
+| POST | `/processes/:id/documents` | Associar documento ao processo |
+
+### Notificações Automáticas
+
+Quando um operador altera o status de um processo:
+
+1. A API valida a transição pela máquina de estados
+2. Registra a mudança no histórico do processo
+3. Dispara webhook para o n8n
+4. O n8n gera mensagem determinística (sem LLM) e envia via Telegram ao cliente
+
+### Consulta de Status via Chatbot
+
+O usuário pode perguntar *"qual o status do meu processo?"* e o bot responde com dados reais do MongoDB, respeitando os guardrails de governança.
+
+### Timeline Visual
+
+O Console do Operador exibe uma timeline visual do progresso de cada processo, com estados completos em verde, estado atual destacado e estados futuros em cinza.
 
 ---
 
@@ -467,25 +565,25 @@ O console permite que operadores:
 | created_at       |       | updated_at       |       | created_at       |
 | updated_at       |       +------------------+       +------------------+
 +------------------+
-                                   |
-                                   |
-                                   v
-                           +------------------+
-                           |      File        |
-                           +------------------+
-                           | _id              |
-                           | conversation_id  |
-                           | message_id       |
-                           | file_id          |
-                           | s3_bucket        |
-                           | s3_key           |
-                           | original_filename|
-                           | file_size        |
-                           | mime_type        |
-                           | uploaded_at      |
-                           | metadata         |
-                           | created_at       |
-                           +------------------+
+        |
+        |
+        v
++------------------+       +------------------+
+|    Process       |       |      File        |
++------------------+       +------------------+
+| _id              |       | _id              |
+| user_id (FK)     |       | conversation_id  |
+| conversation_id  |       | message_id       |
+| visa_type        |       | file_id          |
+| destination_     |       | s3_bucket        |
+|   country        |       | s3_key           |
+| status           |       | original_filename|
+| status_history[] |       | file_size        |
+| documents[] (FK) |------>| mime_type        |
+| notes            |       | uploaded_at      |
+| created_at       |       | metadata         |
+| updated_at       |       | created_at       |
++------------------+       +------------------+
 ```
 
 ### Descrição das Entidades
@@ -496,7 +594,9 @@ O console permite que operadores:
 
 **Message:** Mensagem individual dentro de uma conversa. Pode ser texto, documento, foto, vídeo ou áudio.
 
-**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação.
+**File:** Metadados de arquivos enviados. Armazena referência ao S3 e resultados de classificação pela IA.
+
+**Process:** Representa uma solicitação de visto. Possui máquina de estados finitos com transições validadas e histórico completo de mudanças de status. Cada processo pode ter múltiplos documentos associados.
 
 ---
 
@@ -505,42 +605,61 @@ O console permite que operadores:
 ### 4.1 Fluxo Completo: Envio de Documento
 
 ```
-Usuário              Telegram            n8n                API               S3                SQS           Classifier         MongoDB
-   |                    |                 |                  |                 |                  |                |                |
-   |  Envia documento   |                 |                  |                 |                  |                |                |
-   |------------------->|                 |                  |                 |                  |                |                |
-   |                    |  Webhook        |                  |                 |                  |                |                |
-   |                    |---------------->|                  |                 |                  |                |                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |  POST /users     |                 |                  |                |                |
-   |                    |                 |----------------->|                 |                  |                |                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |  POST /conversations               |                  |                |                |
-   |                    |                 |----------------->|                 |                  |                |                |
-   |                    |                 |                  |  Salva          |                  |                |                |
-   |                    |                 |                  |---------------->|                  |                |                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |  Upload arquivo  |                 |                  |                |                |
-   |                    |                 |---------------------------------->|                  |                |                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |                  |                 |  Evento S3       |                |                |
-   |                    |                 |                  |                 |----------------->|                |                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |                  |                 |                  |  Trigger       |                |
-   |                    |                 |                  |                 |                  |--------------->|                |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |                  |                 |                  |                |  Classifica    |
-   |                    |                 |                  |                 |                  |                |  (Bedrock)     |
-   |                    |                 |                  |                 |                  |                |                |
-   |                    |                 |                  |                 |                  |                |  Salva result  |
-   |                    |                 |                  |                 |                  |                |--------------->|
-   |                    |                 |                  |                 |                  |                |                |
-   |  Notificação       |                 |                  |                 |                  |                |                |
-   |<-------------------|<----------------|------------------|-----------------|------------------|----------------|                |
-   |                    |                 |                  |                 |                  |                |                |
+Usuário              Telegram            n8n                API               S3            Classifier         MongoDB
+   |                    |                 |                  |                 |                |                |
+   |  Envia documento   |                 |                  |                 |                |                |
+   |------------------->|                 |                  |                 |                |                |
+   |                    |  Webhook        |                  |                 |                |                |
+   |                    |---------------->|                  |                 |                |                |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |  POST /users     |                 |                |                |
+   |                    |                 |----------------->|                 |                |                |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |  POST /conversations               |                |                |
+   |                    |                 |----------------->|                 |                |                |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |  Upload arquivo  |                 |                |                |
+   |                    |                 |---------------------------------->|                |                |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |  Classifica documento              |                |                |
+   |                    |                 |-------------------------------------------------->|                |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |                  |                 |                |  Classifica    |
+   |                    |                 |                  |                 |                |  (Bedrock)     |
+   |                    |                 |                  |                 |                |                |
+   |                    |                 |                  |                 |                |  Salva result  |
+   |                    |                 |                  |                 |                |--------------->|
+   |                    |                 |                  |                 |                |                |
+   |  Notificação       |                 |                  |                 |                |                |
+   |<-------------------|<----------------|                  |                 |                |                |
+   |                    |                 |                  |                 |                |                |
 ```
 
-### 4.2 Classificação com IA
+### 4.2 Fluxo: Mudança de Status com Notificação
+
+```
+Operador             Console             API               n8n               Telegram         Usuário
+   |                    |                 |                  |                 |                |
+   |  Muda status       |                 |                  |                 |                |
+   |------------------->|                 |                  |                 |                |
+   |                    |  POST /status   |                  |                 |                |
+   |                    |---------------->|                  |                 |                |
+   |                    |                 |  Valida FSM      |                 |                |
+   |                    |                 |  Salva histórico |                 |                |
+   |                    |                 |                  |                 |                |
+   |                    |                 |  Webhook         |                 |                |
+   |                    |                 |----------------->|                 |                |
+   |                    |                 |                  |  Gera mensagem  |                |
+   |                    |                 |                  |  determinística |                |
+   |                    |                 |                  |                 |                |
+   |                    |                 |                  |  sendMessage    |                |
+   |                    |                 |                  |---------------->|                |
+   |                    |                 |                  |                 |  Notificação   |
+   |                    |                 |                  |                 |--------------->|
+   |                    |                 |                  |                 |                |
+```
+
+### 4.3 Classificação com IA
 
 O Classifier Lambda utiliza o modelo **Claude 3 Haiku** da AWS Bedrock para analisar imagens de documentos.
 
@@ -559,7 +678,7 @@ Responda com apenas uma das seguintes categorias:
 Responda apenas o nome da categoria. Nada mais.
 ```
 
-### 4.3 Fluxo de Transferência para Atendente Humano
+### 4.4 Fluxo de Transferência para Atendente Humano
 
 Quando o usuário solicita falar com um atendente humano, o sistema transfere a conversa:
 
@@ -602,7 +721,7 @@ Usuário              Bot                  MongoDB              Console Operador
 
 ---
 
-### 4.4 Notificação ao Usuário
+### 4.5 Notificação ao Usuário
 
 Após a classificação, o usuário recebe uma notificação no Telegram:
 
@@ -681,6 +800,9 @@ Por favor, envie novamente seguindo estas dicas:
 
    # API
    API_KEY=sua_chave_secreta
+
+   # Notificações (n8n)
+   N8N_STATUS_WEBHOOK_URL=http://localhost:5678/webhook/status-change
    ```
 
 ### Comandos Principais
@@ -729,8 +851,8 @@ youvisa/
 +-- app/
 |   +-- api/                    # Backend API (TypeScript/Fastify)
 |   |   +-- src/
-|   |   |   +-- controllers/    # Lógica de negócio
-|   |   |   +-- models/         # Schemas MongoDB
+|   |   |   +-- controllers/    # Lógica de negócio (users, conversations, files, processes)
+|   |   |   +-- models/         # Schemas MongoDB (incluindo Process com FSM)
 |   |   |   +-- repositories/   # Acesso a dados
 |   |   |   +-- config/         # Configurações
 |   |   |   +-- routes.ts       # Definição de rotas
@@ -748,24 +870,27 @@ youvisa/
 |   +-- nlp/                    # Lambda NLP conversacional (Python)
 |   |   +-- src/
 |   |       +-- handler.py      # Entry point Lambda
-|   |       +-- bedrock.py      # Integração AWS Bedrock
-|   |       +-- mongodb.py      # Operações MongoDB
-|   |       +-- prompts.py      # Prompts do sistema
+|   |       +-- bedrock.py      # Integração AWS Bedrock (com consulta de processos)
+|   |       +-- mongodb.py      # Operações MongoDB (incluindo busca de processos)
+|   |       +-- prompts.py      # Prompts do sistema (com guardrails de governança)
 |   |
 |   +-- frontend/               # Console do Operador (Next.js)
 |   |   +-- src/
 |   |   |   +-- app/            # App Router (páginas)
 |   |   |   |   +-- dashboard/  # Páginas do dashboard
+|   |   |   |   |   +-- processes/  # Gestão de processos
 |   |   |   |   +-- layout.tsx  # Layout principal
 |   |   |   +-- components/     # Componentes React
 |   |   |   |   +-- ui/         # shadcn/ui
 |   |   |   |   +-- layout/     # Header, Sidebar, etc.
+|   |   |   |   +-- process-timeline.tsx  # Timeline visual
 |   |   |   +-- lib/            # Utilitários e API client
 |   |   +-- package.json
 |   |
 |   +-- n8n/
 |   |   +-- workflows/          # Workflows n8n
 |   |       +-- telegram.template.json
+|   |       +-- status-notification.template.json
 |   |
 |   +-- infrastructure/
 |       +-- terraform/          # Infraestrutura como código
@@ -784,6 +909,7 @@ youvisa/
 |
 +-- docs/
 |   +-- diagramas/             # Diagramas da arquitetura
+|   +-- RELATORIO_SPRINT_3.md  # Relatório técnico da Sprint 3
 |
 +-- docker-compose.yml         # Configuração Docker
 +-- Makefile                   # Comandos make
@@ -799,6 +925,7 @@ youvisa/
 - **Criptografia:** AES-256 para dados em repouso (S3)
 - **Autenticação:** API Key obrigatória em todas as requisições
 - **IAM:** Princípio do menor privilégio para permissões AWS
+- **Governança de IA:** Guardrails impedem que o LLM invente dados ou tome decisões institucionais
 
 ---
 
@@ -820,25 +947,28 @@ youvisa/
 
 | Risco | Impacto | Mitigação |
 |-------|---------|-----------|
-| Erro semântico do NLP | Médio | Fallback humano + retraining contínuo |
+| Erro semântico do NLP | Médio | Guardrails de governança + fallback humano |
 | Falha de canal (API WA/Telegram) | Alto | Failover n8n + logs automáticos |
 | Vazamento de dados | Crítico | Criptografia + IAM + DLP + auditoria |
 | Resistência da equipe | Médio | Treinamento e onboarding progressivo |
 | Sobrecarga de fluxos | Médio | Escalabilidade cloud (EKS/Fargate) |
+| IA inventar informações | Alto | Guardrails de governança + dados reais do MongoDB |
 
 ---
 
 ## Conclusão
 
-A Sprint 2 do projeto YOUVISA consolida a implementação de uma plataforma de atendimento multicanal inteligente, unindo:
+A Sprint 3 do projeto YOUVISA consolida a evolução da plataforma para uma solução completa de acompanhamento de processos de visto, unindo:
 
-- **Chatbot funcional** via Telegram com orquestração n8n
-- **Pipeline de automação** para recebimento e classificação de documentos
-- **IA Generativa** (Claude 3 Haiku) para classificação e NLP conversacional
-- **Visão Computacional** para validação de qualidade de imagem
-- **Console do Operador** em React/Next.js para gerenciamento de conversas
+- **Gestão de processos** com máquina de estados finitos e transições validadas
+- **Notificações automáticas** via Telegram a cada mudança de status
+- **Consulta de status pelo chatbot** com guardrails de governança de IA
+- **Timeline visual** para acompanhamento do progresso de cada solicitação
+- **Classificação de documentos** com IA e associação automática ao processo
+- **Console do Operador** completo para gerenciar conversas, documentos e processos
+- **Chatbot funcional** via Telegram com IA conversacional (Claude 3 Haiku)
 - **Transferência humana** quando o usuário solicita atendente
 
-O sistema demonstra a viabilidade de automatizar processos consulares com IA, reduzindo tempo de atendimento e mantendo a opção de escalação para atendimento humano quando necessário.
+O sistema demonstra a viabilidade de automatizar processos consulares com IA de forma responsável, mantendo controle humano sobre decisões institucionais e fornecendo visibilidade completa ao cliente sobre o andamento de sua solicitação.
 
 A arquitetura serverless na AWS (Lambda, S3, SQS) garante escalabilidade e conformidade com LGPD, enquanto o n8n proporciona flexibilidade para evolução dos fluxos de automação.
