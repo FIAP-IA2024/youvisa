@@ -13,6 +13,8 @@
 
 **Link do projeto no GitHub:** <https://github.com/ribeirogab/youvisa>
 
+**Vídeo demonstrativo:** <https://youtu.be/JOql8H0fl3Q>
+
 ---
 
 O código fonte e recursos do projeto estão organizados na pasta `./app`.

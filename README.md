@@ -31,9 +31,21 @@ O sistema cobre o ciclo completo de atendimento — desde o recebimento e classi
 
 ---
 
-## Vídeo Demonstrativo
+## Vídeos Demonstrativos
 
-*Link do vídeo será adicionado em breve.*
+### Sprint 3
+
+[![Vídeo Sprint 3](https://img.youtube.com/vi/JOql8H0fl3Q/0.jpg)](https://youtu.be/JOql8H0fl3Q)
+
+**Assista no YouTube:** [https://youtu.be/JOql8H0fl3Q](https://youtu.be/JOql8H0fl3Q)
+
+### Sprint 2
+
+[![Vídeo Sprint 2](https://img.youtube.com/vi/dyTIJXozWXk/0.jpg)](https://youtu.be/dyTIJXozWXk)
+
+**Assista no YouTube:** [https://youtu.be/dyTIJXozWXk](https://youtu.be/dyTIJXozWXk)
+
+> O código da Sprint 2 está disponível na branch [`sprint/2`](https://github.com/FIAP-IA2024/youvisa/tree/sprint/2).
 
 ---
 
