@@ -80,17 +80,65 @@ class BedrockNLP:
         if not processes:
             return "Nenhum processo encontrado"
 
+        final_states = ('aprovado', 'rejeitado', 'finalizado', 'cancelado')
+
+        # Show only active processes; if none, show the most recent one
+        active = [p for p in processes if p.get('status', '') not in final_states]
+        if active:
+            processes = active
+        else:
+            processes = [processes[0]]
+
+        visa_labels = {
+            'turismo': 'Turismo', 'trabalho': 'Trabalho',
+            'estudante': 'Estudante', 'residencia': 'Residência',
+            'transito': 'Trânsito', 'a_definir': None
+        }
+        status_labels = {
+            'recebido': 'Recebido', 'em_analise': 'Em Análise',
+            'pendente_documentos': 'Pendente de Documentos',
+            'aprovado': 'Aprovado', 'rejeitado': 'Rejeitado',
+            'finalizado': 'Finalizado', 'cancelado': 'Cancelado'
+        }
+
         formatted = []
-        for p in processes:
-            visa_type = p.get('visa_type', 'N/A')
-            country = p.get('destination_country', 'N/A')
-            status = p.get('status', 'N/A')
-            created = str(p.get('created_at', 'N/A'))[:10]
+        for i, p in enumerate(processes, 1):
+            visa_raw = p.get('visa_type', 'a_definir')
+            country_raw = p.get('destination_country', '')
+            status_raw = p.get('status', 'N/A')
+            created_raw = p.get('created_at', '')
             docs_count = len(p.get('documents', []))
-            formatted.append(
-                f"- Visto: {visa_type} | Pais: {country} | Status: {status} | "
-                f"Criado em: {created} | Documentos: {docs_count}"
-            )
+
+            # Friendly labels
+            visa = visa_labels.get(visa_raw, visa_raw)
+            status = status_labels.get(status_raw, status_raw)
+
+            # Format date as DD/MM/YYYY
+            created = ''
+            if created_raw:
+                date_str = str(created_raw)[:10]
+                if len(date_str) == 10 and '-' in date_str:
+                    parts = date_str.split('-')
+                    created = f"{parts[2]}/{parts[1]}/{parts[0]}"
+                else:
+                    created = date_str
+
+            # Determine if process is active or closed
+            final_states = ('aprovado', 'rejeitado', 'finalizado', 'cancelado')
+            situacao = 'ENCERRADO' if status_raw in final_states else 'EM ANDAMENTO'
+
+            # Build description, omitting "a_definir" fields
+            parts = [f"Processo {i} ({situacao}):"]
+            if visa:
+                parts.append(f"Tipo de visto: {visa}")
+            if country_raw and country_raw.lower() not in ('a definir', 'a_definir', ''):
+                parts.append(f"País destino: {country_raw}")
+            parts.append(f"Status: {status}")
+            if created:
+                parts.append(f"Data de criação: {created}")
+            parts.append(f"Documentos associados: {docs_count}")
+
+            formatted.append(" | ".join(parts))
 
         return "\n".join(formatted)
 
@@ -161,16 +209,46 @@ class BedrockNLP:
         """Parse the JSON response from Claude."""
         try:
             # Try to extract JSON from response
-            # Sometimes Claude adds text before/after JSON
             start_idx = raw_text.find('{')
             end_idx = raw_text.rfind('}') + 1
 
             if start_idx != -1 and end_idx > start_idx:
                 json_str = raw_text[start_idx:end_idx]
-                result = json.loads(json_str)
+                try:
+                    result = json.loads(json_str)
+                except json.JSONDecodeError:
+                    # Try finding the outermost JSON object by brace matching
+                    depth = 0
+                    real_end = -1
+                    for i in range(start_idx, len(raw_text)):
+                        if raw_text[i] == '{':
+                            depth += 1
+                        elif raw_text[i] == '}':
+                            depth -= 1
+                            if depth == 0:
+                                real_end = i + 1
+                                break
+                    if real_end > start_idx:
+                        json_str = raw_text[start_idx:real_end]
+                        try:
+                            result = json.loads(json_str)
+                        except json.JSONDecodeError:
+                            logger.error(f"JSON parse failed even with brace matching")
+                            return self._default_response(raw_text)
+                    else:
+                        return self._default_response(raw_text)
+
+                # If result['response'] is itself a JSON string, unwrap it
+                resp = result.get('response', '')
+                if isinstance(resp, str) and resp.strip().startswith('{'):
+                    try:
+                        inner = json.loads(resp)
+                        resp = inner.get('response', resp)
+                    except (json.JSONDecodeError, AttributeError):
+                        pass
 
                 return {
-                    'response': result.get('response', ''),
+                    'response': resp,
                     'intent': result.get('intent', 'general'),
                     'extracted_email': result.get('extracted_email'),
                     'new_state': result.get('new_state')
@@ -179,9 +257,8 @@ class BedrockNLP:
             # If no JSON found, use raw text as response
             return self._default_response(raw_text)
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Error parsing JSON response: {str(e)}")
-            # Use raw text if JSON parsing fails
+        except Exception as e:
+            logger.error(f"Error parsing response: {str(e)}")
             return self._default_response(raw_text)
 
     def _default_response(self, message: str) -> dict:

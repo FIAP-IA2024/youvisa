@@ -189,12 +189,15 @@ export async function getProcessHistory(id: string): Promise<{
 export async function updateProcessStatus(
   id: string,
   status: string,
-  reason: string,
+  reason?: string,
   changed_by?: string
 ): Promise<Process | null> {
+  const body: Record<string, string> = { status };
+  if (reason) body.reason = reason;
+  if (changed_by) body.changed_by = changed_by;
   const response = await fetchApi<Process>(`/processes/${id}/status`, {
     method: "POST",
-    body: JSON.stringify({ status, reason, changed_by }),
+    body: JSON.stringify(body),
   });
   return response.data || null;
 }

@@ -134,13 +134,13 @@ export class ProcessController {
 
   async updateStatus(
     id: string,
-    data: { status: string; reason: string; changed_by?: string },
+    data: { status: string; reason?: string; changed_by?: string },
   ) {
     try {
       const { process, error } = await this.processRepository.updateStatus(
         id,
         data.status,
-        data.reason,
+        data.reason || '',
         data.changed_by,
       );
 

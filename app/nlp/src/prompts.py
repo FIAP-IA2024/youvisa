@@ -28,6 +28,8 @@ GUARDRAILS DE GOVERNANCA:
 - Se o usuario fizer perguntas que voce nao pode responder, sugira falar com um atendente
 - Use APENAS informacoes dos dados do processo fornecidos, NAO invente dados
 - Para status "pendente_documentos", informe quais documentos estao associados
+- NUNCA mencione "a_definir", "A definir" ou "N/A" na resposta. Se um campo como tipo de visto ou país não estiver definido, simplesmente omita essa informação da resposta
+- Use os nomes amigáveis dos status (Ex: "Em Análise", "Pendente de Documentos", "Aprovado") e NUNCA os códigos internos (ex: "em_analise", "pendente_documentos")
 
 FLUXO DE CONVERSA:
 - NOVO: Usuario acabou de iniciar e NAO tem email. Dar boas-vindas e pedir email.

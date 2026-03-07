@@ -42,7 +42,7 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   recebido: "Recebido",
-  em_analise: "Em Analise",
+  em_analise: "Em Análise",
   pendente_documentos: "Pendente Docs",
   aprovado: "Aprovado",
   rejeitado: "Rejeitado",
@@ -54,9 +54,8 @@ const visaTypeLabels: Record<string, string> = {
   turismo: "Turismo",
   trabalho: "Trabalho",
   estudante: "Estudante",
-  residencia: "Residencia",
-  transito: "Transito",
-  a_definir: "A definir",
+  residencia: "Residência",
+  transito: "Trânsito",
 };
 
 function formatDate(dateString: string) {
@@ -202,9 +201,13 @@ export default function ProcessesPage() {
                 {processes.map((process) => (
                   <TableRow key={process._id}>
                     <TableCell className="font-medium">
-                      {visaTypeLabels[process.visa_type] || process.visa_type}
+                      {visaTypeLabels[process.visa_type] || (process.visa_type === "a_definir" ? "—" : process.visa_type)}
                     </TableCell>
-                    <TableCell>{process.destination_country}</TableCell>
+                    <TableCell>
+                      {process.destination_country && !["a definir", "a_definir"].includes(process.destination_country.toLowerCase())
+                        ? process.destination_country
+                        : "—"}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"

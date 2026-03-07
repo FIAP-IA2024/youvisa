@@ -44,7 +44,7 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   recebido: "Recebido",
-  em_analise: "Em Analise",
+  em_analise: "Em Análise",
   pendente_documentos: "Pendente Docs",
   aprovado: "Aprovado",
   rejeitado: "Rejeitado",
@@ -56,9 +56,8 @@ const visaTypeLabels: Record<string, string> = {
   turismo: "Turismo",
   trabalho: "Trabalho",
   estudante: "Estudante",
-  residencia: "Residencia",
-  transito: "Transito",
-  a_definir: "A definir",
+  residencia: "Residência",
+  transito: "Trânsito",
 };
 
 function formatDate(dateString: string) {
@@ -97,10 +96,10 @@ export default function ProcessDetailPage() {
   }, [id]);
 
   const handleStatusChange = async () => {
-    if (!newStatus || !reason.trim()) return;
+    if (!newStatus) return;
     setUpdating(true);
     try {
-      await changeProcessStatus(id, newStatus, reason);
+      await changeProcessStatus(id, newStatus, reason.trim() || undefined);
       setNewStatus("");
       setReason("");
       await loadProcess();
@@ -163,17 +162,19 @@ export default function ProcessDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold">
-              {visaTypeLabels[process.visa_type] || process.visa_type}
+              {visaTypeLabels[process.visa_type] || (process.visa_type === "a_definir" ? "—" : process.visa_type)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pais Destino</CardTitle>
+            <CardTitle className="text-sm font-medium">País Destino</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-lg font-bold">
-              {process.destination_country}
+              {process.destination_country && !["a definir", "a_definir"].includes(process.destination_country.toLowerCase())
+                ? process.destination_country
+                : "—"}
             </div>
           </CardContent>
         </Card>
@@ -254,7 +255,7 @@ export default function ProcessDetailPage() {
               </div>
               <Button
                 onClick={handleStatusChange}
-                disabled={!newStatus || !reason.trim() || updating}
+                disabled={!newStatus || updating}
               >
                 {updating ? "Atualizando..." : "Alterar"}
               </Button>

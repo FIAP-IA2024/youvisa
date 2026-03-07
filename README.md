@@ -25,48 +25,25 @@
 
 A YOUVISA é uma empresa brasileira especializada em soluções digitais baseadas em **Inteligência Artificial, RPA e automação cognitiva** para otimizar processos consulares e de atendimento.
 
-Este projeto foi desenvolvido como parte da **Sprint 2** do Challenge YOUVISA na **FIAP**, com foco em construir um **protótipo funcional avançado** capaz de receber, classificar e automatizar documentos, além de aprimorar a experiência de atendimento com IA Generativa, NLP, RPA e Visão Computacional.
+Este projeto foi desenvolvido como parte do **Challenge YOUVISA** na **FIAP**. A **Sprint 3** evolui o sistema para uma **plataforma inteligente de acompanhamento de processos de visto**, adicionando gestão completa de processos com máquina de estados, notificações automáticas via Telegram, consulta de status pelo chatbot e guardrails de governança de IA.
 
-O sistema transforma documentos em tarefas automáticas, simulando um fluxo real de atendimento da YOUVISA - desde o recebimento de arquivos (passaporte, comprovante, formulário) até a confirmação de recebimento e direcionamento do caso.
-
----
-
-## Video Demonstrativo
-
-[![Video Demonstrativo](https://img.youtube.com/vi/dyTIJXozWXk/0.jpg)](https://youtu.be/dyTIJXozWXk)
-
-**Assista no YouTube:** [https://youtu.be/dyTIJXozWXk](https://youtu.be/dyTIJXozWXk)
+O sistema cobre o ciclo completo de atendimento — desde o recebimento e classificação de documentos com IA até o acompanhamento do processo de visto pelo cliente e pelo operador, com notificações em tempo real a cada mudança de status.
 
 ---
 
-## Demo ao Vivo
+## Vídeo Demonstrativo
 
-A plataforma está disponível online para testes:
-
-| Componente | URL | Descrição |
-|------------|-----|-----------|
-| **n8n (Orquestrador)** | [youvisa-n8n.gabrielribeiro.work](https://youvisa-n8n.gabrielribeiro.work/) | Workflows de automação |
-| **Dashboard (Console)** | [youvisa-dashboard.gabrielribeiro.work](https://youvisa-dashboard.gabrielribeiro.work/) | Painel do operador |
-
-**Credenciais de Acesso (Dashboard):**
-
-- Usuario: `admin@admin.com`
-- Senha: `Teste1234`
-
-**Bot Telegram:**
-
-- Link direto: [https://web.telegram.org/a/#8196147608](https://web.telegram.org/a/#8196147608)
-- Ou procure por: `@youvisa_test_assistant_bot`
+*Link do vídeo será adicionado em breve.*
 
 ---
 
-## Objetivos da Sprint 2
+## Objetivos da Sprint 3
 
-- Automatizar o pipeline de documentos
-- Integrar chatbot à gestão de arquivos
-- Validar documentos com visão computacional
-- Aplicar NLP e IA Generativa para classificação
-- Concluir a arquitetura da plataforma
+- Implementar gestão de processos de visto com máquina de estados finitos
+- Notificar automaticamente o cliente via Telegram a cada mudança de status
+- Permitir consulta de status do processo pelo chatbot com guardrails de governança
+- Construir interface de acompanhamento com timeline visual no Console do Operador
+- Classificar documentos com IA e associá-los automaticamente ao processo
 
 ---
 

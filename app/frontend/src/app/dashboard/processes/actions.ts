@@ -21,7 +21,7 @@ export async function fetchProcess(id: string): Promise<Process | null> {
 export async function changeProcessStatus(
   id: string,
   status: string,
-  reason: string
+  reason?: string
 ): Promise<Process | null> {
   return await updateProcessStatus(id, status, reason);
 }

@@ -37,7 +37,7 @@
 
 ---
 
-O codigo fonte e recursos do projeto estao organizados na pasta `./app`.
+O código fonte e recursos do projeto estão organizados na pasta `./app`.
 
 ## Arquivos principais
 
