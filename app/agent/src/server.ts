@@ -5,6 +5,7 @@ import { getEnv } from '@/config/env';
 import { connectMongo } from '@/db/mongo';
 import { logger } from '@/lib/logger';
 import { healthRoute } from '@/routes/health';
+import { telegramWebhookRoute } from '@/routes/telegram-webhook';
 
 const env = getEnv();
 
@@ -19,6 +20,7 @@ const app = new Hono();
 
 // Health route (always available, no auth)
 app.route('/', healthRoute);
+app.route('/', telegramWebhookRoute);
 
 // 404 handler
 app.notFound((c) =>
