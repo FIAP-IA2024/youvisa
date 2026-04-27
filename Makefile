@@ -1,76 +1,76 @@
-.PHONY: help deploy start stop logs s3-list workflow
+.PHONY: help up down logs build smoke test type-check claude-setup webhook
 
 # Colors
 BLUE := \033[0;34m
+GREEN := \033[0;32m
 RED := \033[0;31m
 NC := \033[0m
 
 help:
-	@echo "$(BLUE)YOUVISA - Platform 360$(NC)"
+	@echo "$(BLUE)YOUVISA — Sprint 4 (local-only stack)$(NC)"
 	@echo ""
-	@echo "$(BLUE)Deploy Commands:$(NC)"
-	@echo "  make deploy <app>    - Deploy infrastructure (tf-state, s3, api, validation, classifier, n8n, all)"
-	@echo "                         Examples: make deploy tf-state (run this FIRST)"
-	@echo "                                  make deploy s3"
-	@echo "                                  make deploy api"
-	@echo "                                  make deploy validation"
-	@echo "                                  make deploy classifier"
-	@echo "                                  make deploy n8n"
-	@echo "                                  make deploy all"
+	@echo "$(BLUE)Stack Commands:$(NC)"
+	@echo "  make up                 - Start all services (mongo, minio, api, agent, validation, frontend)"
+	@echo "  make down               - Stop all services"
+	@echo "  make build              - Rebuild images"
+	@echo "  make logs [service]     - Tail logs (default: all)"
 	@echo ""
-	@echo "$(BLUE)Start Commands:$(NC)"
-	@echo "  make start <app>     - Start services (backend, n8n, all)"
-	@echo "                         Examples: make start backend"
-	@echo "                                  make start n8n"
-	@echo "                                  make start all"
+	@echo "$(BLUE)Quality:$(NC)"
+	@echo "  make test               - Run vitest (api + agent) and pytest (validation)"
+	@echo "  make type-check         - Run tsc --noEmit on api + agent"
+	@echo "  make smoke              - Run end-to-end smoke script"
 	@echo ""
-	@echo "$(BLUE)Utility Commands:$(NC)"
-	@echo "  make stop            - Stop all services"
-	@echo "  make logs <service>  - Show logs (backend, n8n)"
-	@echo "  make s3-list         - List files in S3 bucket"
-	@echo "  make workflow        - Generate n8n workflow file (interactive)"
-	@echo ""
+	@echo "$(BLUE)One-time setup:$(NC)"
+	@echo "  make claude-setup       - Run 'claude setup-token' inside agent container"
+	@echo "                            (only needed if claude_home volume is empty)"
+	@echo "  make webhook URL=...    - Register Telegram webhook to URL/telegram/webhook"
+	@echo "                            (e.g., make webhook URL=https://abc.ngrok-free.app)"
 
-# Deploy command
-deploy:
-	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
-		echo "$(RED)Error: Please specify what to deploy$(NC)"; \
-		echo "Available options: tf-state, s3, api, ocr, n8n, all"; \
-		echo "Example: make deploy tf-state"; \
-		exit 1; \
-	fi
-	@./scripts/deploy.sh $(filter-out $@,$(MAKECMDGOALS))
+up:
+	@docker volume create claude_home > /dev/null 2>&1 || true
+	@docker compose up -d
+	@echo "$(GREEN)stack started.$(NC) tail logs with: make logs"
 
-# Start command
-start:
-	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
-		echo "$(RED)Error: Please specify what to start$(NC)"; \
-		echo "Available options: backend, n8n, ocr, all"; \
-		echo "Example: make start all"; \
-		exit 1; \
-	fi
-	@./scripts/start.sh $(filter-out $@,$(MAKECMDGOALS))
+down:
+	@docker compose down
 
-# Stop all services
-stop:
-	@./scripts/stop.sh
+build:
+	@docker compose build
 
-# Show logs
 logs:
 	@if [ "$(filter-out $@,$(MAKECMDGOALS))" = "" ]; then \
-		docker-compose logs -f; \
+		docker compose logs -f --tail=200; \
 	else \
-		docker-compose logs -f $(filter-out $@,$(MAKECMDGOALS)); \
+		docker compose logs -f --tail=200 $(filter-out $@,$(MAKECMDGOALS)); \
 	fi
 
-# S3 list
-s3-list:
-	@./scripts/s3-list.sh
+test:
+	@echo "$(BLUE)→ vitest in app/api$(NC)"
+	@docker compose exec -T api npm test
+	@echo ""
+	@echo "$(BLUE)→ vitest in app/agent$(NC)"
+	@docker compose exec -T agent npm test
 
-# Generate n8n workflow
-workflow:
-	@./scripts/generate-workflow.sh
+type-check:
+	@echo "$(BLUE)→ tsc in app/api$(NC)"
+	@docker compose exec -T api npm run type-check || true
+	@echo ""
+	@echo "$(BLUE)→ tsc in app/agent$(NC)"
+	@docker compose exec -T agent npm run type-check || true
 
-# Catch-all target to prevent "No rule to make target" errors
+smoke:
+	@docker compose exec -T agent npx tsx src/scripts/smoke-pipeline.ts
+
+claude-setup:
+	@docker compose run --rm agent claude setup-token
+
+webhook:
+	@if [ -z "$(URL)" ]; then \
+		echo "$(RED)Usage: make webhook URL=https://your-ngrok.ngrok-free.app$(NC)"; \
+		exit 1; \
+	fi
+	@docker compose exec -T agent npx tsx src/scripts/register-webhook.ts $(URL)/telegram/webhook
+
+# Catch-all target so 'make logs api' (extra arg) doesn't error
 %:
 	@:

@@ -11,8 +11,8 @@ RUN npm install
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 3000
+# Expose port (Sprint 4: API listens on 5555)
+EXPOSE 5555
 
-# Start development server
+# Start development server (the runtime is hot-reload via tsx watch)
 CMD ["npm", "run", "dev"]

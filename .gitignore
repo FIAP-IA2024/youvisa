@@ -61,8 +61,6 @@ vendor/
 .env.local
 .env.bak
 
-# n8n workflow output (contains sensitive data)
-app/n8n/workflows/telegram.output.json
 
 # Terraform
 *.tfstate
@@ -84,16 +82,7 @@ __pycache__/
 *.exe
 *.bkp
 
-# Lambda packages
-app/**/lambda.zip
-app/**/layer.zip
-app/**/dist/
-app/**/layer/
-app/api/lambda.zip
-app/api/nodejs-layer.zip
 
-# Docker volumes
-docker/
 
 # Others
 tmp/*
