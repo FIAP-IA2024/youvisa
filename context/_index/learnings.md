@@ -10,12 +10,15 @@ Learnings here are specific to YOUVISA. Code style conventions live in `[[conven
 
 ## `#concept` — Architecture and patterns
 
-_No learnings yet. Add the first one when you discover something non-obvious._
+- [[../learnings/sprint-2-ocr-pivot|Sprint 2 dropped OCR (Textract) in favor of Validation + Classifier]]
+- [[../learnings/nlp-direct-mongodb-access|NLP Lambda reads MongoDB directly, not through the API]]
+- [[../learnings/status-notifications-deterministic|Status change notifications use deterministic templates, never LLM]]
+- [[../learnings/bot-handoff-mechanism|Bot ↔ human handoff uses `conversation.status=transferred` + `skip_response: true`]]
 
 ## `#reference` — Environment and commands
 
-_No references yet._
+- [[../learnings/n8n-workflow-placeholders|n8n workflows are templates with `__PLACEHOLDER__` tokens substituted at deploy time]]
 
 ## `#gotcha` — Things that tripped us up
 
-_No gotchas captured yet. Add the first one when you hit a repeatable surprise._
+- [[../learnings/bedrock-region-quirk|AWS Bedrock Claude lives in `us-east-1`, not the project's `sa-east-1`]]
