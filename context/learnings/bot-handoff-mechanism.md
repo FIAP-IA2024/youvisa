@@ -38,3 +38,19 @@ Sprint 4's multi-agent orchestrator **must preserve this contract end-to-end**:
 3. The "operator returns conversation to bot" flow must continue working — do not break the `PUT /conversations/:id` path.
 
 **Test:** send "quero humano" via Telegram, verify bot stops responding to follow-up messages, return conversation via console, verify bot responds again.
+
+## Update — Sprint 4 (post-n8n removal)
+
+The `skip_response: true` *wire format* described above was specific to
+n8n's `Check Skip Response?` IF node, and that node no longer exists
+(n8n was removed in Sprint 4 Phase 10). The **behavioral contract**
+remains identical — bot stays silent while `conversation.status === 'transferred'`,
+and resumes when an operator flips it back to `active`. The new
+implementation lives in `app/agent/src/orchestrator/pipeline.ts` (handoff
+short-circuit step 0) and produces an `InteractionLog` with
+`response_skipped: true` instead of returning a structured `skip_response`
+flag to a downstream IF node. The `app/agent/src/routes/telegram-webhook.ts`
+route checks `out.response_skipped` before calling `sendMessage`.
+
+Sprint 4's smoke E2E (`scripts/smoke-e2e.ts`) covers this with the
+HANDOFF_SUPPRESSES_BOT and BACK_TO_BOT_AFTER_HANDOFF scenarios.

@@ -14,7 +14,7 @@ interface ActionButtonsProps {
 
 export function ActionButtons({
   conversationId,
-  telegramBotUsername = "youvisa_test_assistant_bot",
+  telegramBotUsername = "youvisa_test_assistant_s3_bot",
   onHandoffRequested,
 }: ActionButtonsProps) {
   const [isPending, startTransition] = useTransition();
