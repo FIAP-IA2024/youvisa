@@ -17,7 +17,9 @@ export async function verifyPortalToken(token: string): Promise<PortalTokenPaylo
     const key = new TextEncoder().encode(PORTAL_SECRET);
     const { payload } = await jwtVerify(token, key, { algorithms: ["HS256"] });
     if (typeof payload.user_id !== "string") return null;
-    return payload as PortalTokenPayload;
+    // jose's JWTPayload index type doesn't structurally overlap with
+    // ours, but we just asserted the load-bearing field above.
+    return payload as unknown as PortalTokenPayload;
   } catch (err) {
     console.warn("portal token verify failed:", (err as Error).message);
     return null;

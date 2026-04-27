@@ -1,4 +1,4 @@
-.PHONY: help up down logs build smoke test type-check claude-setup webhook
+.PHONY: help up down logs build smoke smoke-e2e test type-check claude-setup webhook record
 
 # Colors
 BLUE := \033[0;34m
@@ -53,13 +53,22 @@ test:
 
 type-check:
 	@echo "$(BLUE)→ tsc in app/api$(NC)"
-	@docker compose exec -T api npm run type-check || true
+	@docker compose exec -T api npm run type-check
 	@echo ""
 	@echo "$(BLUE)→ tsc in app/agent$(NC)"
-	@docker compose exec -T agent npm run type-check || true
+	@docker compose exec -T agent npm run type-check
+	@echo ""
+	@echo "$(BLUE)→ tsc in app/frontend$(NC)"
+	@docker compose exec -T frontend npm run type-check
 
 smoke:
 	@docker compose exec -T agent npx tsx src/scripts/smoke-pipeline.ts
+
+smoke-e2e:
+	@npx tsx scripts/smoke-e2e.ts
+
+record:
+	@bash scripts/run-demo-v2.sh
 
 claude-setup:
 	@docker compose run --rm agent claude setup-token
