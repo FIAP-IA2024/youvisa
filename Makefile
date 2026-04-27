@@ -55,8 +55,13 @@ type-check:
 	@echo "$(BLUE)→ tsc in app/api$(NC)"
 	@docker compose exec -T api npm run type-check
 	@echo ""
-	@echo "$(BLUE)→ tsc in app/agent$(NC)"
-	@docker compose exec -T agent npm run type-check
+	@echo "$(BLUE)→ tsc in app/agent (host — Docker container OOMs on Claude SDK types)$(NC)"
+	@NODE_BIN=$$(ls -1 $$HOME/.nvm/versions/node 2>/dev/null | sort -V | tail -1); \
+	  if [ -n "$$NODE_BIN" ] && [ -x "$$HOME/.nvm/versions/node/$$NODE_BIN/bin/node" ]; then \
+	    NODE="$$HOME/.nvm/versions/node/$$NODE_BIN/bin/node"; \
+	  else NODE=node; fi; \
+	  cd app/agent && (test -d node_modules || $$NODE $$HOME/.nvm/versions/node/$$NODE_BIN/bin/npm install --silent) && \
+	  $$NODE --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit
 	@echo ""
 	@echo "$(BLUE)→ tsc in app/frontend$(NC)"
 	@docker compose exec -T frontend npm run type-check
