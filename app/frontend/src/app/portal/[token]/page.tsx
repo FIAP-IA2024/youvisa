@@ -72,21 +72,41 @@ export default async function PortalPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto py-6 px-4">
+      <header className="border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-10">
+        <div className="container mx-auto py-4 px-4 sm:px-6 max-w-5xl">
           <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-3xl font-bold">YOUVISA</h1>
-              <p className="text-sm text-muted-foreground">Olá, {user.first_name ?? "cliente"}!</p>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.25"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden
+                >
+                  <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+                </svg>
+              </div>
+              <div className="leading-tight">
+                <p className="font-display text-lg font-semibold">YOUVISA</p>
+                <p className="text-xs text-muted-foreground">
+                  Olá, {user.first_name ?? "cliente"}
+                </p>
+              </div>
             </div>
-            <span className="text-xs text-muted-foreground">
-              Sessão expira em {payload.exp ? new Date(payload.exp * 1000).toLocaleString("pt-BR") : "—"}
+            <span className="text-[11px] text-muted-foreground tabular-nums">
+              Sessão expira em{" "}
+              {payload.exp ? new Date(payload.exp * 1000).toLocaleString("pt-BR") : "—"}
             </span>
           </div>
         </div>
       </header>
 
-      <section className="container mx-auto py-8 px-4 space-y-6 max-w-5xl">
+      <section className="container mx-auto py-6 sm:py-8 px-4 sm:px-6 space-y-6 max-w-5xl">
         {activeProcess ? (
           <>
             <TimelineCard process={activeProcess} guidance={currentGuidance} />
@@ -96,9 +116,10 @@ export default async function PortalPage({ params }: PageProps) {
             </div>
           </>
         ) : (
-          <div className="rounded-lg border border-dashed border-border p-8 text-center">
-            <p className="text-muted-foreground">
-              Você ainda não tem nenhum processo de visto ativo. Envie seus documentos pelo Telegram para começar.
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Você ainda não tem nenhum processo de visto ativo. Envie seus documentos pelo
+              Telegram para começar.
             </p>
           </div>
         )}
@@ -111,8 +132,8 @@ export default async function PortalPage({ params }: PageProps) {
       </section>
 
       <footer className="border-t border-border mt-12">
-        <div className="container mx-auto py-4 px-4 text-center text-xs text-muted-foreground">
-          YOUVISA · Plataforma inteligente de atendimento
+        <div className="container mx-auto py-4 px-4 text-center text-xs text-muted-foreground max-w-5xl">
+          YOUVISA · Plataforma de atendimento inteligente
         </div>
       </footer>
     </main>
