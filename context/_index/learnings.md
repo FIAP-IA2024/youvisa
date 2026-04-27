@@ -22,3 +22,6 @@ Learnings here are specific to YOUVISA. Code style conventions live in `[[conven
 ## `#gotcha` — Things that tripped us up
 
 - [[../learnings/bedrock-region-quirk|AWS Bedrock Claude lives in `us-east-1`, not the project's `sa-east-1`]]
+- [[../learnings/claude-vision-oauth-token-refresh|Claude OAuth tokens expire ~ every 8h — sync from macOS Keychain on demand]]
+- [[../learnings/telegram-web-bubble-counter-virtual-scrolling|Telegram WebK uses virtual scrolling — count `.is-in` bubbles, not `.bubble`]]
+- [[../learnings/nextjs-16-middleware-renamed-proxy|Next.js 16 renamed `middleware.ts` to `proxy.ts` — silently 404s the old form]]
