@@ -70,7 +70,13 @@ export default async function PortalPage({ params }: PageProps) {
   const currentGuidance = activeProcess ? guidance[activeProcess.status] : undefined;
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:shadow-lg"
+      >
+        Pular para o conteúdo
+      </a>
       <header className="border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 sticky top-0 z-10">
         <div className="container mx-auto py-4 px-4 sm:px-6 max-w-5xl">
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -105,7 +111,15 @@ export default async function PortalPage({ params }: PageProps) {
         </div>
       </header>
 
-      <section className="container mx-auto py-6 sm:py-8 px-4 sm:px-6 space-y-6 max-w-5xl">
+      <main
+        id="main-content"
+        role="main"
+        aria-labelledby="portal-title"
+        className="container mx-auto py-6 sm:py-8 px-4 sm:px-6 space-y-6 max-w-5xl"
+      >
+        <h1 id="portal-title" className="sr-only">
+          Portal do cliente — {user.first_name ?? "YOUVISA"}
+        </h1>
         {activeProcess ? (
           <>
             <TimelineCard process={activeProcess} guidance={currentGuidance} />
@@ -131,13 +145,13 @@ export default async function PortalPage({ params }: PageProps) {
             conversationId={userTelegramConversation._id}
           />
         )}
-      </section>
+      </main>
 
       <footer className="border-t border-border mt-12">
         <div className="container mx-auto py-4 px-4 text-center text-xs text-muted-foreground max-w-5xl">
           YOUVISA · Plataforma de atendimento inteligente
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

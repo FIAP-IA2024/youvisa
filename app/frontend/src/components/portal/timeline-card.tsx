@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ProcessTimeline } from "@/components/process-timeline";
+import { StatusPill } from "@/components/portal/status-pill";
 import type { Process, VisaGuidance } from "@/lib/api";
 
 const VISA_LABELS: Record<string, string> = {
@@ -47,9 +48,11 @@ export function TimelineCard({
               Atualizado em {new Date(process.updated_at).toLocaleString("pt-BR")}
             </p>
           </div>
-          <span className="status-pill text-sm" data-status={process.status}>
-            {guidance?.label ?? process.status}
-          </span>
+          <StatusPill
+            status={process.status}
+            label={guidance?.label ?? process.status}
+            size="md"
+          />
         </div>
       </CardHeader>
       <CardContent className="pt-6 pb-7">
