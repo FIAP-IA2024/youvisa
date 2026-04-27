@@ -2,17 +2,41 @@
 
 **Objetivo:** mostrar todos os 8 itens do briefing FIAP em sequência, sem cortes longos.
 
-## Pré-gravação (não vai no vídeo)
+A gravação é **automatizada** por Playwright e produz `docs/demo-sprint-4.mp4`
+diretamente. Os comandos abaixo cobrem o fluxo completo, do zero até o mp4 pronto.
 
-1. `docker compose up -d` — espere ~20s até todos `healthy`
-2. `ngrok http 7777` em outra aba (deixe a URL visível)
-3. `make webhook URL=<sua-ngrok-url>` — confirma "✓ webhook registered"
-4. Telegram aberto no bot **@youvisa_test_assistant_s3_bot**
-5. Browser com 3 abas:
-   - **Aba 1:** `http://localhost:3010/dashboard/processes` (logada)
-   - **Aba 2:** `http://localhost:3010/dashboard/interactions` (logada)
-   - **Aba 3:** vazia (será o portal do cliente)
-6. Tenha o `docs/diagramas/Diagramas.drawio` (ou print da arquitetura) à mão pra abertura
+## Setup (uma vez)
+
+```bash
+# 1. Subir a stack (mongo, minio, api, agent, validation, frontend)
+make up
+
+# 2. Login no Telegram Web (uma vez por máquina — escaneia QR)
+node scripts/telegram-login.mjs
+```
+
+## Gravar (a partir daqui é automático)
+
+```bash
+# 3. Tudo em um comando: refresca token Claude, sobe ngrok, registra
+#    webhook com secret_token, manda "olá" pro bot, roda seed, e
+#    grava o vídeo de ~2:50 com 7+ highlights visuais.
+make record
+```
+
+> O script `scripts/setup-demo-v2.sh` é idempotente e roda automaticamente
+> por dentro do `make record`. Ele sincroniza o token OAuth do Claude Code
+> a partir do Keychain do macOS (token expira ~ 8 h), garante que o ngrok
+> está rodando e re-registra o webhook do Telegram com o secret token
+> compartilhado (verifica via `X-Telegram-Bot-Api-Secret-Token`).
+
+Saída esperada: `docs/demo-sprint-4.mp4` com duração 150–180 s.
+
+## Fluxo capturado pela gravação automática
+
+A gravação dirige Telegram Web (sua conta), o Console do Operador, e o Portal
+do Cliente em uma só janela do Chromium, com captions, spotlights e zoom-ins
+sobrepostos via DOM (renderizados pelo próprio browser — sem editor externo):
 
 ## Gravação — divisão por segundo
 

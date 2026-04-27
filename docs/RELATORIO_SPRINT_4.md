@@ -9,6 +9,22 @@
 
 A Sprint 4 substituiu o NLP monolítico (uma única chamada ao Bedrock) por um **pipeline multi-agente em TypeScript** rodando como um serviço dedicado (`app/agent/`) com o **Claude Agent SDK**, autenticado via volume Docker (`claude_home`) que recebe o token do plano Max do desenvolvedor por `claude setup-token`.
 
+**Exceção documentada (governança):** a classificação de documentos
+(`app/agent/src/classifier/claude-vision.ts`) chama a Anthropic Messages API
+diretamente via `fetch` em vez do SDK, porque o `@anthropic-ai/claude-agent-sdk`
+v0.2.x não expõe entrada multimodal (imagens). O token OAuth e o modelo são
+os mesmos; só o transporte difere. A pipeline de texto (intent, entity,
+response) usa o SDK integralmente.
+
+**Sprint 3 → Sprint 4 — o que foi removido e por quê:**
+
+| Removido | Motivo |
+|---|---|
+| `app/n8n/` + workflows JSON | Substituído pelo agent service (Hono) que recebe webhook do Telegram diretamente. Workflows em JSON com `__PLACEHOLDER__` substituídos no deploy eram opacos e difíceis de revisar. |
+| `app/nlp/` (Lambda Python) | Substituído pelo pipeline multi-agente tipado em `app/agent/src/agents/`. |
+| `app/classifier/` (Lambda Python + Bedrock) | Substituído por `app/agent/src/classifier/` (Claude Vision via OAuth). |
+| `infra/` (Terraform AWS) | Sprint 4 é local-only; deploys AWS pausados. Pasta arquivada, não removida do histórico. |
+
 ```
 Inbound message
    │

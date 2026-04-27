@@ -45,6 +45,23 @@ Isso abre uma URL no terminal — copie e cole no seu browser, autorize com sua 
 >   'cat > /dst/.credentials.json && chown 1000:1000 /dst/.credentials.json && chmod 600 /dst/.credentials.json'
 > ```
 
+### Ciclo de vida das credenciais Claude
+
+O token OAuth do Claude Code expira a cada **~8 h**. Quando isso acontece, o
+classificador (Claude Vision) começa a retornar 401 e o pipeline texto pára
+de responder:
+
+| Comando | Quando usar |
+|---|---|
+| `make claude-setup` | **Primeira vez** num host novo, ou quando você não usa Claude Code no macOS. Faz login interativo dentro do container. |
+| `bash scripts/setup-demo-v2.sh` | **Toda vez antes de gravar/demonstrar.** Idempotente. Sincroniza o token fresco do Keychain do macOS para o volume `claude_home`. Roda automaticamente dentro de `make record`. |
+
+⚠️ **Não rode `claude setup-token` depois de já ter sincronizado do Keychain** —
+o `setup-token` apaga as credenciais sincronizadas e te força ao fluxo
+interativo de novo. Em dúvida, prefira `setup-demo-v2.sh`.
+
+Detalhes técnicos: [[../context/learnings/claude-vision-oauth-token-refresh]].
+
 ## Subir a stack
 
 ```bash
