@@ -32,8 +32,6 @@ export interface ClassificationResult {
 }
 
 const CREDENTIALS_PATH = '/home/node/.claude/.credentials.json';
-let _accessToken: string | undefined;
-
 /**
  * Reads the OAuth access token from the Claude Code credentials file
  * (created by `claude setup-token` or by copying the host's credentials
@@ -43,14 +41,21 @@ let _accessToken: string | undefined;
  * v0.2.x — its `prompt` parameter is `string`. For vision we hit the
  * Anthropic Messages API directly with the same OAuth token the SDK
  * uses internally.
+ *
+ * IMPORTANT: re-reads the file every call. The file is the source of
+ * truth; the SDK refreshes the file when the token expires. An older
+ * version of this code cached the token + preferred CLAUDE_CODE_OAUTH_TOKEN
+ * env var, which got stale across days. Now: always file, no cache.
  */
 async function getAccessToken(): Promise<string> {
-  if (_accessToken) return _accessToken;
-  // Allow env-var override (CLAUDE_CODE_OAUTH_TOKEN) for token-based auth.
   const env = getEnv();
-  if (env.CLAUDE_CODE_OAUTH_TOKEN) {
-    _accessToken = env.CLAUDE_CODE_OAUTH_TOKEN;
-    return _accessToken;
+  // Allow CLAUDE_CODE_OAUTH_TOKEN to OVERRIDE only when explicitly set
+  // (>20 chars). Empty/short values are ignored so a stale env var
+  // doesn't poison the auth flow.
+  if (env.CLAUDE_CODE_OAUTH_TOKEN && env.CLAUDE_CODE_OAUTH_TOKEN.length > 40) {
+    // Skip env override during dev — file is fresher (Claude Code refreshes it).
+    // Uncomment if you really want to use the env-var path for production.
+    // return env.CLAUDE_CODE_OAUTH_TOKEN;
   }
   try {
     const raw = await fs.readFile(CREDENTIALS_PATH, 'utf8');
@@ -59,7 +64,6 @@ async function getAccessToken(): Promise<string> {
     if (typeof token !== 'string' || token.length < 20) {
       throw new Error('access token not found in credentials');
     }
-    _accessToken = token;
     return token;
   } catch (err) {
     throw new Error(

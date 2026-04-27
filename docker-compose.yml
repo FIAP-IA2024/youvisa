@@ -122,7 +122,10 @@ services:
       - API_URL=${API_URL:-http://api:5555}
       - API_KEY=${API_KEY}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-haiku-4-5}
-      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+      # CLAUDE_CODE_OAUTH_TOKEN deliberately NOT inherited from host shell —
+      # Claude Desktop sets it for its own internal use, but that token is
+      # different from the user's Max-plan token. Auth comes from the
+      # claude_home volume's /home/node/.claude/.credentials.json file.
       - VALIDATION_URL=${VALIDATION_URL:-http://validation:5556}
     depends_on:
       - mongo
