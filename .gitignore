@@ -100,3 +100,12 @@ CLAUDE.md
 AGENTS.md
 tmp/*
 .tasks/*
+
+# Obsidian workspace (machine-local)
+context/.obsidian/workspace.json
+context/.obsidian/workspace-mobile.json
+context/.obsidian/cache
+context/.obsidian/plugins/*/data.json
+
+# Claude Code local settings (per-developer)
+.claude/settings.local.json
