@@ -58,12 +58,24 @@ export async function callClaude(opts: {
     ? [opts.systemPrompt, SYSTEM_PROMPT_DYNAMIC_BOUNDARY]
     : opts.systemPrompt;
 
+  // The SDK picks a platform-specific Claude binary by autodetect; on
+  // Debian-arm64 inside Docker it sometimes picks the *-musl variant
+  // which segfaults under glibc. Force the glibc one explicitly when
+  // we're on linux-arm64.
+  const pathToClaudeCodeExecutable =
+    process.platform === 'linux' && process.arch === 'arm64'
+      ? '/app/node_modules/@anthropic-ai/claude-agent-sdk-linux-arm64/claude'
+      : process.platform === 'linux' && process.arch === 'x64'
+      ? '/app/node_modules/@anthropic-ai/claude-agent-sdk-linux-x64/claude'
+      : undefined;
+
   for await (const message of query({
     prompt,
     options: {
       model,
       systemPrompt: systemPromptOption,
       ...(opts.maxTokens ? { maxTurns: 1 } : {}),
+      ...(pathToClaudeCodeExecutable ? { pathToClaudeCodeExecutable } : {}),
     },
   })) {
     if (message.type === 'assistant') {

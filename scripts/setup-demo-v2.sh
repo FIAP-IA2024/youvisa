@@ -73,7 +73,7 @@ fi
 # container reads the same value. Telegram echoes it back in the
 # X-Telegram-Bot-Api-Secret-Token header, which the webhook handler
 # verifies — closes the unauthenticated-webhook attack surface.
-WEBHOOK_SECRET=$(grep '^TELEGRAM_WEBHOOK_SECRET=' .env 2>/dev/null | cut -d= -f2)
+WEBHOOK_SECRET=$( (grep '^TELEGRAM_WEBHOOK_SECRET=' .env 2>/dev/null || true) | cut -d= -f2)
 if [[ -z "$WEBHOOK_SECRET" ]]; then
   WEBHOOK_SECRET=$(openssl rand -hex 32)
   echo "TELEGRAM_WEBHOOK_SECRET=$WEBHOOK_SECRET" >> .env

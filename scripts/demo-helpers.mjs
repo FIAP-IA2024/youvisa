@@ -270,6 +270,60 @@ export async function clearZoom(page) {
   });
 }
 
+// ---------- zoom into the latest Telegram bubble ----------
+
+/**
+ * Zoom-in on the *most recent* Telegram message bubble. Smarter than
+ * `zoomIn(page, '.bubble:last-of-type', ...)` because Telegram WebK
+ * sometimes wraps the last item in a service block — we walk back
+ * until we find a bubble with text content.
+ */
+export async function zoomLastBubble(page, scale = 1.35) {
+  return page.evaluate(
+    ({ scale }) => {
+      const id = '__demo_zoom__';
+      const old = document.getElementById(id);
+      if (old) old.remove();
+
+      const bubbles = Array.from(document.querySelectorAll('.bubble'));
+      let target = null;
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        const text = b.innerText?.trim() ?? '';
+        if (text.length > 4) {
+          target = b;
+          break;
+        }
+      }
+      if (!target) return false;
+      const r = target.getBoundingClientRect();
+      const clone = target.cloneNode(true);
+      clone.id = id;
+      clone.style.cssText = `
+        position: fixed;
+        top: ${r.top}px;
+        left: ${r.left}px;
+        width: ${r.width}px;
+        z-index: 99997;
+        transform-origin: ${r.left + r.width / 2}px ${r.top + r.height / 2}px;
+        transform: scale(1);
+        transition: transform 600ms cubic-bezier(0.34, 1.3, 0.4, 1),
+                    box-shadow 600ms ease;
+        border-radius: 14px;
+        pointer-events: none;
+      `;
+      document.body.appendChild(clone);
+      requestAnimationFrame(() => {
+        clone.style.transform = `scale(${scale})`;
+        clone.style.boxShadow =
+          '0 32px 80px rgba(0, 0, 0, 0.5), 0 0 0 4px hsl(221 83% 53% / 0.5)';
+      });
+      return true;
+    },
+    { scale },
+  );
+}
+
 // ---------- cross-fade between scenes ----------
 
 export async function crossFade(page, fn) {
