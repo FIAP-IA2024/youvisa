@@ -90,6 +90,13 @@ export async function upsertConversation(data: {
   return res.data;
 }
 
+export interface ApiMessage {
+  _id: string;
+  conversation_id: string;
+  message_id: string;
+  user_id: string;
+}
+
 export async function saveMessage(data: {
   conversation_id: string;
   message_id: string;
@@ -99,15 +106,17 @@ export async function saveMessage(data: {
   direction: 'incoming' | 'outgoing';
   timestamp?: Date;
   metadata?: Record<string, unknown>;
-}): Promise<unknown> {
-  return request(`/messages`, {
+}): Promise<ApiMessage> {
+  const res = await request<{ success: boolean; data: ApiMessage }>(`/messages`, {
     method: 'POST',
     body: { ...data, timestamp: data.timestamp ?? new Date() },
   });
+  return res.data;
 }
 
 export async function saveFile(data: {
   conversation_id: string;
+  /** ObjectId of the Message document (NOT Telegram's external message_id) */
   message_id: string;
   file_id: string;
   s3_bucket: string;

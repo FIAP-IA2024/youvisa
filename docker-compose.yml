@@ -76,6 +76,25 @@ services:
       - youvisa-network
     command: npm run dev
 
+  validation:
+    build:
+      context: ./app/validation
+      dockerfile: Dockerfile
+    container_name: youvisa-validation
+    restart: unless-stopped
+    ports:
+      - "5556:5556"
+    environment:
+      - API_KEY=${API_KEY}
+      - VALIDATION_PORT=5556
+    networks:
+      - youvisa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5556/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
   agent:
     build:
       context: ./app/agent
@@ -104,10 +123,12 @@ services:
       - API_KEY=${API_KEY}
       - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-haiku-4-5}
       - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+      - VALIDATION_URL=${VALIDATION_URL:-http://validation:5556}
     depends_on:
       - mongo
       - minio
       - api
+      - validation
     volumes:
       - claude_home:/home/node/.claude
       - ./app/agent/src:/app/src:cached

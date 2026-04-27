@@ -26,6 +26,9 @@ const envSchema = z.object({
   API_URL: z.string().url().default('http://api:5555'),
   API_KEY: z.string(),
 
+  // Validation service (FastAPI + OpenCV — Sprint 4 Phase 7)
+  VALIDATION_URL: z.string().url().default('http://validation:5556'),
+
   // Claude Agent SDK
   CLAUDE_MODEL: z.string().default('claude-haiku-4-5'),
   CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),

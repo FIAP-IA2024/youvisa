@@ -6,21 +6,22 @@ import {
   upsertUser,
 } from '@/lib/api-client';
 import { logger } from '@/lib/logger';
-import { sendMessage } from '@/telegram/client';
+import { getFile, sendMessage } from '@/telegram/client';
 import { updateSchema, type TelegramUpdate } from '@/telegram/types';
+import { handleDocument } from '@/classifier/document-flow';
 
 export const telegramWebhookRoute = new Hono();
 
 /**
  * POST /telegram/webhook
  * Receives Telegram bot updates. Telegram pushes here when the user
- * sends a message; we run the multi-agent pipeline and respond via
+ * sends a message; we run the multi-agent pipeline (text) or the
+ * document-classification flow (photo/document) and respond via
  * Telegram sendMessage.
  *
- * NOTE: Telegram requires this endpoint to respond within ~60s. The
- * pipeline can take 10-15s with LLM calls, which is fine. For longer
- * processing (e.g., document classification with vision) Phase 6 will
- * fork into a non-blocking handler.
+ * NOTE: Telegram requires this endpoint to respond within ~60s.
+ * The pipeline can take 10-15s with LLM calls; document flow can be
+ * 20-25s including vision. Both are within the limit.
  */
 telegramWebhookRoute.post('/telegram/webhook', async (c) => {
   let update: TelegramUpdate;
@@ -39,11 +40,9 @@ telegramWebhookRoute.post('/telegram/webhook', async (c) => {
     return c.json({ ok: true });
   }
 
-  // Documents/photos handled in Phase 6
+  // Document/photo path: download -> validate -> MinIO -> classify -> notify
   if (msg.photo || msg.document) {
-    logger.info({ update_id: update.update_id }, 'document received (Phase 6 handler not yet wired)');
-    // Acknowledge silently for now; Phase 6 will plug in the classifier flow.
-    return c.json({ ok: true });
+    return handleDocumentMessage(update, c);
   }
 
   if (!msg.text) {
@@ -117,3 +116,81 @@ telegramWebhookRoute.post('/telegram/webhook', async (c) => {
     return c.json({ ok: false, error: 'internal error' }, 200);
   }
 });
+
+/**
+ * Document/photo subroutine. Telegram sends photos as an array of
+ * PhotoSize objects (different resolutions); we always pick the largest.
+ */
+async function handleDocumentMessage(update: TelegramUpdate, c: any) {
+  const msg = update.message!;
+  const from = msg.from!;
+
+  try {
+    const user = await upsertUser({
+      telegram_id: String(from.id),
+      username: from.username,
+      first_name: from.first_name,
+      last_name: from.last_name,
+      is_bot: from.is_bot,
+    });
+    const conversation = await upsertConversation({
+      user_id: user._id,
+      channel: 'telegram',
+      chat_id: String(msg.chat.id),
+      status: 'active',
+    });
+
+    let fileId: string;
+    let fileName: string;
+    let mimeType: string;
+
+    if (msg.photo && msg.photo.length > 0) {
+      // Pick the largest size
+      const largest = msg.photo.reduce((a, b) =>
+        a.width * a.height > b.width * b.height ? a : b,
+      );
+      fileId = largest.file_id;
+      fileName = `photo-${Date.now()}.jpg`;
+      mimeType = 'image/jpeg';
+    } else if (msg.document) {
+      fileId = msg.document.file_id;
+      fileName = msg.document.file_name ?? `document-${Date.now()}`;
+      mimeType = msg.document.mime_type ?? 'application/octet-stream';
+    } else {
+      return c.json({ ok: true });
+    }
+
+    // Save the inbound message with type 'photo' or 'document'
+    const messageType = msg.photo ? 'photo' : 'document';
+    const savedMsg = await saveMessage({
+      conversation_id: conversation._id,
+      message_id: String(msg.message_id),
+      user_id: user._id,
+      message_type: messageType,
+      direction: 'incoming',
+      timestamp: new Date(msg.date * 1000),
+      metadata: { telegram_file_id: fileId, file_name: fileName },
+    });
+
+    // Download from Telegram
+    logger.info({ fileId, fileName, mimeType }, 'downloading document from telegram');
+    const tgFile = await getFile(fileId);
+
+    // Run the document flow (validate -> MinIO -> classify -> notify)
+    const result = await handleDocument({
+      imageBytes: tgFile.bytes,
+      mimeType: tgFile.mimeType,
+      fileName: tgFile.fileName,
+      telegramFileId: fileId,
+      conversation_id: conversation._id,
+      message_object_id: savedMsg._id,
+      user_id: user._id,
+      chat_id: msg.chat.id,
+    });
+
+    return c.json({ ok: true, ...result });
+  } catch (err) {
+    logger.error({ err }, 'document handler error');
+    return c.json({ ok: false, error: 'internal error' }, 200);
+  }
+}
