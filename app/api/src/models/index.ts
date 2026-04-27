@@ -1,5 +1,10 @@
 export { ConversationModel, type IConversation } from './conversation.model';
 export { FileModel, type IFile } from './file.model';
+export {
+  InteractionLogModel,
+  type IInteractionLog,
+  type IAgentTraceEntry,
+} from './interaction-log.model';
 export { MessageModel, type IMessage } from './message.model';
 export {
   ProcessModel,

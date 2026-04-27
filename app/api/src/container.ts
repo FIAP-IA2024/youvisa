@@ -11,6 +11,7 @@ import {
 import {
   ConversationController,
   FileController,
+  InteractionLogController,
   MessageController,
   ProcessController,
   UserController,
@@ -18,6 +19,7 @@ import {
 import {
   ConversationRepository,
   FileRepository,
+  InteractionLogRepository,
   MessageRepository,
   ProcessRepository,
   UserRepository,
@@ -35,6 +37,7 @@ container.registerSingleton('ConversationRepository', ConversationRepository);
 container.registerSingleton('MessageRepository', MessageRepository);
 container.registerSingleton('FileRepository', FileRepository);
 container.registerSingleton('ProcessRepository', ProcessRepository);
+container.registerSingleton('InteractionLogRepository', InteractionLogRepository);
 
 // Register @/controllers
 container.registerSingleton('UserController', UserController);
@@ -42,5 +45,6 @@ container.registerSingleton('ConversationController', ConversationController);
 container.registerSingleton('MessageController', MessageController);
 container.registerSingleton('FileController', FileController);
 container.registerSingleton('ProcessController', ProcessController);
+container.registerSingleton('InteractionLogController', InteractionLogController);
 
 export { container };

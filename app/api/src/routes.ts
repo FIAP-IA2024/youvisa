@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify';
 import {
   ConversationController,
   FileController,
+  InteractionLogController,
   MessageController,
   ProcessController,
   UserController,
@@ -15,6 +16,7 @@ export async function routes(fastify: FastifyInstance) {
   const messageController = container.resolve(MessageController);
   const fileController = container.resolve(FileController);
   const processController = container.resolve(ProcessController);
+  const interactionLogController = container.resolve(InteractionLogController);
 
   // Health check
   fastify.get('/health', async () => {
@@ -191,6 +193,46 @@ export async function routes(fastify: FastifyInstance) {
       id,
       request.body as any,
     );
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  // Interaction log routes (written by app/agent at end of every pipeline run;
+  // read by the operator console and the customer portal)
+  fastify.post('/interactions', async (request, reply) => {
+    const result = await interactionLogController.create(request.body as any);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/interactions', async (request, reply) => {
+    const { intent, user_id, channel } = request.query as any;
+    const result = await interactionLogController.getAll({
+      intent,
+      user_id,
+      channel,
+    });
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get('/interactions/user/:userId', async (request, reply) => {
+    const { userId } = request.params as { userId: string };
+    const result = await interactionLogController.getByUserId(userId);
+    return reply.status(result.statusCode).send(result.body);
+  });
+
+  fastify.get(
+    '/interactions/conversation/:conversationId',
+    async (request, reply) => {
+      const { conversationId } = request.params as { conversationId: string };
+      const result = await interactionLogController.getByConversationId(
+        conversationId,
+      );
+      return reply.status(result.statusCode).send(result.body);
+    },
+  );
+
+  fastify.get('/interactions/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const result = await interactionLogController.getById(id);
     return reply.status(result.statusCode).send(result.body);
   });
 }
