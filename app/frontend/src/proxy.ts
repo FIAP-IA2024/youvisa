@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const SESSION_COOKIE = "youvisa_session";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const session = request.cookies.get(SESSION_COOKIE);
   const isAuthenticated = session?.value === "authenticated";
   const isLoginPage = request.nextUrl.pathname === "/login";
