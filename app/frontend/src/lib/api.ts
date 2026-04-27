@@ -122,6 +122,41 @@ export interface Process {
   updated_at: string;
 }
 
+// Sprint 4: InteractionLog (written by app/agent at end of each pipeline run)
+export interface AgentTraceEntry {
+  step: string;
+  started_at: string;
+  duration_ms: number;
+  output: Record<string, unknown>;
+  error?: string;
+}
+
+export interface InteractionLog {
+  _id: string;
+  session_id: string;
+  user_id: string;
+  conversation_id: string;
+  channel: "telegram" | "whatsapp" | "webchat";
+  user_message: string;
+  intent: string;
+  intent_confidence: number;
+  entities: Record<string, unknown>;
+  agent_trace: AgentTraceEntry[];
+  response: string;
+  response_skipped: boolean;
+  total_latency_ms: number;
+  created_at: string;
+}
+
+// Visa guidance (the same JSON as app/agent/src/knowledge/visa-guidance.json,
+// fetched at runtime from the agent service so the source of truth stays single).
+export interface VisaGuidance {
+  label: string;
+  general_info: string;
+  next_steps: string[];
+}
+export type VisaGuidanceMap = Record<string, VisaGuidance>;
+
 // API Functions
 export async function getUsers(): Promise<User[]> {
   const response = await fetchApi<User[]>("/users");
@@ -221,6 +256,56 @@ export async function updateConversation(id: string, data: Partial<Conversation>
     method: "PUT",
     body: JSON.stringify(data),
   });
+  return response.data || null;
+}
+
+// Sprint 4: Interaction Log fetchers
+export async function getInteractionLogs(filters?: {
+  intent?: string;
+  user_id?: string;
+}): Promise<InteractionLog[]> {
+  const params = new URLSearchParams();
+  if (filters?.intent) params.append("intent", filters.intent);
+  if (filters?.user_id) params.append("user_id", filters.user_id);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  const response = await fetchApi<InteractionLog[]>(`/interactions${query}`);
+  return response.data || [];
+}
+
+export async function getInteractionLogsByUser(userId: string): Promise<InteractionLog[]> {
+  const response = await fetchApi<InteractionLog[]>(`/interactions/user/${userId}`);
+  return response.data || [];
+}
+
+export async function getInteractionLogsByConversation(conversationId: string): Promise<InteractionLog[]> {
+  const response = await fetchApi<InteractionLog[]>(`/interactions/conversation/${conversationId}`);
+  return response.data || [];
+}
+
+// Visa guidance lives in the agent service (single source of truth shared
+// with the Response Generator). The portal fetches it at request time.
+//
+// Server-side (RSC fetching) uses AGENT_URL which inside the docker network
+// is `http://agent:7777`. Client-side bundles get NEXT_PUBLIC_AGENT_URL
+// which points at the host-exposed `http://localhost:7777`.
+const AGENT_URL_SERVER =
+  typeof window === "undefined"
+    ? process.env.AGENT_URL || "http://agent:7777"
+    : process.env.NEXT_PUBLIC_AGENT_URL || "http://localhost:7777";
+
+export async function getVisaGuidance(): Promise<VisaGuidanceMap> {
+  try {
+    const res = await fetch(`${AGENT_URL_SERVER}/knowledge/visa-guidance`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`agent returned ${res.status}`);
+    return (await res.json()) as VisaGuidanceMap;
+  } catch (err) {
+    console.error("getVisaGuidance failed:", err);
+    return {};
+  }
+}
+
+export async function getUser(id: string): Promise<User | null> {
+  const response = await fetchApi<User>(`/users/${id}`);
   return response.data || null;
 }
 

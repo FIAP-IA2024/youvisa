@@ -4,7 +4,9 @@ import { Hono } from 'hono';
 import { getEnv } from '@/config/env';
 import { connectMongo } from '@/db/mongo';
 import { logger } from '@/lib/logger';
+import { cors } from 'hono/cors';
 import { healthRoute } from '@/routes/health';
+import { knowledgeRoute } from '@/routes/knowledge';
 import { telegramWebhookRoute } from '@/routes/telegram-webhook';
 
 const env = getEnv();
@@ -18,9 +20,13 @@ await connectMongo().catch((err) => {
 
 const app = new Hono();
 
+// Allow the frontend (default :3000) to fetch /knowledge for the portal.
+app.use('/knowledge/*', cors({ origin: '*' }));
+
 // Health route (always available, no auth)
 app.route('/', healthRoute);
 app.route('/', telegramWebhookRoute);
+app.route('/', knowledgeRoute);
 
 // 404 handler
 app.notFound((c) =>

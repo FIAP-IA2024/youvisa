@@ -136,6 +136,34 @@ services:
     networks:
       - youvisa-network
 
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    container_name: youvisa-frontend
+    restart: unless-stopped
+    ports:
+      - "3010:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - API_URL=${API_URL:-http://api:5555}
+      - API_KEY=${API_KEY}
+      - PORTAL_SECRET=${PORTAL_SECRET}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5555}
+      - NEXT_PUBLIC_AGENT_URL=${NEXT_PUBLIC_AGENT_URL:-http://localhost:7777}
+      - AGENT_URL=http://agent:7777
+      - DASHBOARD_PASSWORD=${DASHBOARD_PASSWORD:-Teste1234}
+      - DASHBOARD_SESSION_SECRET=${DASHBOARD_SESSION_SECRET:-changeme-changeme-changeme-changeme}
+    depends_on:
+      - api
+      - agent
+    volumes:
+      - ./app/frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - youvisa-network
+
   # NOTE: n8n is being phased out in Sprint 4. Kept here only until Phase 10
   # of the Sprint 4 plan, when its responsibilities are fully migrated to
   # the agent service. See: context/specs/2026-04-26-sprint-4-multi-agent/.
