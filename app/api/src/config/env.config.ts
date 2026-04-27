@@ -52,10 +52,4 @@ export class EnvConfig {
 
   // Telegram (used by StatusNotifier — see Sprint 4 Phase 2)
   public readonly TELEGRAM_BOT_TOKEN = envVar.get('TELEGRAM_BOT_TOKEN').default('').asString();
-
-  // n8n Status Webhook (deprecated; replaced by StatusNotifier in Sprint 4 Phase 2)
-  public readonly N8N_STATUS_WEBHOOK_URL = envVar
-    .get('N8N_STATUS_WEBHOOK_URL')
-    .default('')
-    .asString();
 }

@@ -24,6 +24,8 @@ import {
   ProcessRepository,
   UserRepository,
 } from './repositories';
+import { StatusNotifierService } from './services/status-notifier.service';
+import { TelegramNotifier } from './services/telegram-notifier';
 
 // Register @/config
 container.registerSingleton('EnvConfig', EnvConfig);
@@ -38,6 +40,10 @@ container.registerSingleton('MessageRepository', MessageRepository);
 container.registerSingleton('FileRepository', FileRepository);
 container.registerSingleton('ProcessRepository', ProcessRepository);
 container.registerSingleton('InteractionLogRepository', InteractionLogRepository);
+
+// Register @/services
+container.registerSingleton('TelegramNotifier', TelegramNotifier);
+container.registerSingleton('StatusNotifierService', StatusNotifierService);
 
 // Register @/controllers
 container.registerSingleton('UserController', UserController);
