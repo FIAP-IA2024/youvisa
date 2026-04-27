@@ -96,8 +96,6 @@ app/api/nodejs-layer.zip
 docker/
 
 # Others
-CLAUDE.md
-AGENTS.md
 tmp/*
 .tasks/*
 
