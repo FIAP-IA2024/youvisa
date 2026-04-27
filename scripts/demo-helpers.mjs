@@ -353,21 +353,48 @@ export const HIDE_NEXT_DEV_CSS = `
 `;
 
 export async function injectInitScripts(context) {
-  await context.addInitScript(({ css }) => {
-    const inject = () => {
-      if (document.getElementById('__demo_hide_nextjs__')) return;
+  await context.addInitScript(({ css, tgCss }) => {
+    const inject = (id, content) => {
+      if (document.getElementById(id)) return;
       const s = document.createElement('style');
-      s.id = '__demo_hide_nextjs__';
-      s.textContent = css;
+      s.id = id;
+      s.textContent = content;
       (document.head || document.documentElement).appendChild(s);
     };
+    const apply = () => {
+      inject('__demo_hide_nextjs__', css);
+      // Telegram WebK privacy CSS — hides the chat list / contacts /
+      // folder tabs in the left column so only the active chat is
+      // visible. Applied on every navigation to web.telegram.org.
+      if (location.hostname.includes('web.telegram.org')) {
+        inject('__demo_hide_tg__', tgCss);
+      }
+    };
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', inject);
+      document.addEventListener('DOMContentLoaded', apply);
     } else {
-      inject();
+      apply();
     }
-  }, { css: HIDE_NEXT_DEV_CSS });
+  }, { css: HIDE_NEXT_DEV_CSS, tgCss: HIDE_TELEGRAM_SIDEBAR_CSS });
 }
+
+/**
+ * Hides the Telegram WebK chatlist (left column with contacts + chat
+ * list + folders) for privacy during the demo recording. The flex
+ * parent automatically reflows so #column-center expands to fill the
+ * full viewport — no other rules needed.
+ *
+ * Verified by scripts/probe-tg-hide.mjs:
+ *   baseline:  left=420, center=860 (chat squeezed)
+ *   with hide: left=0,   center=1280 (full width ✓)
+ *
+ * Earlier revisions also tried to hide #column-right and force widths
+ * on .col-main / .messages-container — those broke the layout (chat
+ * shrunk to 320px). Keep this minimal.
+ */
+export const HIDE_TELEGRAM_SIDEBAR_CSS = `
+  #column-left { display: none !important; }
+`;
 
 // ---------- natural typing ----------
 

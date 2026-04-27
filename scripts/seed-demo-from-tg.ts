@@ -106,47 +106,49 @@ async function main() {
     body: { status: 'active' },
   });
 
-  // 5. Process — find existing or create one
-  const procs = await api<{ data: any[] }>(`/processes/user/${me._id}`);
-  let proc = procs.data?.find((p) => p.status === 'em_analise');
-
-  if (!proc) {
-    const created = await api<{ data: any }>(`/processes`, {
-      method: 'POST',
-      body: {
-        user_id: me._id,
-        conversation_id: conv.data._id,
-        visa_type: 'turismo',
-        destination_country: 'Estados Unidos',
-        notes: 'Pedido aberto via Telegram — demo Sprint 4',
-      },
-    });
-    await api(`/processes/${created.data._id}/status`, {
-      method: 'POST',
-      body: {
-        status: 'em_analise',
-        reason: 'Documentos básicos recebidos, iniciando análise.',
-        changed_by: 'operator-demo',
-      },
-    });
-    proc = created.data;
-    console.log('  process     :', proc._id, '(NEW → em_analise)');
-  } else {
-    console.log('  process     :', proc._id, '(reusing, em_analise)');
-  }
-
-  // 6. Files — wipe demo files for this conversation, re-insert
+  // 5. WIPE existing processes for this user — every demo run accumulates
+  //    a new process, and the bot's status_query response then mentions
+  //    "Você tem N processos…" which is confusing and unprofessional. We
+  //    want exactly 1 visible process per recording.
   await mongoose.connect(MONGO, { dbName: DB });
+  const Processes = mongoose.connection.collection('processes');
   const Files = mongoose.connection.collection('files');
   const Messages = mongoose.connection.collection('messages');
-  const convOid = new mongoose.Types.ObjectId(conv.data._id);
   const userOid = new mongoose.Types.ObjectId(me._id);
+  const convOid = new mongoose.Types.ObjectId(conv.data._id);
 
-  // Delete previous demo-prefixed files only (never touch real uploads)
-  await Files.deleteMany({
+  const wipedProcesses = await Processes.deleteMany({ user_id: userOid });
+  await Files.deleteMany({ conversation_id: convOid });
+  await Messages.deleteMany({
     conversation_id: convOid,
-    file_id: { $regex: '^demo-' },
+    message_id: { $regex: '^demo-' },
   });
+  console.log(
+    `  wiped       : ${wipedProcesses.deletedCount} stale processes + their files`,
+  );
+
+  // 6. Create the canonical process via the API (so FSM history is properly
+  //    initialized).
+  const created = await api<{ data: any }>(`/processes`, {
+    method: 'POST',
+    body: {
+      user_id: me._id,
+      conversation_id: conv.data._id,
+      visa_type: 'turismo',
+      destination_country: 'Estados Unidos',
+      notes: 'Pedido aberto via Telegram — demo Sprint 4',
+    },
+  });
+  await api(`/processes/${created.data._id}/status`, {
+    method: 'POST',
+    body: {
+      status: 'em_analise',
+      reason: 'Documentos básicos recebidos, iniciando análise.',
+      changed_by: 'operator-demo',
+    },
+  });
+  const proc = created.data;
+  console.log('  process     :', proc._id, '(em_analise — clean state)');
 
   const t0 = Date.now() - 1000 * 60 * 60 * 24 * 2; // 2 days ago
 
