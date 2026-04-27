@@ -139,7 +139,7 @@ The Sprint 4 deliverable is complete when **every** item below is verifiable end
 - `docker compose up` starts all services without errors and they remain healthy for ≥ 1 minute.
 - `npm run type-check` passes in `app/api/`, `app/agent/`, `app/frontend/`.
 - `npm run test` (vitest) passes in `app/agent/` for deterministic modules (input filter, output filter, JWT, lookup queries).
-- The smoke E2E script `scripts/smoke-e2e.sh` (or `.ts`) exercises every demo path and exits 0.
+- The smoke E2E script `scripts/smoke-e2e.ts` (executed via `tsx`) exercises every demo path and exits 0.
 - Manual smoke (Claude operator runs through it once via real Telegram) confirms each demo scenario works on the user's machine.
 
 ## Risks and Mitigations
@@ -158,5 +158,8 @@ The Sprint 4 deliverable is complete when **every** item below is verifiable end
 
 ## Open Questions
 
-- **Telegram bot for demo:** reuse the existing `@youvisa_test_assistant_bot` (on the user's account) or create a dedicated `@youvisa_sprint4_bot`? Default: reuse existing unless there is a reason to isolate Sprint 4.
+- **Telegram bot for demo (decide before implementation):** Telegram only allows one webhook URL per bot token. The moment Sprint 4's agent service registers its webhook on the existing `@youvisa_test_assistant_bot`, the Sprint 3 demo (still wired to the n8n container) will stop working — the prior webhook URL is unset. **The user must choose:**
+  - **(reuse)** Same bot. Sprint 3 demo path is destroyed (acceptable since Sprint 4 supersedes it). Simplest setup.
+  - **(new bot)** Create `@youvisa_sprint4_bot` via @BotFather. Sprint 3 keeps working in parallel. One extra `.env` token (`TELEGRAM_BOT_TOKEN_SPRINT4`) and one extra ngrok session.
+  This decision must be made before the agent service starts because the Telegram token and webhook registration are part of first-boot configuration.
 - **Diagrams update tooling:** the existing `Diagramas.drawio` requires the draw.io desktop or web app to edit/export. Acceptable to keep that workflow, or should we move to a code-driven diagram source (e.g., Mermaid in the README, exported as PNG via a CI step)? Default: keep draw.io for the source-of-truth file but include Mermaid fallbacks inline in the README so the deliverable reads well without opening external tools.
