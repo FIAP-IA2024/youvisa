@@ -16,6 +16,10 @@ export async function generateResponse(
     systemPrompt,
     userMessage,
     maxTokens: 500,
+    // The response prompt is the largest (~5 KB w/ few-shot + visa
+    // guidance). Caching it shaves ~60% off Claude latency on
+    // consecutive customer messages within the 5-min cache TTL.
+    cacheable: true,
   });
 
   const text = result.text.trim();

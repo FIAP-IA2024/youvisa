@@ -84,6 +84,10 @@ const interactionLogSchema = new Schema<IInteractionLog>(
   },
 );
 
+// Compound index for the most common query — operator console + portal
+// both fetch by user_id ordered by created_at desc.
+interactionLogSchema.index({ user_id: 1, created_at: -1 });
+
 export const InteractionLogModel = mongoose.model<IInteractionLog>(
   'InteractionLog',
   interactionLogSchema,

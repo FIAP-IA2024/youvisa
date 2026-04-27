@@ -121,11 +121,39 @@ export async function runPipeline(input: PipelineInput): Promise<PipelineOutput>
     return output;
   }
 
-  // ---- 2 & 3. Intent + Entity (parallel — they don't depend on each other) ----
-  const [intentResult, entityResult] = await Promise.all([
-    tracer.run('intent-classifier', () => classifyIntent(input.user_message)),
-    tracer.run('entity-extractor', () => extractEntities(input.user_message)),
+  // ---- 2. Intent classifier ----
+  const intentResult = await tracer.run('intent-classifier', () =>
+    classifyIntent(input.user_message),
+  );
+
+  // ---- 3. Entity extractor (skipped for intents where entities are
+  // never useful — saves ~10 s of Claude latency on simple greetings,
+  // handoff requests, and blocked injections).
+  const ENTITY_ELIGIBLE_INTENTS = new Set<typeof intentResult.intent>([
+    'status_query',
+    'document_question',
+    'open_portal',
+    'provide_email',
   ]);
+  const entityResult: { entities: Record<string, unknown> } & {
+    durationMs?: number;
+    raw?: string;
+  } = ENTITY_ELIGIBLE_INTENTS.has(intentResult.intent)
+    ? await tracer.run('entity-extractor', () =>
+        extractEntities(input.user_message),
+      )
+    : (() => {
+        // Push a synthetic trace entry so the pipeline's six-step
+        // visibility is preserved in interaction_logs (the briefing
+        // requires it). The step is fast and explicit.
+        tracer.push({
+          step: 'entity-extractor',
+          started_at: new Date(),
+          duration_ms: 0,
+          output: { skipped: true, reason: 'intent-not-eligible' },
+        });
+        return { entities: {}, durationMs: 0 };
+      })();
 
   // ---- 4. Lookup (deterministic) ----
   const lookupResult = await tracer.run('lookup', () =>
