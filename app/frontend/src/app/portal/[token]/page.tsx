@@ -38,27 +38,26 @@ export default async function PortalPage({ params }: PageProps) {
     );
   }
 
-  // Fetch all data for the user in parallel
-  const [user, processes, files, interactionLogs, guidance, conversations] = await Promise.all([
-    getUser(payload.user_id),
-    getProcesses({ user_id: payload.user_id }),
-    getFiles().then((all) => {
-      // The API doesn't filter files by user; filter client-side using the
-      // conversations from the next call. We refetch below.
-      return all;
-    }),
-    getInteractionLogsByUser(payload.user_id),
-    getVisaGuidance(),
-    getConversations(),
-  ]);
+  // Fetch all data for THIS user in parallel — every endpoint accepts a user_id
+  // filter so we don't ship anyone else's records to the browser.
+  const [user, processes, interactionLogs, guidance, conversations] =
+    await Promise.all([
+      getUser(payload.user_id),
+      getProcesses({ user_id: payload.user_id }),
+      getInteractionLogsByUser(payload.user_id),
+      getVisaGuidance(),
+      getConversations({ user_id: payload.user_id }),
+    ]);
 
   if (!user) notFound();
 
-  // Filter files to those belonging to this user's conversations
-  const userConversationIds = new Set(
-    conversations.filter((c) => c.user_id === payload.user_id).map((c) => c._id),
+  // Files are scoped per-conversation. Fetch only this user's conversations'
+  // files.
+  const userConversationIds = conversations.map((c) => c._id);
+  const filesPerConversation = await Promise.all(
+    userConversationIds.map((id) => getFiles({ conversation_id: id })),
   );
-  const userFiles = files.filter((f) => userConversationIds.has(f.conversation_id));
+  const userFiles = filesPerConversation.flat();
 
   const activeProcess =
     processes.find((p) => !["finalizado", "cancelado", "rejeitado"].includes(p.status)) ??
@@ -127,7 +126,10 @@ export default async function PortalPage({ params }: PageProps) {
         <InteractionHistory logs={interactionLogs} />
 
         {userTelegramConversation && (
-          <ActionButtons conversationId={userTelegramConversation._id} />
+          <ActionButtons
+            token={token}
+            conversationId={userTelegramConversation._id}
+          />
         )}
       </section>
 

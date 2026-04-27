@@ -166,14 +166,21 @@ export async function getUsers(): Promise<User[]> {
 export async function getConversations(filters?: {
   status?: string;
   channel?: string;
+  user_id?: string;
 }): Promise<Conversation[]> {
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
   if (filters?.channel) params.append("channel", filters.channel);
+  if (filters?.user_id) params.append("user_id", filters.user_id);
 
   const query = params.toString() ? `?${params.toString()}` : "";
   const response = await fetchApi<Conversation[]>(`/conversations${query}`);
   return response.data || [];
+}
+
+export async function getConversation(id: string): Promise<Conversation | null> {
+  const response = await fetchApi<Conversation>(`/conversations/${id}`);
+  return response.data || null;
 }
 
 export async function getMessages(conversationId: string): Promise<Message[]> {

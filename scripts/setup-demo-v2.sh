@@ -61,18 +61,32 @@ NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels \
   | python3 -c "import json,sys;d=json.load(sys.stdin);print(d['tunnels'][0]['public_url'])")
 echo -e "${G}  ✓${N} tunnel: $NGROK_URL"
 
-# ---- 3. Set Telegram webhook ----
+# ---- 3. Set Telegram webhook (with secret_token) ----
 echo -e "${Y}[3/4]${N} Setting Telegram webhook"
 TOKEN=$(grep '^TELEGRAM_BOT_TOKEN=' .env | cut -d= -f2)
 if [[ -z "$TOKEN" ]]; then
   echo -e "${R}  TELEGRAM_BOT_TOKEN not found in .env${N}"
   exit 1
 fi
+
+# Generate a webhook secret on first run; persist to .env so the agent
+# container reads the same value. Telegram echoes it back in the
+# X-Telegram-Bot-Api-Secret-Token header, which the webhook handler
+# verifies — closes the unauthenticated-webhook attack surface.
+WEBHOOK_SECRET=$(grep '^TELEGRAM_WEBHOOK_SECRET=' .env 2>/dev/null | cut -d= -f2)
+if [[ -z "$WEBHOOK_SECRET" ]]; then
+  WEBHOOK_SECRET=$(openssl rand -hex 32)
+  echo "TELEGRAM_WEBHOOK_SECRET=$WEBHOOK_SECRET" >> .env
+  echo -e "${G}  ✓${N} generated TELEGRAM_WEBHOOK_SECRET (persisted to .env)"
+  # Restart agent so it picks up the new env var
+  docker compose restart agent > /dev/null 2>&1 || true
+fi
+
 RESP=$(curl -s -X POST "https://api.telegram.org/bot$TOKEN/setWebhook" \
   -H "Content-Type: application/json" \
-  -d "{\"url\":\"$NGROK_URL/telegram/webhook\",\"drop_pending_updates\":true,\"allowed_updates\":[\"message\"]}")
+  -d "{\"url\":\"$NGROK_URL/telegram/webhook\",\"secret_token\":\"$WEBHOOK_SECRET\",\"drop_pending_updates\":true,\"allowed_updates\":[\"message\"]}")
 if echo "$RESP" | grep -q '"ok":true'; then
-  echo -e "${G}  ✓${N} webhook → $NGROK_URL/telegram/webhook"
+  echo -e "${G}  ✓${N} webhook → $NGROK_URL/telegram/webhook (signed)"
 else
   echo -e "${R}  $RESP${N}"; exit 1
 fi

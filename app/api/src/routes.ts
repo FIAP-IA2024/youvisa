@@ -74,8 +74,12 @@ export async function routes(fastify: FastifyInstance) {
   });
 
   fastify.get('/conversations', async (request, reply) => {
-    const { status, channel } = request.query as any;
-    const result = await conversationController.getAll({ status, channel });
+    const { status, channel, user_id } = request.query as any;
+    const result = await conversationController.getAll({
+      status,
+      channel,
+      user_id,
+    });
     return reply.status(result.statusCode).send(result.body);
   });
 

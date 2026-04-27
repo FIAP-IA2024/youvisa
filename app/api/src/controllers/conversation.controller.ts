@@ -62,7 +62,7 @@ export class ConversationController {
     }
   }
 
-  async getAll(filters?: { status?: string; channel?: string }) {
+  async getAll(filters?: { status?: string; channel?: string; user_id?: string }) {
     try {
       const conversations = await this.conversationRepository.findAll(filters);
 

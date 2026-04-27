@@ -34,6 +34,7 @@ export class ConversationRepository {
   async findAll(filters?: {
     status?: string;
     channel?: string;
+    user_id?: string;
   }): Promise<IConversation[]> {
     const query = Object.fromEntries(
       Object.entries(filters || {}).filter(([, v]) => v),

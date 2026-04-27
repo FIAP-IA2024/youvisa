@@ -16,6 +16,14 @@ const envSchema = z.object({
 
   // Telegram
   TELEGRAM_BOT_TOKEN: z.string(),
+  /**
+   * Optional shared secret for the Telegram webhook. When set, every
+   * inbound POST to /telegram/webhook must carry the matching value
+   * in the X-Telegram-Bot-Api-Secret-Token header — Telegram's own
+   * authenticator. We register the same secret with setWebhook in
+   * scripts/setup-demo-v2.sh.
+   */
+  TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
 
   // Portal JWT
   PORTAL_SECRET: z.string().min(32, 'PORTAL_SECRET must be at least 32 chars'),

@@ -67,14 +67,41 @@ export async function getFile(fileId: string): Promise<TelegramFile> {
  * Set the bot's webhook URL. Called once at startup with the agent's
  * publicly reachable URL (typically an ngrok tunnel pointing at /telegram/webhook).
  */
-export async function setWebhook(url: string): Promise<{ ok: boolean; description?: string }> {
+export async function setWebhook(
+  url: string,
+  options?: { secret_token?: string },
+): Promise<{ ok: boolean; description?: string }> {
   const res = await fetch(`${BASE}/setWebhook`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url, drop_pending_updates: true }),
+    body: JSON.stringify({
+      url,
+      drop_pending_updates: true,
+      ...(options?.secret_token ? { secret_token: options.secret_token } : {}),
+    }),
   });
   const body = (await res.json()) as { ok: boolean; description?: string };
   return body;
+}
+
+/**
+ * Show "typing…" in the customer's Telegram chat. Lasts ~5 seconds or
+ * until the next message lands. Fire-and-forget: failures don't block
+ * the pipeline because the typing dots are decorative.
+ */
+export async function sendChatAction(
+  chatId: string | number,
+  action: 'typing' | 'upload_photo' | 'upload_document' = 'typing',
+): Promise<void> {
+  try {
+    await fetch(`${BASE}/sendChatAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, action }),
+    });
+  } catch {
+    /* decorative — never fail the pipeline */
+  }
 }
 
 export async function deleteWebhook(): Promise<boolean> {

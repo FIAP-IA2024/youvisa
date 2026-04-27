@@ -5,12 +5,15 @@ import {
   upsertConversation,
   upsertUser,
 } from '@/lib/api-client';
+import { getEnv } from '@/config/env';
 import { logger } from '@/lib/logger';
-import { getFile, sendMessage } from '@/telegram/client';
+import { claimUpdate } from '@/lib/update-dedup';
+import { getFile, sendChatAction, sendMessage } from '@/telegram/client';
 import { updateSchema, type TelegramUpdate } from '@/telegram/types';
 import { handleDocument } from '@/classifier/document-flow';
 
 export const telegramWebhookRoute = new Hono();
+const env = getEnv();
 
 /**
  * POST /telegram/webhook
@@ -24,6 +27,17 @@ export const telegramWebhookRoute = new Hono();
  * 20-25s including vision. Both are within the limit.
  */
 telegramWebhookRoute.post('/telegram/webhook', async (c) => {
+  // Authenticate: when TELEGRAM_WEBHOOK_SECRET is set, Telegram echoes
+  // it back in this header. Reject anything else fast — no Claude
+  // tokens burned on forged updates.
+  if (env.TELEGRAM_WEBHOOK_SECRET) {
+    const provided = c.req.header('x-telegram-bot-api-secret-token');
+    if (provided !== env.TELEGRAM_WEBHOOK_SECRET) {
+      logger.warn({ provided }, 'telegram webhook: invalid secret token');
+      return c.json({ ok: false, error: 'unauthorized' }, 401);
+    }
+  }
+
   let update: TelegramUpdate;
   try {
     const body = await c.req.json();
@@ -34,11 +48,23 @@ telegramWebhookRoute.post('/telegram/webhook', async (c) => {
     return c.json({ ok: false, error: 'invalid payload' }, 200);
   }
 
+  // Idempotency: Telegram retries delivery on slow/failed acks. Drop
+  // duplicates so the pipeline runs (and the bot replies) exactly once
+  // per user message.
+  const claimed = await claimUpdate(update.update_id);
+  if (!claimed) {
+    return c.json({ ok: true, duplicate: true });
+  }
+
   const msg = update.message;
   if (!msg || !msg.from) {
     logger.debug({ update_id: update.update_id }, 'telegram webhook: no message in update');
     return c.json({ ok: true });
   }
+
+  // Show "typing…" immediately — keeps the user's eye busy while the
+  // pipeline (~10 s) runs. Fire-and-forget.
+  void sendChatAction(msg.chat.id, msg.photo || msg.document ? 'upload_document' : 'typing');
 
   // Document/photo path: download -> validate -> MinIO -> classify -> notify
   if (msg.photo || msg.document) {
