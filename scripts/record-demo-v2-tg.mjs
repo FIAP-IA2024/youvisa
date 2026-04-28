@@ -204,6 +204,66 @@ async function tgScrollToBottom(page) {
 }
 
 /**
+ * Upload a photo through Telegram WebK's 📎 menu.
+ *
+ * Mechanism (verified empirically via scripts/probe-tg-upload-v2.mjs):
+ *   1. Click `.btn-icon.btn-menu-toggle.attach-file` → menu opens
+ *   2. Arm a `filechooser` event listener BEFORE clicking the menu item
+ *   3. Click the "Photo or Video" menu item — this triggers the OS file
+ *      picker, which Playwright's `filechooser` intercepts
+ *   4. Hand the path to `chooser.setFiles(imagePath)`
+ *   5. Wait for the "Send Photo" preview popup
+ *   6. Click `.popup-send-photo .btn-primary` (the SEND button)
+ *   7. Wait for the outgoing `.bubble.is-out.photo` to appear in chat
+ *
+ * Strategy A (direct setInputFiles on a hidden `input[type="file"]`)
+ * does NOT work — Telegram WebK creates the input dynamically when
+ * the menu item is clicked, so the hidden input present at page-load
+ * is never wired up to the upload flow.
+ */
+async function tgUploadPhoto(page, imagePath) {
+  const attach = page.locator('.btn-icon.btn-menu-toggle.attach-file').first();
+  if ((await attach.count()) === 0) {
+    throw new Error('attach button not found in chat input');
+  }
+  await attach.click();
+  await page.waitForTimeout(500);
+
+  // Arm filechooser BEFORE clicking the menu item.
+  const fileChooserPromise = page.waitForEvent('filechooser', {
+    timeout: 10_000,
+  });
+  const photoItem = page
+    .locator('.btn-menu-item.rp-overflow', { hasText: 'Photo or Video' })
+    .first();
+  await photoItem.click();
+
+  const chooser = await fileChooserPromise;
+  await chooser.setFiles(imagePath);
+
+  // Wait for the preview popup to render.
+  await page
+    .waitForSelector('.popup-send-photo, .popup-photo', { timeout: 8_000 })
+    .catch(() => {});
+  await page.waitForTimeout(700);
+
+  // Click the SEND button inside the popup.
+  const sendBtn = page.locator('.popup-send-photo .btn-primary').first();
+  if ((await sendBtn.count()) === 0) {
+    throw new Error('SEND button not found in send-photo popup');
+  }
+  await sendBtn.click();
+
+  // Wait for the outgoing photo bubble to appear.
+  await page
+    .waitForSelector('.bubble.is-out.photo, .bubble.is-out img.media-photo', {
+      timeout: 10_000,
+    })
+    .catch(() => {});
+  await page.waitForTimeout(400);
+}
+
+/**
  * Visually clear the bot chat for the recording.
  *
  * Programmatically clicking WebK's "Clear history" menu is brittle —
@@ -539,7 +599,60 @@ async function record() {
   await clearCaption(page);
   await page.waitForTimeout(500);
 
-  // -- Q3: handoff --
+  // -- Q3: blurry document → validation rejects (highlight #3) --
+  // Verifies the validation-service path: OpenCV variance-of-Laplacian
+  // < threshold → bot returns a "tire uma foto mais nítida" message
+  // BEFORE Claude Vision is invoked. No File record is created in DB.
+  sentAt = Date.now();
+  await caption(
+    page,
+    'Cliente envia documento (foto desfocada)',
+    'validation-service rejeita: variância de Laplaciano < limiar',
+  );
+  await tgUploadPhoto(page, '/tmp/demo-passport-blurry.jpg');
+  await waitForBotResponseConfirmed(page, {
+    userId: ctx.user_id,
+    sentAt,
+    beforeIncomingCount: n,
+    maxMs: 30_000,
+  });
+  n = await tgCountIncomingBubbles(page);
+  await tgScrollToBottom(page);
+  await page.waitForTimeout(600);
+  await zoomLastBubble(page, 1.18);
+  await page.waitForTimeout(3200);
+  await clearZoom(page);
+  await clearCaption(page);
+  await page.waitForTimeout(500);
+
+  // -- Q4: good document → Claude Vision classifies (highlight #4) --
+  // Verifies the full upload pipeline: validation passes → MinIO put_object
+  // → File saved → Claude Vision classifies → bot replies with
+  // "classificado como: Passaporte". The document then appears in the
+  // operator console + customer portal scenes that follow.
+  sentAt = Date.now();
+  await caption(
+    page,
+    'Cliente envia o passaporte (foto nítida)',
+    'validation OK → MinIO → Claude Vision (multimodal) classifica',
+  );
+  await tgUploadPhoto(page, '/tmp/demo-passport.jpg');
+  await waitForBotResponseConfirmed(page, {
+    userId: ctx.user_id,
+    sentAt,
+    beforeIncomingCount: n,
+    maxMs: 45_000, // Claude Vision can take 2-5s; give headroom
+  });
+  n = await tgCountIncomingBubbles(page);
+  await tgScrollToBottom(page);
+  await page.waitForTimeout(600);
+  await zoomLastBubble(page, 1.18);
+  await page.waitForTimeout(3000);
+  await clearZoom(page);
+  await clearCaption(page);
+  await page.waitForTimeout(500);
+
+  // -- Q5: handoff --
   sentAt = Date.now();
   await tgSend(page, 'preciso falar com um atendente humano');
   await caption(
