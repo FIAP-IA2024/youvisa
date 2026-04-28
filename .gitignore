@@ -61,8 +61,6 @@ vendor/
 .env.local
 .env.bak
 
-# n8n workflow output (contains sensitive data)
-app/n8n/workflows/telegram.output.json
 
 # Terraform
 *.tfstate
@@ -84,19 +82,21 @@ __pycache__/
 *.exe
 *.bkp
 
-# Lambda packages
-app/**/lambda.zip
-app/**/layer.zip
-app/**/dist/
-app/**/layer/
-app/api/lambda.zip
-app/api/nodejs-layer.zip
 
-# Docker volumes
-docker/
 
 # Others
-CLAUDE.md
-AGENTS.md
 tmp/*
 .tasks/*
+
+# Demo recording artifacts (the .mp4 is committed; .webm is intermediate)
+tmp/demo-recording/
+docs/demo-sprint-4.webm
+
+# Obsidian workspace (machine-local)
+context/.obsidian/workspace.json
+context/.obsidian/workspace-mobile.json
+context/.obsidian/cache
+context/.obsidian/plugins/*/data.json
+
+# Claude Code local settings (per-developer)
+.claude/settings.local.json

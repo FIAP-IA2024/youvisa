@@ -58,7 +58,14 @@ export default function ConversationsPage() {
     loadConversations();
   }, []);
 
-  const handleReturnToBot = async (id: string) => {
+  const handleReturnToBot = async (id: string, chatId: string) => {
+    if (
+      !confirm(
+        `Devolver a conversa #${chatId} ao bot? O bot voltará a responder mensagens do cliente.`,
+      )
+    ) {
+      return;
+    }
     setUpdating(id);
     try {
       await setConversationStatus(id, "active");
@@ -157,8 +164,11 @@ export default function ConversationsPage() {
                     <TableCell>
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => handleReturnToBot(conversation._id)}
+                        size="default"
+                        className="h-11"
+                        onClick={() =>
+                          handleReturnToBot(conversation._id, conversation.chat_id)
+                        }
                         disabled={updating === conversation._id}
                       >
                         <Bot className="h-4 w-4 mr-2" />

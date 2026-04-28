@@ -1,0 +1,53 @@
+{
+  "recebido": {
+    "label": "Recebido",
+    "general_info": "Seus documentos foram recebidos e estão na fila para análise da nossa equipe.",
+    "next_steps": [
+      "Aguardar o início da análise",
+      "Você pode enviar documentos adicionais a qualquer momento via Telegram"
+    ]
+  },
+  "em_analise": {
+    "label": "Em Análise",
+    "general_info": "Sua solicitação está sendo analisada pela nossa equipe.",
+    "next_steps": [
+      "Aguardar resposta da análise",
+      "Pode ser que sejam solicitados documentos adicionais — fique atento ao Telegram"
+    ]
+  },
+  "pendente_documentos": {
+    "label": "Pendente de Documentos",
+    "general_info": "Estamos aguardando documentos adicionais para prosseguir com sua solicitação.",
+    "next_steps": [
+      "Envie os documentos solicitados via Telegram",
+      "Após o envio, a análise é retomada automaticamente"
+    ]
+  },
+  "aprovado": {
+    "label": "Aprovado",
+    "general_info": "Seu visto foi aprovado!",
+    "next_steps": [
+      "Aguardar instruções de retirada e próximos passos",
+      "Verificar se os dados do passaporte estão atualizados"
+    ]
+  },
+  "rejeitado": {
+    "label": "Rejeitado",
+    "general_info": "Seu processo não foi aprovado neste momento.",
+    "next_steps": [
+      "Entre em contato com a nossa equipe para entender os motivos detalhados"
+    ]
+  },
+  "finalizado": {
+    "label": "Finalizado",
+    "general_info": "Processo concluído com sucesso. Obrigado por utilizar a YOUVISA.",
+    "next_steps": []
+  },
+  "cancelado": {
+    "label": "Cancelado",
+    "general_info": "Este processo foi cancelado.",
+    "next_steps": [
+      "Você pode iniciar um novo processo a qualquer momento — basta enviar os documentos via Telegram"
+    ]
+  }
+}

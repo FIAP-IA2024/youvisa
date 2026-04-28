@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lexend, Source_Sans_3, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display font — institutional, accessible, modern (UI/UX recommendation: Lexend)
+const lexend = Lexend({
+  variable: "--font-lexend",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Body font — paired with Lexend per the design system
+const sourceSans = Source_Sans_3({
+  variable: "--font-source",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Monospace for tabular data (latencies, IDs, JSON traces)
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "YOUVISA",
-  description: "YOUVISA - Plataforma de Atendimento Multicanal",
+  title: "YOUVISA — Plataforma de atendimento inteligente",
+  description:
+    "Plataforma de atendimento multicanal para serviços consulares. Pipeline multi-agente, classificação de documentos por IA e portal do cliente.",
 };
 
 export default function RootLayout({
@@ -26,11 +41,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${sourceSans.variable} ${lexend.variable} ${mono.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

@@ -1,0 +1,22 @@
+{
+  "name": "youvisa",
+  "version": "1.0.0",
+  "description": "YOUVISA — FIAP Sprint 4 root. Hosts top-level scripts (seed-demo, record-demo, smoke-e2e). Each service has its own package.json under app/.",
+  "private": true,
+  "scripts": {
+    "seed-demo": "tsx scripts/seed-demo.ts",
+    "record-demo": "node scripts/record-demo.mjs",
+    "smoke-e2e": "tsx scripts/smoke-e2e.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FIAP-IA2024/youvisa.git"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "mongoose": "^9.5.0",
+    "playwright": "^1.59.1",
+    "tsx": "^4.19.0"
+  }
+}

@@ -32,16 +32,17 @@ export class FastifyConfig {
 
     // Global error handler
     server.setErrorHandler((error, request, reply) => {
+      const e = error as Error & { statusCode?: number };
       this.logger.error('Request error', {
-        error: error.message,
-        stack: error.stack,
+        error: e.message,
+        stack: e.stack,
         url: request.url,
         method: request.method,
       });
 
-      reply.status(error.statusCode || 500).send({
+      reply.status(e.statusCode ?? 500).send({
         success: false,
-        error: error.message || 'Internal Server Error',
+        error: e.message || 'Internal Server Error',
       });
     });
 

@@ -1,8 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import { inject, injectable } from 'tsyringe';
 
-import { EnvConfig, LoggerConfig } from '@/config';
+import { LoggerConfig } from '@/config';
 import { ProcessRepository } from '@/repositories';
+import { StatusNotifierService } from '@/services/status-notifier.service';
 
 @injectable()
 export class ProcessController {
@@ -10,7 +11,8 @@ export class ProcessController {
     @inject('ProcessRepository')
     private readonly processRepository: ProcessRepository,
     @inject('LoggerConfig') private readonly logger: LoggerConfig,
-    @inject('EnvConfig') private readonly env: EnvConfig,
+    @inject('StatusNotifierService')
+    private readonly statusNotifier: StatusNotifierService,
   ) {}
 
   async create(data: {
@@ -163,18 +165,18 @@ export class ProcessController {
         newStatus: data.status,
       });
 
-      // Fire webhook notification if configured
-      if (this.env.N8N_STATUS_WEBHOOK_URL) {
-        this._notifyStatusChange(
-          id,
-          String(process.user_id),
-          process.status_history.at(-2)?.to_status ||
-            process.status_history[0]?.from_status ||
-            'recebido',
-          data.status,
-          data.reason,
-        );
-      }
+      // Send Telegram notification via deterministic template (Sprint 4 — replaces n8n).
+      // Best-effort: failure to notify must not roll back the FSM transition.
+      const previousStatus =
+        process.status_history.at(-1)?.from_status || 'recebido';
+      this.statusNotifier
+        .notifyStatusChange(id, previousStatus, data.status, data.reason || '')
+        .catch((err) => {
+          this.logger.error('Status notification failed (non-fatal)', {
+            error: err.message,
+            processId: id,
+          });
+        });
 
       return {
         statusCode: StatusCodes.OK,
@@ -260,30 +262,4 @@ export class ProcessController {
     }
   }
 
-  private async _notifyStatusChange(
-    processId: string,
-    userId: string,
-    oldStatus: string,
-    newStatus: string,
-    reason: string,
-  ) {
-    try {
-      await fetch(this.env.N8N_STATUS_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          process_id: processId,
-          user_id: userId,
-          old_status: oldStatus,
-          new_status: newStatus,
-          reason,
-        }),
-      });
-      this.logger.info('Status webhook notified', { processId, newStatus });
-    } catch (error: any) {
-      this.logger.error('Failed to notify status webhook', {
-        error: error.message,
-      });
-    }
-  }
 }

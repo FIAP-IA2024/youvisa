@@ -10,23 +10,33 @@
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint ./src --ext .ts --fix",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build": "tsup",
     "dev": "tsx watch src/server.ts",
     "start": "NODE_ENV=production node dist/server.js",
     "package:lambda": "npm run build && bash scripts/package-lambda.sh",
     "deploy": "npm run package:lambda && cd infrastructure/terraform/lambda && terraform apply"
   },
-  "keywords": ["youvisa", "backend", "api", "lambda", "mongodb"],
+  "keywords": [
+    "youvisa",
+    "backend",
+    "api",
+    "lambda",
+    "mongodb"
+  ],
   "author": "YOUVISA Team",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.15.14",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^9.28.0",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "@fastify/aws-lambda": "^6.1.1",
