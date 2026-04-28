@@ -25,7 +25,7 @@ Toda a stack roda **100% local** via `docker compose up` — sem dependência de
 
 ### Vídeo demonstrativo
 
-> _Adicionar link do YouTube após gravação._
+<https://youtu.be/621cVSKsvQU>
 
 ### Sprints anteriores
 

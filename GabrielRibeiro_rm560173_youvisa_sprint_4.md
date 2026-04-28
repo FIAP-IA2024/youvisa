@@ -13,7 +13,7 @@
 
 **Link do projeto no GitHub:** <https://github.com/ribeirogab/youvisa>
 
-**Vídeo demonstrativo:** <https://github.com/FIAP-IA2024/youvisa/blob/main/docs/demo-sprint-4.mp4>
+**Vídeo demonstrativo:** <https://youtu.be/621cVSKsvQU>
 
 ---
 
