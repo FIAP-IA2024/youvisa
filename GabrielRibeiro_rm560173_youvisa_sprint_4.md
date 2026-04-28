@@ -13,7 +13,7 @@
 
 **Link do projeto no GitHub:** <https://github.com/ribeirogab/youvisa>
 
-**Vídeo demonstrativo:** <https://youtu.be/621cVSKsvQU>
+**Vídeo demonstrativo:** <https://youtu.be/XbzTaDDjHlg>
 
 ---
 
