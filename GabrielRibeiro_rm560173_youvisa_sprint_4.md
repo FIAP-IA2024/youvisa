@@ -11,7 +11,7 @@
 - RM559800 - Jonas Felipe dos Santos Lima
 - RM559645 - Edimilson Ribeiro da Silva
 
-**Link do projeto no GitHub:** <https://github.com/ribeirogab/youvisa>
+**Link do projeto no GitHub:** <https://github.com/FIAP-IA2024/youvisa>
 
 **Vídeo demonstrativo:** <https://youtu.be/XbzTaDDjHlg>
 
